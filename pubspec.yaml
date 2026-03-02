@@ -21,6 +21,7 @@ dependencies:
   flutter_native_splash: ^2.4.7
   smooth_page_indicator: ^1.2.1
   carousel_slider: ^5.1.1
+  lottie: ^3.1.0
 
   # Icons
   cupertino_icons: ^1.0.8
@@ -47,8 +48,6 @@ flutter:
   # ------------------- LOCAL ASSETS --------------------
 
   assets:
-    - assets/logos/
-    - assets/icons/
     - assets/images/
     - assets/images/onboarding_images/
     - assets/images/animations/
@@ -81,17 +80,24 @@ flutter:
         - asset: assets/fonts/Poppins-Black.ttf
           weight: 900
 
+  
+
 # ------------------- SPLASH CONFIG ---------------------
 flutter_native_splash:
   color: "#FFFFFF"
   color_dark: "#272727"
-  image: assets\images\iamlogopng.png
-  image_dark: assets\images\iamlogo.png
+  image: assets/images/iamlogopng.png
+  image_dark: assets/images/iamlogo.png
 
   android_12:
     color: "#FFFFFF"
     color_dark: "#272727"
-    image: assets\images\iamlogopng.png
-    image_dark: assets\images\iamlogo.png
+    image: assets/images/iamlogopng.png
+    image_dark: assets/images/iamlogo.png
 
   web: false
+  
+  flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/iam_app_icon.png"

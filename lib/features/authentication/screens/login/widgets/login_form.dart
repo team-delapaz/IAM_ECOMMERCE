@@ -7,8 +7,16 @@ import 'package:iam_ecomm/utils/constants/sizes.dart';
 import 'package:iam_ecomm/utils/constants/text_strings.dart';
 import 'package:iconsax/iconsax.dart';
 
-class IAMLoginForm extends StatelessWidget {
+class IAMLoginForm extends StatefulWidget {
   const IAMLoginForm({super.key});
+
+  @override
+  State<IAMLoginForm> createState() => _IAMLoginFormState();
+}
+
+class _IAMLoginFormState extends State<IAMLoginForm> {
+  bool obscurePassword = true;
+  bool rememberMe = true;
 
   @override
   Widget build(BuildContext context) {
@@ -19,46 +27,60 @@ class IAMLoginForm extends StatelessWidget {
         ),
         child: Column(
           children: [
-            //email
             TextFormField(
               decoration: const InputDecoration(
-                prefixIcon: Icon(Iconsax.direct_right),
+                prefixIcon: Icon(Iconsax.sms),
                 labelText: IAMTexts.email,
               ),
             ),
+
             const SizedBox(height: IAMSizes.spaceBtwInputFields),
-            //password
+
             TextFormField(
-              decoration: const InputDecoration(
-                prefixIcon: Icon(Iconsax.password_check),
+              obscureText: obscurePassword,
+              obscuringCharacter: '•',
+              decoration: InputDecoration(
+                prefixIcon: const Icon(Iconsax.password_check),
                 labelText: IAMTexts.password,
-                suffixIcon: Icon(Iconsax.eye_slash),
+                suffixIcon: IconButton(
+                  icon: Icon(obscurePassword ? Iconsax.eye_slash : Iconsax.eye),
+                  onPressed: () {
+                    setState(() {
+                      obscurePassword = !obscurePassword;
+                    });
+                  },
+                ),
               ),
             ),
+
             const SizedBox(height: IAMSizes.spaceBtwInputFields / 2),
 
-            // Remember me and forget password
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                //remeber me
                 Row(
                   children: [
-                    Checkbox(value: true, onChanged: (value) {}),
+                    Checkbox(
+                      value: rememberMe,
+                      onChanged: (value) {
+                        setState(() {
+                          rememberMe = value ?? false;
+                        });
+                      },
+                    ),
                     const Text(IAMTexts.rememberMe),
                   ],
                 ),
 
-                //forgot password
                 TextButton(
                   onPressed: () => Get.to(() => const ForgetPassword()),
                   child: const Text(IAMTexts.forgetPassword),
                 ),
               ],
             ),
+
             const SizedBox(height: IAMSizes.spaceBtwSections),
 
-            //Sign in button
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -66,9 +88,9 @@ class IAMLoginForm extends StatelessWidget {
                 child: Text(IAMTexts.signIn),
               ),
             ),
+
             const SizedBox(height: IAMSizes.spaceBtwItems),
 
-            //Create Account Button
             SizedBox(
               width: double.infinity,
               child: OutlinedButton(

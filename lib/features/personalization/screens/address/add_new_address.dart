@@ -11,7 +11,7 @@ class AddNewAddressScreen extends StatelessWidget {
     return Scaffold(
       appBar: const IAMAppBar(
         showBackArrow: true,
-        title: Text('Add new Address'),
+        title: Text('Add New Address'),
       ),
       body: SingleChildScrollView(
         child: Padding(

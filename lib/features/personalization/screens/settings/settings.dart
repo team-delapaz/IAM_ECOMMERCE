@@ -5,7 +5,7 @@ import 'package:iam_ecomm/common/widgets/appbar/appbar.dart';
 import 'package:iam_ecomm/common/widgets/custom_shapes/containers/primary_header_container.dart';
 import 'package:iam_ecomm/common/widgets/list_tiles/settings_menu_tile.dart';
 import 'package:iam_ecomm/common/widgets/list_tiles/user_profile_tile.dart';
-import 'package:iam_ecomm/features/personalization/screens/address/add_new_address.dart';
+import 'package:iam_ecomm/features/authentication/screens/login/login.dart';
 import 'package:iam_ecomm/features/personalization/screens/address/address.dart';
 import 'package:iam_ecomm/features/personalization/screens/profile/profile.dart';
 import 'package:iam_ecomm/features/shop/screens/cart/cart.dart';
@@ -80,21 +80,21 @@ class SettingScreen extends StatelessWidget {
                     title: 'Bank Account',
                     subTitle: 'Manage Connected Banks',
                   ),
-                  IAMSettingMenu(
-                    icon: Iconsax.discount_shape,
-                    title: 'Vouchers',
-                    subTitle: 'Manage Discount Coupons',
-                  ),
+                  // IAMSettingMenu(
+                  //   icon: Iconsax.discount_shape,
+                  //   title: 'Vouchers',
+                  //   subTitle: 'Manage Discount Coupons',
+                  // ),
                   IAMSettingMenu(
                     icon: Iconsax.gift,
                     title: 'Invite Friends',
-                    subTitle: 'Share and Referral Settings',
+                    subTitle: 'Share Referral Code',
                   ),
                   //INVITE FRIENDS VIEWS USER ID WHRE USERS CAN COPY AND WILL THEN SEND A DOWNLOADABLE APP URL WITH THEIR REFERRAL CODE AUTOMATICALLY INSERTED
                   IAMSettingMenu(
                     icon: Iconsax.message_question,
                     title: 'Help Center',
-                    subTitle: 'Help Articles and FAQs',
+                    subTitle: 'FAQs',
                   ),
                   // IAMSettingMenu(
                   //   icon: Iconsax.notification,
@@ -145,7 +145,7 @@ class SettingScreen extends StatelessWidget {
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton(
-                      onPressed: () {},
+                      onPressed: () => Get.to(() => LoginScreen()),
                       child: const Text('Logout'),
                     ),
                   ),

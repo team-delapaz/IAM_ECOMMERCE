@@ -18,10 +18,13 @@ class OnboardingPage extends StatelessWidget {
       padding: const EdgeInsets.all(IAMSizes.defaultSpace),
       child: Column(
         children: [
-          Image(
-            width: IAMHelperFunctions.screenWidth() * 0.8,
-            height: IAMHelperFunctions.screenHeight() * 0.6,
-            image: AssetImage(image),
+          Transform.scale(
+            scale: 1,
+            child: Image(
+              width: IAMHelperFunctions.screenWidth() * 0.8,
+              height: IAMHelperFunctions.screenHeight() * 0.6,
+              image: AssetImage(image),
+            ),
           ),
           Text(
             title,

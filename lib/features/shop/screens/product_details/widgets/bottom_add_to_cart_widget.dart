@@ -12,15 +12,18 @@ class IAMBottomAddToCart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dark = IAMHelperFunctions.isDarkMode(context);
-    
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: IAMSizes.defaultSpace, vertical: IAMSizes.defaultSpace / 2),
+      padding: const EdgeInsets.symmetric(
+        horizontal: IAMSizes.defaultSpace,
+        vertical: IAMSizes.defaultSpace / 2,
+      ),
       decoration: BoxDecoration(
         color: dark ? IAMColors.darkerGrey : IAMColors.light,
-        borderRadius:  const BorderRadius.only(
+        borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(IAMSizes.cardRadiusLg),
           topRight: Radius.circular(IAMSizes.cardRadiusLg),
-        )
+        ),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -34,12 +37,12 @@ class IAMBottomAddToCart extends StatelessWidget {
                 height: 40,
                 color: IAMColors.white,
               ),
-              const SizedBox(width: IAMSizes.spaceBtwItems,),
-              Text('2', style: Theme.of(context).textTheme.titleSmall,),
-              const SizedBox(width: IAMSizes.spaceBtwItems,),
+              const SizedBox(width: IAMSizes.spaceBtwItems),
+              Text('2', style: Theme.of(context).textTheme.titleSmall),
+              const SizedBox(width: IAMSizes.spaceBtwItems),
               IAMCircularIcon(
                 icon: Iconsax.add,
-                backgroundColor: IAMColors.warning,
+                backgroundColor: Color(0xFFDBA724),
                 width: 40,
                 height: 40,
                 color: IAMColors.white,
@@ -47,11 +50,10 @@ class IAMBottomAddToCart extends StatelessWidget {
             ],
           ),
           ElevatedButton(
-            onPressed: (){}, 
+            onPressed: () {},
             style: ElevatedButton.styleFrom(
               padding: const EdgeInsets.all(IAMSizes.md),
-              backgroundColor: IAMColors.warning,
-              side: const BorderSide(color: IAMColors.black),
+              backgroundColor: Color(0xFFDBA724),
             ),
             child: const Text('Add to Cart'),
           ),

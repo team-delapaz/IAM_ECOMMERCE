@@ -7,6 +7,7 @@ import 'package:iam_ecomm/features/authentication/screens/widgets/onboarding_pag
 import 'package:iam_ecomm/features/authentication/screens/widgets/onboarding_skip.dart';
 import 'package:iam_ecomm/utils/constants/image_strings.dart';
 import 'package:iam_ecomm/utils/constants/text_strings.dart';
+import 'package:lottie/lottie.dart';
 
 class OnBoardingScreen extends StatelessWidget {
   const OnBoardingScreen({super.key});
@@ -24,17 +25,17 @@ class OnBoardingScreen extends StatelessWidget {
             onPageChanged: controller.updatePageIndicator,
             children: [
               OnboardingPage(
-                image: IAMImages.onBoardingImage1,
+                image: IAMImages.onBoardingImage4,
                 title: IAMTexts.onBoardingTitle1,
                 subTitle: IAMTexts.onBoardingSubTitle1,
               ),
               OnboardingPage(
-                image: IAMImages.onBoardingImage2,
+                image: IAMImages.onBoardingImage7,
                 title: IAMTexts.onBoardingTitle2,
                 subTitle: IAMTexts.onBoardingSubTitle2,
               ),
               OnboardingPage(
-                image: IAMImages.onBoardingImage3,
+                image: IAMImages.onBoardingImage8,
                 title: IAMTexts.onBoardingTitle3,
                 subTitle: IAMTexts.onBoardingSubTitle3,
               ),

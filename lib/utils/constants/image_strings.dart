@@ -2,6 +2,7 @@ class IAMImages {
   //App Logos
   static const String darkAppLogo = "assets/images/iamlogopng.png";
   static const String lightAppLogo = "assets/images/iamlogopng.png";
+  static const String iambg = "assets/images/iambg.jpg";
 
   // static const String darkAppLogo = "assets/logos/iamlogo.png";
 
@@ -16,6 +17,16 @@ class IAMImages {
       "assets/images/onboarding_images/Online shopping  Black Friday.gif";
   static const String onBoardingImage3 =
       "assets/images/onboarding_images/Delivery Scooter.gif";
+  static const String onBoardingImage4 =
+      "assets/images/onboarding_images/SHOPPING THROUGH PHONE.gif";
+  static const String onBoardingImage5 =
+      "assets/images/onboarding_images/Loc.gif";
+  static const String onBoardingImage6 =
+      "assets/images/onboarding_images/SHOPCART.gif";
+  static const String onBoardingImage7 =
+      "assets/images/onboarding_images/pay1.gif";
+  static const String onBoardingImage8 =
+      "assets/images/onboarding_images/route.gif";
 
   //Animations/Images
   static const String emailSent = "assets/images/animations/sent.png";
@@ -65,7 +76,10 @@ class IAMImages {
   static const String maya = "assets/images/payments/maya.png";
   static const String iamwallet = "assets/images/payments/iamwallet.png";
   static const String cod = "assets/images/payments/cod.png";
-  static const String successfulPaymentIcon = "assets/images/payments/successpayment.png";
-  static const String failPaymentIcon = "assets/images/payments/failpayment.png";
-  static const String successfulPaymentGif = "assets/images/payments/successpayment.gif";
+  static const String successfulPaymentIcon =
+      "assets/images/payments/successpayment.png";
+  static const String failPaymentIcon =
+      "assets/images/payments/failpayment.png";
+  static const String successfulPaymentGif =
+      "assets/images/payments/successpayment.gif";
 }

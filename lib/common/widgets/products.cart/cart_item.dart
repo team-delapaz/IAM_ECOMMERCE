@@ -8,9 +8,7 @@ import 'package:iam_ecomm/utils/constants/sizes.dart';
 import 'package:iam_ecomm/utils/helpers/helper_functions.dart';
 
 class IAMCartItem extends StatelessWidget {
-  const IAMCartItem({
-    super.key,
-  });
+  const IAMCartItem({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -26,19 +24,19 @@ class IAMCartItem extends StatelessWidget {
               : IAMColors.light,
         ),
         const SizedBox(width: IAMSizes.spaceBtwItems),
-    
+
         Expanded(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              IAMBrandTitleWithVerifiedIcon(title: 'IAM'),
+              IAMBrandTitleWithVerifiedIcon(title: 'AMAZING Organic Barley'),
               Flexible(
                 child: Transform.scale(
                   scale: 1.4, // Slightly larger title just in cart items
                   alignment: Alignment.centerLeft,
                   child: IAMProductTitleText(
-                    title: 'IAM Barley Powder',
+                    title: 'IAM Barley Capsules',
                     maxLines: 1,
                   ),
                 ),
