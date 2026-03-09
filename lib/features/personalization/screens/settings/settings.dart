@@ -5,11 +5,13 @@ import 'package:iam_ecomm/common/widgets/appbar/appbar.dart';
 import 'package:iam_ecomm/common/widgets/custom_shapes/containers/primary_header_container.dart';
 import 'package:iam_ecomm/common/widgets/list_tiles/settings_menu_tile.dart';
 import 'package:iam_ecomm/common/widgets/list_tiles/user_profile_tile.dart';
+import 'package:iam_ecomm/features/authentication/screens/login/login.dart';
 import 'package:iam_ecomm/features/personalization/screens/address/add_new_address.dart';
 import 'package:iam_ecomm/features/personalization/screens/address/address.dart';
 import 'package:iam_ecomm/features/personalization/screens/profile/profile.dart';
 import 'package:iam_ecomm/features/shop/screens/cart/cart.dart';
 import 'package:iam_ecomm/features/shop/screens/order/order.dart';
+import 'package:iam_ecomm/utils/api/api.dart';
 import 'package:iam_ecomm/utils/constants/colors.dart';
 import 'package:iam_ecomm/utils/constants/sizes.dart';
 import 'package:iconsax/iconsax.dart';
@@ -145,7 +147,10 @@ class SettingScreen extends StatelessWidget {
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton(
-                      onPressed: () {},
+                      onPressed: () async {
+                        await ApiMiddleware.clearToken();
+                        Get.offAll(() => const LoginScreen());
+                      },
                       child: const Text('Logout'),
                     ),
                   ),
