@@ -2,6 +2,8 @@ import 'core/api_client.dart';
 import 'core/auth_token_store.dart';
 import 'services/auth_api.dart';
 import 'services/cart_api.dart';
+import 'services/member_api.dart';
+import 'services/payment_api.dart';
 import 'services/products_api.dart';
 
 /// Single entry point for API calls...
@@ -18,6 +20,8 @@ class ApiMiddleware {
   static final AuthTokenStore _tokenStore = AuthTokenStore();
   static final AuthApi auth = AuthApi(_client);
   static final CartApi cart = CartApi(_client);
+  static final MemberApi member = MemberApi(_client);
+  static final PaymentApi payment = PaymentApi(_client);
   static final ProductsApi products = ProductsApi(_client);
 
   static Future<void> init() async {

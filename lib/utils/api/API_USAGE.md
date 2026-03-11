@@ -2,6 +2,17 @@
 
 Use `ApiMiddleware` instead of raw HTTP. All calls return `ApiResponse<T>`: `status`, `success`, `message`, `data`. Network and HTTP errors are caught and returned as an `ApiResponse` with `success: false`, so you don't have to try/catch for normal flow na.
 
+Standard JSON from backend:
+
+```json
+{
+  "status": 200,
+  "success": true,
+  "message": "Products retrieved successfully.",
+  "data": {}
+}
+```
+
 ## Setup after login
 
 ```dart
@@ -27,15 +38,24 @@ await ApiMiddleware.init();
 
 ## Cart
 
-- `ApiMiddleware.cart.add(productCode: 'X', qty: 1, sourceApp: 'M')`
-- `ApiMiddleware.cart.getCart()`
-- `ApiMiddleware.cart.updateQty(productCode, qty)`
-- `ApiMiddleware.cart.deleteItem(productCode)`
+- `ApiMiddleware.cart.add(productCode: 'X', qty: 1)` → `ApiResponse<CartPayload?>`
+- `ApiMiddleware.cart.getCart()` → `ApiResponse<CartPayload?>`
+- `ApiMiddleware.cart.updateQty(productCode, qty)` → `ApiResponse<CartPayload?>`
+- `ApiMiddleware.cart.deleteItem(productCode)` → `ApiResponse<CartPayload?>`
 
 ## Products
 
 - `ApiMiddleware.products.getProducts()` → `ApiResponse<List<ProductItem?>>`
 - `ApiMiddleware.products.getProductDetail(productCode)` → `ApiResponse<ProductItem?>`
+
+## Member
+
+- `ApiMiddleware.member.getMember()` → `ApiResponse<MemberPayload?>`
+
+## Payment
+
+- `ApiMiddleware.payment.getPaymentMethods()` → `ApiResponse<List<PaymentMethodItem?>>`
+- `ApiMiddleware.payment.getPaymentProviders()` → `ApiResponse<List<PaymentProviderItem?>>`
 
 ## Response handling
 

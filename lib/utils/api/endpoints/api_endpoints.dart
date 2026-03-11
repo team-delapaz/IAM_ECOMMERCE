@@ -14,4 +14,9 @@ class ApiEndpoints {
 
   static const String products = '/Products';
   static String productDetail(String productCode) => '/Products/$productCode';
+
+  static const String member = '/Member';
+
+  static const String paymentMethods = '/Payment/PaymentMethods';
+  static const String paymentProviders = '/Payment/PaymentProviders';
 }
