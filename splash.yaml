@@ -1,13 +1,22 @@
 flutter_native_splash:
   color: "#FFFFFF"
   color_dark: "#272727"
-  image: assets/images/iamlogo.png
-  image_dark: assets/images/iamlogo.png
-
+  image: assets/images/ecom_app_icon.png
+  image_dark: assets/images/ecom_app_icon.png
+  
+  # App icon properties for better corner rounding
+  android: true
+  ios: true
+  android_gravity: center
+  ios_content_mode: center
+  
+  # Size and padding adjustments
   android_12:
     color: "#FFFFFF"
     color_dark: "#272727"
-    image: assets/logos/iamlogo.png
-    image_dark: assets/logos/iamlogo.png
+    branding_image: assets/images/ecom_app_icon.png
+    branding_image_dark: assets/images/ecom_app_icon.png
+    icon_background_color: "#FFFFFF"
+    icon_background_color_dark: "#272727"
 
   web: false

@@ -42,6 +42,8 @@ dev_dependencies:
     sdk: flutter
 
   flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.14.1
+  image: ^4.8.0
 
 flutter:
   uses-material-design: true
@@ -56,6 +58,7 @@ flutter:
     - assets/images/animations/
     - assets/images/categories/
     - assets/images/products/
+    - assets/images/products_whitebg/
     - assets/images/packages/
     - assets/images/payments/
     - assets/images/users/
@@ -88,13 +91,30 @@ flutter:
 flutter_native_splash:
   color: "#FFFFFF"
   color_dark: "#272727"
-  image: assets\images\iamlogopng.png
-  image_dark: assets\images\iamlogo.png
-
+  image: assets/images/ecom_app_icon_xs.png
+  image_dark: assets/images/ecom_app_icon_xs.png
+  
+  # App icon properties for better corner rounding
+  android: true
+  ios: true
+  android_gravity: center
+  ios_content_mode: center
+  
+  # Size and padding adjustments
   android_12:
     color: "#FFFFFF"
     color_dark: "#272727"
-    image: assets\images\iamlogopng.png
-    image_dark: assets\images\iamlogo.png
+    image: assets/images/ecom_app_icon_xs.png
+    image_dark: assets/images/ecom_app_icon_xs.png
+    icon_background_color: "#FFFFFF"
+    icon_background_color_dark: "#272727"
 
   web: false
+
+# ------------------- APP ICON CONFIG --------------------
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/ecom_app_icon.png"
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/images/ecom_app_icon.png"

@@ -12,7 +12,9 @@ import 'package:iam_ecomm/utils/constants/sizes.dart';
 import 'package:iam_ecomm/utils/helpers/helper_functions.dart';
 
 class StoreScreen extends StatelessWidget {
-  const StoreScreen({super.key});
+  const StoreScreen({super.key, this.initialTabIndex = 0});
+  
+  final int initialTabIndex;
 
   @override
   Widget build(BuildContext context) {
