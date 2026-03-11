@@ -3,37 +3,85 @@ import 'package:get/get.dart';
 import 'package:iam_ecomm/features/authentication/screens/password_configuration/forget_password.dart';
 import 'package:iam_ecomm/features/authentication/screens/signup/signup.dart';
 import 'package:iam_ecomm/navigation_menu.dart';
+import 'package:iam_ecomm/utils/api/api.dart';
 import 'package:iam_ecomm/utils/constants/sizes.dart';
 import 'package:iam_ecomm/utils/constants/text_strings.dart';
 import 'package:iconsax/iconsax.dart';
 
-class IAMLoginForm extends StatelessWidget {
+class IAMLoginForm extends StatefulWidget {
   const IAMLoginForm({super.key});
+
+  @override
+  State<IAMLoginForm> createState() => _IAMLoginFormState();
+}
+
+class _IAMLoginFormState extends State<IAMLoginForm> {
+  final _formKey = GlobalKey<FormState>();
+  final _usernameController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _obscurePassword = true;
+  bool _loading = false;
+
+  @override
+  void dispose() {
+    _usernameController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+    setState(() => _loading = true);
+    final res = await ApiMiddleware.auth.login(
+      _usernameController.text.trim(),
+      _passwordController.text,
+    );
+    if (!mounted) return;
+    setState(() => _loading = false);
+    if (res.success && res.data?.token != null) {
+      await ApiMiddleware.setToken(res.data!.token!.accessToken);
+      Get.offAll(() => const NavigationMenu());
+    } else {
+      Get.snackbar('Sign in failed', res.message);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Form(
+      key: _formKey,
       child: Padding(
         padding: const EdgeInsets.symmetric(
           vertical: IAMSizes.spaceBtwSections,
         ),
         child: Column(
           children: [
-            //email
+            // username
             TextFormField(
+              controller: _usernameController,
               decoration: const InputDecoration(
                 prefixIcon: Icon(Iconsax.direct_right),
-                labelText: IAMTexts.email,
+                labelText: IAMTexts.username,
               ),
+              validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+              textInputAction: TextInputAction.next,
             ),
             const SizedBox(height: IAMSizes.spaceBtwInputFields),
-            //password
+            // password
             TextFormField(
-              decoration: const InputDecoration(
-                prefixIcon: Icon(Iconsax.password_check),
+              controller: _passwordController,
+              obscureText: _obscurePassword,
+              decoration: InputDecoration(
+                prefixIcon: const Icon(Iconsax.password_check),
                 labelText: IAMTexts.password,
-                suffixIcon: Icon(Iconsax.eye_slash),
+                suffixIcon: IconButton(
+                  icon: Icon(_obscurePassword ? Iconsax.eye_slash : Iconsax.eye),
+                  onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                ),
               ),
+              validator: (v) => (v == null || v.isEmpty) ? 'Required' : null,
+              textInputAction: TextInputAction.done,
+              onFieldSubmitted: (_) => _submit(),
             ),
             const SizedBox(height: IAMSizes.spaceBtwInputFields / 2),
 
@@ -41,15 +89,14 @@ class IAMLoginForm extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                //remeber me
+                // remember me
                 Row(
                   children: [
                     Checkbox(value: true, onChanged: (value) {}),
                     const Text(IAMTexts.rememberMe),
                   ],
                 ),
-
-                //forgot password
+                // forgot password
                 TextButton(
                   onPressed: () => Get.to(() => const ForgetPassword()),
                   child: const Text(IAMTexts.forgetPassword),
@@ -58,21 +105,27 @@ class IAMLoginForm extends StatelessWidget {
             ),
             const SizedBox(height: IAMSizes.spaceBtwSections),
 
-            //Sign in button
+            // Sign in button
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () => Get.to(() => const NavigationMenu()),
-                child: Text(IAMTexts.signIn),
+                onPressed: _loading ? null : _submit,
+                child: _loading
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : Text(IAMTexts.signIn),
               ),
             ),
             const SizedBox(height: IAMSizes.spaceBtwItems),
 
-            //Create Account Button
+            // Create Account Button
             SizedBox(
               width: double.infinity,
               child: OutlinedButton(
-                onPressed: () => Get.to(() => const SignupScreen()),
+                onPressed: _loading ? null : () => Get.to(() => const SignupScreen()),
                 child: Text(IAMTexts.createAccount),
               ),
             ),
