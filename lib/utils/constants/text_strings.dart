@@ -23,6 +23,7 @@ class IAMTexts {
   static const String firstName = "First Name";
   static const String lastName = "Last Name";
   static const String email = "E-Mail";
+  static const String userid = "User ID";
   static const String password = "Password";
   static const String newPassword = "New Password";
   static const String username = "Username";

@@ -5,86 +5,211 @@ import 'package:iam_ecomm/features/authentication/screens/signup/widgets/termsan
 import 'package:iam_ecomm/utils/constants/sizes.dart';
 import 'package:iam_ecomm/utils/constants/text_strings.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:iam_ecomm/utils/api/api.dart';
 
-class IAMSignupForm extends StatelessWidget {
+class IAMSignupForm extends StatefulWidget {
   const IAMSignupForm({super.key});
+
+  @override
+  State<IAMSignupForm> createState() => _IAMSignupFormState();
+}
+
+class _IAMSignupFormState extends State<IAMSignupForm> {
+  final _formKey = GlobalKey<FormState>();
+  bool _isLoading = false;
+  bool _obscurePassword = true;
+
+  final _firstNameController = TextEditingController();
+  final _lastNameController = TextEditingController();
+  final _usernameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _passwordController = TextEditingController();
+
+  Future<void> _submitForm() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final res = await ApiMiddleware.auth.signup(
+        email: _emailController.text.trim(),
+        mobileNo: _phoneController.text.trim(),
+        password: _passwordController.text,
+        firstName: _firstNameController.text.trim(),
+        lastName: _lastNameController.text.trim(),
+      );
+
+      if (!mounted) return;
+
+      setState(() {
+        _isLoading = false;
+      });
+
+      // Safe snackbar display
+      Get.snackbar(
+        res.success ? "Success" : "Signup Failed",
+        res.message ??
+            (res.success ? "Account created successfully" : "Server error"),
+        snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 3),
+      );
+
+      if (res.success) {
+        Get.to(() => const VerifyEmailScreen());
+      }
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() {
+        _isLoading = false;
+      });
+
+      Get.snackbar(
+        "Error",
+        "Server error. Please try again later.",
+        snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 3),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _firstNameController.dispose();
+    _lastNameController.dispose();
+    _usernameController.dispose();
+    _emailController.dispose();
+    _phoneController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Form(
+      key: _formKey,
+      autovalidateMode: AutovalidateMode.onUserInteraction,
       child: Column(
         children: [
           Row(
             children: [
               Expanded(
                 child: TextFormField(
+                  controller: _firstNameController,
                   expands: false,
                   decoration: const InputDecoration(
                     labelText: IAMTexts.firstName,
                     prefixIcon: Icon(Iconsax.user),
                   ),
+                  validator: (v) =>
+                      (v == null || v.isEmpty) ? 'Required Field*' : null,
                 ),
               ),
               const SizedBox(width: IAMSizes.spaceBtwInputFields),
               Expanded(
                 child: TextFormField(
+                  controller: _lastNameController,
                   expands: false,
                   decoration: const InputDecoration(
                     labelText: IAMTexts.lastName,
                     prefixIcon: Icon(Iconsax.user),
                   ),
+                  validator: (v) =>
+                      (v == null || v.isEmpty) ? 'Required Field*' : null,
                 ),
               ),
             ],
           ),
+
           const SizedBox(height: IAMSizes.spaceBtwInputFields),
 
-          //Username
+          // Username field commented out
+          // TextFormField(
+          //   controller: _usernameController,
+          //   expands: false,
+          //   decoration: const InputDecoration(
+          //     labelText: IAMTexts.username,
+          //     prefixIcon: Icon(Iconsax.user_edit),
+          //   ),
+          //   validator: (v) =>
+          //       (v == null || v.isEmpty) ? 'Required Field*' : null,
+          // ),
           TextFormField(
-            expands: false,
-            decoration: const InputDecoration(
-              labelText: IAMTexts.username,
-              prefixIcon: Icon(Iconsax.user_edit),
-            ),
-          ),
-          const SizedBox(height: IAMSizes.spaceBtwInputFields),
-          //Email
-          TextFormField(
+            controller: _emailController,
             expands: false,
             decoration: const InputDecoration(
               labelText: IAMTexts.email,
               prefixIcon: Icon(Iconsax.direct),
             ),
+            validator: (v) {
+              if (v == null || v.isEmpty) return 'Required Field*';
+              final regex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+              if (!regex.hasMatch(v)) return 'Invalid email';
+              return null;
+            },
           ),
+
           const SizedBox(height: IAMSizes.spaceBtwInputFields),
-          //Phone number
+
           TextFormField(
+            controller: _phoneController,
             expands: false,
             decoration: const InputDecoration(
               labelText: IAMTexts.phoneNo,
               prefixIcon: Icon(Iconsax.call),
             ),
+            validator: (v) {
+              if (v == null || v.isEmpty) return 'Required Field*';
+              final regex = RegExp(r'^[0-9]+$');
+              if (!regex.hasMatch(v)) return 'Invalid phone number';
+              return null;
+            },
           ),
+
           const SizedBox(height: IAMSizes.spaceBtwInputFields),
-          //Password
+
           TextFormField(
-            expands: false,
-            decoration: const InputDecoration(
+            controller: _passwordController,
+            obscureText: _obscurePassword,
+            obscuringCharacter: '•',
+            decoration: InputDecoration(
+              prefixIcon: const Icon(Iconsax.password_check),
               labelText: IAMTexts.password,
-              prefixIcon: Icon(Iconsax.password_check),
-              suffixIcon: Icon(Iconsax.eye_slash),
+              suffixIcon: IconButton(
+                icon: Icon(_obscurePassword ? Iconsax.eye_slash : Iconsax.eye),
+                onPressed: () =>
+                    setState(() => _obscurePassword = !_obscurePassword),
+              ),
             ),
+            validator: (v) =>
+                (v == null || v.isEmpty) ? 'Required Field*' : null,
           ),
+
           const SizedBox(height: IAMSizes.spaceBtwSections),
-          //Terms and Conditions Checkbox
+
           const IAMTermsAndConditions(),
+
           const SizedBox(height: IAMSizes.spaceBtwSections),
-          //Sign up button
+
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () => Get.to(() => const VerifyEmailScreen()),
-              child: const Text(IAMTexts.createAccount),
+              onPressed: _isLoading ? null : _submitForm,
+              child: _isLoading
+                  ? const SizedBox(
+                      height: 22,
+                      width: 22,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Text(IAMTexts.createAccount),
             ),
           ),
         ],
