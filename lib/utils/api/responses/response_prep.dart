@@ -80,6 +80,8 @@ class UserInfo {
 }
 
 class ProductItem {
+  final int categoryId;
+  final String categoryName;
   final String productCode;
   final String productName;
   final num regularPrice;
@@ -91,6 +93,8 @@ class ProductItem {
   final String altText;
 
   ProductItem({
+    required this.categoryId,
+    required this.categoryName,
     required this.productCode,
     required this.productName,
     required this.regularPrice,
@@ -106,6 +110,8 @@ class ProductItem {
     final m = asMap(json);
     if (m == null) return null;
     return ProductItem(
+      categoryId: (m['categoryId'] as int?) ?? 0,
+      categoryName: m['categoryName'] as String? ?? '',
       productCode: m['productCode'] as String? ?? '',
       productName: m['productName'] as String? ?? '',
       regularPrice: (m['regularPrice'] as num?) ?? 0,

@@ -25,4 +25,15 @@ class ProductsApi {
       fromJsonData: ProductItem.fromJson,
     );
   }
+
+  Future<ApiResponse<List<ProductItem?>>> getProductsByCategory(int categoryId) {
+    return _client.get<List<ProductItem?>>(
+      ApiEndpoints.productsByCategory(categoryId),
+      fromJsonData: (dynamic v) {
+        if (v == null) return null;
+        final list = v is List ? v : [];
+        return list.map((e) => ProductItem.fromJson(e)).toList();
+      },
+    );
+  }
 }
