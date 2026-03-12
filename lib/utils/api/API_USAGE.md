@@ -57,6 +57,14 @@ await ApiMiddleware.init();
 
 - `ApiMiddleware.payment.getPaymentMethods()` → `ApiResponse<List<PaymentMethodItem?>>`
 - `ApiMiddleware.payment.getPaymentProviders()` → `ApiResponse<List<PaymentProviderItem?>>`
+ - `ApiMiddleware.payment.createPayment(...)` → `ApiResponse<dynamic>`
+ - `ApiMiddleware.payment.callbackPayment(...)` → `ApiResponse<dynamic>`
+ - `ApiMiddleware.payment.getPaymentByTransaction(transactionId)` → `ApiResponse<dynamic>`
+ - `ApiMiddleware.payment.getPaymentStatus(refNo)` → `ApiResponse<dynamic>`
+
+## Checkout
+
+- `ApiMiddleware.checkout.checkout(notes: 'optional note')` → `ApiResponse<dynamic>`
 
 ## Response handling
 
