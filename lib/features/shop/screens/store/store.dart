@@ -19,6 +19,7 @@ class StoreScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
+      initialIndex: initialTabIndex,
       length: 8,
       child: Scaffold(
         appBar: IAMAppBar(

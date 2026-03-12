@@ -3,6 +3,7 @@ import 'package:iam_ecomm/common/widgets/appbar/appbar.dart';
 import 'package:iam_ecomm/common/widgets/custom_shapes/curved_edges/curved_edges_widget.dart';
 import 'package:iam_ecomm/common/widgets/icons/circular_icon.dart';
 import 'package:iam_ecomm/common/widgets/images/iam_rounded_images.dart';
+import 'package:iam_ecomm/utils/api/responses/response_prep.dart';
 import 'package:iam_ecomm/utils/constants/colors.dart';
 import 'package:iam_ecomm/utils/constants/image_strings.dart';
 import 'package:iam_ecomm/utils/constants/sizes.dart';
@@ -10,33 +11,36 @@ import 'package:iam_ecomm/utils/helpers/helper_functions.dart';
 import 'package:iconsax/iconsax.dart';
 
 class IAMProductImageSlider extends StatelessWidget {
-  const IAMProductImageSlider({
-    super.key,
-  });
+  const IAMProductImageSlider({super.key, this.product});
+
+  final ProductItem? product;
 
   @override
   Widget build(BuildContext context) {
     final dark = IAMHelperFunctions.isDarkMode(context);
-    
+    final imageUrl = product?.imageUrl ?? IAMImages.pibarpow;
+    final isNetwork = product != null;
+
     return IAMCurvedEdgeWidget(
       child: Container(
         color: dark ? IAMColors.darkerGrey : IAMColors.light,
         child: Stack(
           children: [
-            // -- MAIN IMAGE
             SizedBox(
               height: 400,
               child: Padding(
-                padding: EdgeInsets.all(
-                  IAMSizes.productImageRadius * 2,
-                ),
+                padding: EdgeInsets.all(IAMSizes.productImageRadius * 2),
                 child: Center(
-                  child: Image(image: AssetImage(IAMImages.pibarpow)),
+                  child: isNetwork
+                      ? IAMRoundedImage(
+                          imageUrl: imageUrl,
+                          isNetworkImage: true,
+                          fit: BoxFit.contain,
+                        )
+                      : Image(image: AssetImage(imageUrl)),
                 ),
               ),
             ),
-    
-            // -- IMAGE SLIDER
             Positioned(
               right: 0,
               bottom: 30,
@@ -46,28 +50,25 @@ class IAMProductImageSlider extends StatelessWidget {
                 child: ListView.separated(
                   separatorBuilder: (_, __) =>
                       const SizedBox(width: IAMSizes.spaceBtwItems),
-                  itemCount: 6,
+                  itemCount: 1,
                   shrinkWrap: true,
                   scrollDirection: Axis.horizontal,
                   physics: const AlwaysScrollableScrollPhysics(),
                   itemBuilder: (_, index) => IAMRoundedImage(
                     width: 80,
-                    backgroundColor: dark
-                        ? IAMColors.dark
-                        : IAMColors.white,
+                    backgroundColor: dark ? IAMColors.dark : IAMColors.white,
                     border: Border.all(color: IAMColors.primary),
                     padding: const EdgeInsets.all(IAMSizes.sm),
-                    imageUrl: IAMImages.piacaibr,
+                    imageUrl: imageUrl,
+                    isNetworkImage: isNetwork,
                   ),
                 ),
               ),
             ),
-    
-            // -- APPBAR ICONS
             const IAMAppBar(
               showBackArrow: true,
               actions: [
-                IAMCircularIcon(icon: Iconsax.heart5, color: Colors.red,)
+                IAMCircularIcon(icon: Iconsax.heart5, color: Colors.red),
               ],
             ),
           ],

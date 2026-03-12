@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:get/get_navigation/src/extension_navigation.dart';
+import 'package:get/get.dart';
 import 'package:iam_ecomm/common/texts/section_heading.dart';
 import 'package:iam_ecomm/common/widgets/custom_shapes/containers/primary_header_container.dart';
 import 'package:iam_ecomm/common/widgets/custom_shapes/containers/search_bar.dart';
@@ -8,6 +7,7 @@ import 'package:iam_ecomm/common/widgets/layouts/grid_layout.dart';
 import 'package:iam_ecomm/common/widgets/products/product_cards/product_card_vertical.dart';
 import 'package:iam_ecomm/features/screens/home/widgets/home_appbar.dart';
 import 'package:iam_ecomm/features/screens/home/widgets/home_categories.dart';
+import 'package:iam_ecomm/features/shop/controllers/home_controller.dart';
 import 'package:iam_ecomm/features/screens/home/widgets/promo_slider.dart';
 import 'package:iam_ecomm/features/shop/screens/all_products/all_products.dart';
 import 'package:iam_ecomm/utils/constants/image_strings.dart';
@@ -18,6 +18,9 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (!Get.isRegistered<HomeController>()) {
+      Get.put(HomeController());
+    }
     return Scaffold(
       body: SingleChildScrollView(
         child: Column(
@@ -75,10 +78,30 @@ class HomeScreen extends StatelessWidget {
                     onPressed: () => Get.to(() => const AllProducts()),
                   ),
                   const SizedBox(height: IAMSizes.spaceBtwItems),
-                  IAMGridLayout(
-                    itemCount: 4,
-                    itemBuilder: (_, index) => const IAMProductCardVertical(),
-                  ),
+                  Obx(() {
+                    final controller = Get.find<HomeController>();
+                    if (controller.productsLoading.value) {
+                      return const Padding(
+                        padding: EdgeInsets.all(IAMSizes.defaultSpace),
+                        child: Center(child: CircularProgressIndicator()),
+                      );
+                    }
+                    if (controller.productsError.value.isNotEmpty) {
+                      return Padding(
+                        padding: const EdgeInsets.all(IAMSizes.defaultSpace),
+                        child: Text(
+                          controller.productsError.value,
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                      );
+                    }
+                    final list = controller.products;
+                    return IAMGridLayout(
+                      itemCount: list.length,
+                      itemBuilder: (_, index) =>
+                          IAMProductCardVertical(product: list[index]),
+                    );
+                  }),
                 ],
               ),
 

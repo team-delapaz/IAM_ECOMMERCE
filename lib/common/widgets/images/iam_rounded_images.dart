@@ -43,12 +43,26 @@ class IAMRoundedImage extends StatelessWidget {
           borderRadius: applyImageRadius
               ? BorderRadius.circular(borderRadius)
               : BorderRadius.zero,
-          child: Image(
-            fit: fit,
-            image: isNetworkImage
-                ? NetworkImage(imageUrl)
-                : AssetImage(imageUrl) as ImageProvider,
-          ),
+          child: isNetworkImage
+              ? Image.network(
+                  imageUrl,
+                  fit: fit,
+                  loadingBuilder: (context, child, loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return const Center(child: CircularProgressIndicator());
+                  },
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      color: backgroundColor ?? Colors.transparent,
+                      alignment: Alignment.center,
+                      child: const Icon(Icons.broken_image_outlined),
+                    );
+                  },
+                )
+              : Image(
+                  fit: fit,
+                  image: AssetImage(imageUrl),
+                ),
         ),
       ),
     );
