@@ -6,10 +6,10 @@ Standard JSON from backend:
 
 ```json
 {
-  "status": 200,
-  "success": true,
-  "message": "Products retrieved successfully.",
-  "data": {}
+  "status": 200, // status code
+  "success": true, // true or falsee of api call
+  "message": "Products retrieved successfully.", // Display the message onn toasts , snackbars etc
+  "data": {} // actual data of the api
 }
 ```
 
@@ -47,6 +47,7 @@ await ApiMiddleware.init();
 
 - `ApiMiddleware.products.getProducts()` → `ApiResponse<List<ProductItem?>>`
 - `ApiMiddleware.products.getProductDetail(productCode)` → `ApiResponse<ProductItem?>`
+- `ApiMiddleware.products.getProductsByCategory(categoryId)` → `ApiResponse<List<ProductItem?>>`
 
 ## Member
 
@@ -56,6 +57,14 @@ await ApiMiddleware.init();
 
 - `ApiMiddleware.payment.getPaymentMethods()` → `ApiResponse<List<PaymentMethodItem?>>`
 - `ApiMiddleware.payment.getPaymentProviders()` → `ApiResponse<List<PaymentProviderItem?>>`
+ - `ApiMiddleware.payment.createPayment(...)` → `ApiResponse<dynamic>`
+ - `ApiMiddleware.payment.callbackPayment(...)` → `ApiResponse<dynamic>`
+ - `ApiMiddleware.payment.getPaymentByTransaction(transactionId)` → `ApiResponse<dynamic>`
+ - `ApiMiddleware.payment.getPaymentStatus(refNo)` → `ApiResponse<dynamic>`
+
+## Checkout
+
+- `ApiMiddleware.checkout.checkout(notes: 'optional note')` → `ApiResponse<dynamic>`
 
 ## Response handling
 

@@ -29,5 +29,67 @@ class PaymentApi {
       },
     );
   }
+
+  Future<ApiResponse<dynamic>> createPayment({
+    required String orderNo,
+    required String idno,
+    required num amount,
+    required String currency,
+    required String paymentProvider,
+    required String paymentMethod,
+    required String description,
+    required String clientReferenceNo,
+  }) {
+    return _client.post<dynamic>(
+      ApiEndpoints.paymentCreate,
+      body: {
+        'orderNo': orderNo,
+        'idno': idno,
+        'amount': amount,
+        'currency': currency,
+        'paymentProvider': paymentProvider,
+        'paymentMethod': paymentMethod,
+        'description': description,
+        'clientReferenceNo': clientReferenceNo,
+      },
+    );
+  }
+
+  Future<ApiResponse<dynamic>> callbackPayment({
+    required String paymentTxnId,
+    required String refNo,
+    required String idno,
+    required String paymentProvider,
+    required int paymentStatusId,
+    required String statusMessage,
+    required String gatewayReference,
+    required String rawResponseJson,
+  }) {
+    return _client.post<dynamic>(
+      ApiEndpoints.paymentCallback,
+      body: {
+        'paymentTxnId': paymentTxnId,
+        'refNo': refNo,
+        'idno': idno,
+        'paymentProvider': paymentProvider,
+        'paymentStatusId': paymentStatusId,
+        'statusMessage': statusMessage,
+        'gatewayReference': gatewayReference,
+        'rawResponseJson': rawResponseJson,
+      },
+    );
+  }
+
+  Future<ApiResponse<dynamic>> getPaymentByTransaction(String transactionId) {
+    return _client.get<dynamic>(
+      ApiEndpoints.paymentByTransaction(transactionId),
+    );
+  }
+
+  Future<ApiResponse<dynamic>> getPaymentStatus(String refNo) {
+    return _client.get<dynamic>(
+      ApiEndpoints.paymentStatusByRef(refNo),
+    );
+  }
 }
 

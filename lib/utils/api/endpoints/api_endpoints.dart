@@ -14,9 +14,17 @@ class ApiEndpoints {
 
   static const String products = '/Products';
   static String productDetail(String productCode) => '/Products/$productCode';
+  static String productsByCategory(int categoryId) => '/Products/Category/$categoryId';
 
   static const String member = '/Member';
 
   static const String paymentMethods = '/Payment/PaymentMethods';
   static const String paymentProviders = '/Payment/PaymentProviders';
+
+  static const String checkout = '/Checkout';
+
+  static const String paymentCreate = '/Payment/CreatePayment';
+  static const String paymentCallback = '/Payment/Callback';
+  static String paymentByTransaction(String transactionId) => '/Payment/$transactionId';
+  static String paymentStatusByRef(String refNo) => '/Payment/Status/$refNo';
 }
