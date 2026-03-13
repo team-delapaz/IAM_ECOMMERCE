@@ -9,7 +9,7 @@ class ApiEndpoints {
 
   static const String cart = '/Cart';
   static const String cartAdd = '/Cart/Add';
-  static String cartQty(String productCode) => '/Cart/Qty/$productCode';
+  static const String cartQty = '/Cart/Qty';
   static String cartItem(String productCode) => '/Cart/$productCode';
 
   static const String products = '/Products';
