@@ -3,7 +3,7 @@
 class ProductCategories {
   ProductCategories._();
 
-  static const int iamPackages = 1;
+  //static const int iamPackages = 1;
   static const int amazingBarley = 2;
   static const int awesomeBeautyProducts = 3;
   static const int deliciousJuiceDrinks = 4;
@@ -12,7 +12,7 @@ class ProductCategories {
 
   /// All category IDs in tab order (1-6).
   static const List<int> ids = [
-    iamPackages,
+    //iamPackages,
     amazingBarley,
     awesomeBeautyProducts,
     deliciousJuiceDrinks,
@@ -21,7 +21,7 @@ class ProductCategories {
   ];
 
   static const List<String> names = [
-    'IAM Packages',
+    //'IAM Packages',
     'Amazing Barley',
     'Awesome Beauty Products',
     'Delicious Juice Drinks',
