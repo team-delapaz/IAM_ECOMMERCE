@@ -33,7 +33,7 @@ class CartApi {
 
   Future<ApiResponse<CartPayload?>> updateQty(String productCode, int qty) {
     return _client.put<CartPayload?>(
-      ApiEndpoints.cartQty(productCode),
+      ApiEndpoints.cartQty,
       body: {'productCode': productCode, 'qty': qty},
       fromJsonData: CartPayload.fromJson,
     );

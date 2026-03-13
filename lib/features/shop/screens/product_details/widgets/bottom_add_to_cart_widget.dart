@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iam_ecomm/common/widgets/icons/circular_icon.dart';
+import 'package:iam_ecomm/features/authentication/controllers/auth_controller.dart';
+import 'package:iam_ecomm/features/shop/screens/cart/cart.dart';
+import 'package:iam_ecomm/features/shop/screens/checkout/checkout.dart';
 import 'package:iam_ecomm/utils/api/api.dart';
 import 'package:iam_ecomm/utils/api/responses/response_prep.dart';
 import 'package:iam_ecomm/utils/constants/colors.dart';
 import 'package:iam_ecomm/utils/constants/sizes.dart';
 import 'package:iam_ecomm/utils/helpers/helper_functions.dart';
+import 'package:iam_ecomm/utils/local_storage/storage_utility.dart';
 import 'package:iconsax/iconsax.dart';
 
 class IAMBottomAddToCart extends StatefulWidget {
@@ -23,11 +27,61 @@ class _IAMBottomAddToCartState extends State<IAMBottomAddToCart> {
   Future<void> _addToCart() async {
     final code = widget.product?.productCode;
     if (code == null || code.isEmpty) return;
+    final isLoggedIn =
+        Get.isRegistered<AuthController>() && AuthController.instance.isLoggedIn.value;
+
+    ////TEmporary section while waiting for guest session api
+    if (!isLoggedIn) {
+      final storage = IAMLocalStorage();
+      final existing = storage.readData<List>('guest_cart') ?? [];
+      final cart = existing
+          .map((e) => Map<String, dynamic>.from(e as Map))
+          .toList();
+      final index = cart.indexWhere((e) => e['productCode'] == code);
+      if (index >= 0) {
+        final current = cart[index]['qty'] as int? ?? 0;
+        cart[index]['qty'] = current + _qty;
+      } else {
+        cart.add({'productCode': code, 'qty': _qty});
+      }
+      await storage.saveData('guest_cart', cart);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Item added to cart (guest).')),
+      );
+      return;
+    }
+
     final res = await ApiMiddleware.cart.add(productCode: code, qty: _qty);
-    if (res.success && mounted) {
-      Get.snackbar('Cart', 'Added to cart');
-    } else if (mounted) {
-      Get.snackbar('Error', res.message);
+    if (!mounted) return;
+
+    if (res.success) {
+      final msg =
+          res.message.isNotEmpty ? res.message : 'Item added to cart.';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(msg)),
+      );
+    } else {
+      final msg = res.message.isNotEmpty
+          ? res.message
+          : 'Unable to add item to cart.';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Add to cart failed: $msg')),
+      );
+    }
+  }
+
+  Future<void> _checkout() async {
+    final isLoggedIn =
+        Get.isRegistered<AuthController>() && AuthController.instance.isLoggedIn.value;
+
+    await _addToCart();
+    if (!mounted) return;
+
+    if (isLoggedIn) {
+      Get.to(() => const CartScreen());
+    } else {
+      Get.to(() => const CheckoutScreen());
     }
   }
 
