@@ -11,8 +11,8 @@ import 'package:iam_ecomm/utils/constants/image_strings.dart';
 import 'package:iam_ecomm/utils/constants/sizes.dart';
 import 'package:iam_ecomm/utils/helpers/helper_functions.dart';
 
-String _iconForMethodCode(String methodCode) {
-  switch (methodCode.toUpperCase()) {
+String _iconForProviderCode(String providerCode) {
+  switch (providerCode.toUpperCase()) {
     case 'IAMWALLET':
       return IAMImages.iamwallet;
     case 'PAYMAYA':
@@ -24,15 +24,16 @@ String _iconForMethodCode(String methodCode) {
   }
 }
 
-class IAMBillingPaymentSection extends StatefulWidget {
-  const IAMBillingPaymentSection({super.key});
+class IAMBillingPaymentProviderSection extends StatefulWidget {
+  const IAMBillingPaymentProviderSection({super.key});
 
   @override
-  State<IAMBillingPaymentSection> createState() =>
-      _IAMBillingPaymentSectionState();
+  State<IAMBillingPaymentProviderSection> createState() =>
+      _IAMBillingPaymentProviderSectionState();
 }
 
-class _IAMBillingPaymentSectionState extends State<IAMBillingPaymentSection> {
+class _IAMBillingPaymentProviderSectionState
+    extends State<IAMBillingPaymentProviderSection> {
   _PaymentViewModel? _current;
   bool _loading = true;
   String? _error;
@@ -53,26 +54,35 @@ class _IAMBillingPaymentSectionState extends State<IAMBillingPaymentSection> {
       _loading = true;
       _error = null;
     });
-    final ApiResponse<List<PaymentMethodItem?>> methodsRes = await ApiMiddleware
-        .payment
-        .getPaymentMethods();
-    final methods = methodsRes.data ?? [];
-    final methodList =
-        methods.whereType<PaymentMethodItem>().where((m) => m.isActive).toList()
+    final ApiResponse<List<PaymentProviderItem?>> providersRes =
+        await ApiMiddleware.payment.getPaymentProviders();
+    final providers = providersRes.data ?? [];
+    final providerList =
+        providers
+            .whereType<PaymentProviderItem>()
+            .where((p) => p.isActive)
+            .toList()
           ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
 
     if (mounted) {
       setState(() {
         _loading = false;
-        if (!methodsRes.success) {
-          _error = methodsRes.message;
+        if (!providersRes.success) {
+          _error = providersRes.message;
           _current = null;
-        } else if (methodList.isEmpty) {
-          _error = 'No payment methods available.';
+          _checkout.clearPaymentProvider();
+        } else if (providerList.isEmpty) {
+          _error = 'No payment providers available.';
           _current = null;
+          _checkout.clearPaymentProvider();
         } else {
           _error = null;
-          _current = _PaymentViewModel(method: methodList.first);
+          final first = providerList.first;
+          _current = _PaymentViewModel(provider: first);
+          _checkout.setPaymentProvider(
+            code: first.providerCode,
+            name: first.providerName,
+          );
         }
       });
     }
@@ -81,42 +91,6 @@ class _IAMBillingPaymentSectionState extends State<IAMBillingPaymentSection> {
   @override
   Widget build(BuildContext context) {
     final dark = IAMHelperFunctions.isDarkMode(context);
-    final providerSelected = _checkout.selectedPaymentProviderCode.isNotEmpty;
-
-    if (!providerSelected) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const IAMSectionHeading(
-            title: 'Payment Method',
-            showActionButton: false,
-          ),
-          const SizedBox(height: IAMSizes.spaceBtwItems / 2),
-          Opacity(
-            opacity: 0.6,
-            child: Row(
-              children: [
-                IAMRoundedContainer(
-                  width: 60,
-                  height: 35,
-                  backgroundColor: dark ? IAMColors.light : IAMColors.white,
-                  padding: const EdgeInsets.all(IAMSizes.sm),
-                  child: const SizedBox.shrink(),
-                ),
-                const SizedBox(width: IAMSizes.spaceBtwItems / 2),
-                Expanded(
-                  child: Text(
-                    'Select a payment provider first',
-                    style: Theme.of(context).textTheme.bodyLarge,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      );
-    }
 
     if (_loading) {
       return const SizedBox(
@@ -124,20 +98,19 @@ class _IAMBillingPaymentSectionState extends State<IAMBillingPaymentSection> {
         child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
       );
     }
-
     if (_error != null || _current == null) {
-      return Text(_error ?? 'Unable to load payment methods.');
+      return Text(_error ?? 'Unable to load payment providers.');
     }
     final model = _current!;
-    final iconPath = _iconForMethodCode(model.method.methodCode);
+    final iconPath = _iconForProviderCode(model.provider.providerCode);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         IAMSectionHeading(
-          title: 'Payment Method',
+          title: 'Payment Provider',
           buttonTitle: 'Change',
-          onPressed: providerSelected ? () => _showSelector(context) : null,
+          onPressed: () => _showSelector(context),
         ),
         const SizedBox(height: IAMSizes.spaceBtwItems / 2),
         Row(
@@ -152,7 +125,7 @@ class _IAMBillingPaymentSectionState extends State<IAMBillingPaymentSection> {
                   iconPath,
                   fit: BoxFit.contain,
                   errorBuilder: (_, __, ___) => Text(
-                    model.method.methodCode,
+                    model.provider.providerCode,
                     style: Theme.of(context).textTheme.labelSmall,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -162,7 +135,7 @@ class _IAMBillingPaymentSectionState extends State<IAMBillingPaymentSection> {
             const SizedBox(width: IAMSizes.spaceBtwItems / 2),
             Expanded(
               child: Text(
-                model.method.methodName,
+                model.provider.providerName,
                 style: Theme.of(context).textTheme.bodyLarge,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -174,27 +147,30 @@ class _IAMBillingPaymentSectionState extends State<IAMBillingPaymentSection> {
   }
 
   Future<void> _showSelector(BuildContext context) async {
-    final ApiResponse<List<PaymentMethodItem?>> methodsRes = await ApiMiddleware
-        .payment
-        .getPaymentMethods();
-    final methods = methodsRes.data ?? [];
-    final methodList =
-        methods.whereType<PaymentMethodItem>().where((m) => m.isActive).toList()
+    final ApiResponse<List<PaymentProviderItem?>> providersRes =
+        await ApiMiddleware.payment.getPaymentProviders();
+    final providers = providersRes.data ?? [];
+    final providerList =
+        providers
+            .whereType<PaymentProviderItem>()
+            .where((p) => p.isActive)
+            .toList()
           ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
-    if (methodList.isEmpty) return;
+    if (providerList.isEmpty) return;
 
-    final selected = await showModalBottomSheet<PaymentMethodItem>(
+    final selected = await showModalBottomSheet<PaymentProviderItem>(
       context: context,
       builder: (context) {
         return ListView.separated(
           padding: const EdgeInsets.all(IAMSizes.md),
-          itemCount: methodList.length,
+          itemCount: providerList.length,
           separatorBuilder: (_, __) =>
               const SizedBox(height: IAMSizes.spaceBtwItems),
           itemBuilder: (context, index) {
-            final m = methodList[index];
-            final isSelected = _current?.method.methodCode == m.methodCode;
-            final iconPath = _iconForMethodCode(m.methodCode);
+            final p = providerList[index];
+            final isSelected =
+                _current?.provider.providerCode == p.providerCode;
+            final iconPath = _iconForProviderCode(p.providerCode);
             return ListTile(
               leading: SizedBox(
                 width: 48,
@@ -205,12 +181,12 @@ class _IAMBillingPaymentSectionState extends State<IAMBillingPaymentSection> {
                   errorBuilder: (_, __, ___) => const SizedBox.shrink(),
                 ),
               ),
-              title: Text(m.methodName),
-              subtitle: Text(m.methodCode),
+              title: Text(p.providerName),
+              subtitle: Text(p.providerCode),
               trailing: isSelected
                   ? const Icon(Icons.check_circle, color: IAMColors.warning)
                   : const Icon(Icons.radio_button_unchecked),
-              onTap: () => Navigator.of(context).pop(m),
+              onTap: () => Navigator.of(context).pop(p),
             );
           },
         );
@@ -219,14 +195,19 @@ class _IAMBillingPaymentSectionState extends State<IAMBillingPaymentSection> {
 
     if (selected != null && mounted) {
       setState(() {
-        _current = _PaymentViewModel(method: selected);
+        _current = _PaymentViewModel(provider: selected);
       });
+
+      _checkout.setPaymentProvider(
+        code: selected.providerCode,
+        name: selected.providerName,
+      );
     }
   }
 }
 
 class _PaymentViewModel {
-  final PaymentMethodItem method;
+  final PaymentProviderItem provider;
 
-  _PaymentViewModel({required this.method});
+  _PaymentViewModel({required this.provider});
 }

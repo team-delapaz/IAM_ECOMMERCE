@@ -9,6 +9,7 @@ import 'package:iam_ecomm/features/authentication/screens/login/login.dart';
 import 'package:iam_ecomm/features/authentication/screens/signup/signup.dart';
 import 'package:iam_ecomm/features/shop/screens/checkout/widget/billing_address_section.dart';
 import 'package:iam_ecomm/features/shop/screens/checkout/widget/billing_amount_section.dart';
+import 'package:iam_ecomm/features/shop/screens/checkout/widget/billing_payment_provider_section.dart';
 import 'package:iam_ecomm/features/shop/screens/checkout/widget/billing_payment_section.dart';
 import 'package:iam_ecomm/navigation_menu.dart';
 import 'package:iam_ecomm/utils/api/api.dart';
@@ -45,7 +46,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   Future<_CartViewModel> _loadCart() async {
     final isLoggedIn =
-        Get.isRegistered<AuthController>() && AuthController.instance.isLoggedIn.value;
+        Get.isRegistered<AuthController>() &&
+        AuthController.instance.isLoggedIn.value;
 
     if (isLoggedIn) {
       ///////Integrated Checkout Cart (logged in)
@@ -109,10 +111,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
     return _CartViewModel(items: items, subtotal: subtotal);
   }
-      ////temp din na section while waiting for guest session api, local storage muna.
+
+  ////temp din na section while waiting for guest session api, local storage muna.
   Future<void> _placeOrder(_CartViewModel model) async {
     final isLoggedIn =
-        Get.isRegistered<AuthController>() && AuthController.instance.isLoggedIn.value;
+        Get.isRegistered<AuthController>() &&
+        AuthController.instance.isLoggedIn.value;
     if (!isLoggedIn) {
       await showDialog<void>(
         context: context,
@@ -147,19 +151,17 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     final notes = _notesController.text.trim();
     if (notes.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter order notes before checkout.')),
+        const SnackBar(
+          content: Text('Please enter order notes before checkout.'),
+        ),
       );
       return;
     }
 
-    final res = await ApiMiddleware.checkout.checkout(
-      notes: notes,
-    );
+    final res = await ApiMiddleware.checkout.checkout(notes: notes);
     if (!res.success) {
       final msg = res.message.isNotEmpty ? res.message : 'Checkout failed.';
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(msg)),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
       return;
     }
 
@@ -208,7 +210,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             return const Center(child: CircularProgressIndicator());
           }
           if (!snapshot.hasData) {
-            return const Center(child: Text('Unable to load checkout details.'));
+            return const Center(
+              child: Text('Unable to load checkout details.'),
+            );
           }
           final model = snapshot.data!;
           if (model.items.isEmpty) {
@@ -238,9 +242,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         subtitle: Text('x${item.qty}  ·  ${item.productCode}'),
                         trailing: Text(
                           '₱${item.lineTotal.toStringAsFixed(2)}',
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodyLarge
+                          style: Theme.of(context).textTheme.bodyLarge
                               ?.copyWith(fontWeight: FontWeight.w600),
                         ),
                       );
@@ -268,7 +270,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         const SizedBox(height: IAMSizes.spaceBtwItems),
                         const Divider(),
                         const SizedBox(height: IAMSizes.spaceBtwItems),
-                        const IAMBillingPaymentSection(),
+                        IAMBillingPaymentProviderSection(),
+                        const SizedBox(height: IAMSizes.spaceBtwItems),
+                        IAMBillingPaymentSection(),
                         const SizedBox(height: IAMSizes.spaceBtwItems),
                         const IAMBillingAddressSection(),
                       ],

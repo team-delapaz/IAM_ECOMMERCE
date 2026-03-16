@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:iam_ecomm/utils/api/responses/response_prep.dart';
 
 /// Mock auth controller (for UI/demo purposes).
 ///
@@ -9,9 +10,16 @@ class AuthController extends GetxController {
   static AuthController get instance => Get.find<AuthController>();
 
   final RxBool isLoggedIn = false.obs;
+  final Rx<UserInfo?> user = Rx<UserInfo?>(null);
 
-  void login() => isLoggedIn.value = true;
+  void login(UserInfo? userInfo) {
+    isLoggedIn.value = true;
+    user.value = userInfo;
+  }
 
-  void logout() => isLoggedIn.value = false;
+  void logout() {
+    isLoggedIn.value = false;
+    user.value = null;
+  }
 }
 

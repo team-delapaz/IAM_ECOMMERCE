@@ -9,6 +9,8 @@ import 'package:iam_ecomm/common/widgets/texts/brand_title_text_verifiedicon.dar
 import 'package:iam_ecomm/common/widgets/texts/product_title_text.dart';
 import 'package:iam_ecomm/features/authentication/controllers/auth_controller.dart';
 import 'package:iam_ecomm/features/shop/screens/product_details/product_detail.dart';
+import 'package:iam_ecomm/utils/api/api.dart';
+import 'package:iam_ecomm/utils/local_storage/storage_utility.dart';
 import 'package:iam_ecomm/utils/api/responses/response_prep.dart';
 import 'package:iam_ecomm/utils/constants/colors.dart';
 import 'package:iam_ecomm/utils/constants/image_strings.dart';
@@ -37,7 +39,8 @@ class IAMProductCardVertical extends StatelessWidget {
       final regularPrice = product?.regularPrice ?? 1000;
       final showMember = auth.isLoggedIn.value;
       final displayPrice = showMember ? memberPrice : regularPrice;
-      final discountPercent = showMember && regularPrice > 0 && memberPrice < regularPrice
+      final discountPercent =
+          showMember && regularPrice > 0 && memberPrice < regularPrice
           ? ((regularPrice - memberPrice) / regularPrice * 100).round()
           : null;
 
@@ -47,102 +50,158 @@ class IAMProductCardVertical extends StatelessWidget {
           arguments: product,
         ),
         child: Container(
-        width: 180,
-        padding: const EdgeInsets.all(1),
-        decoration: BoxDecoration(
-          boxShadow: [IAMShadowStyle.verticalProductShadow],
-          borderRadius: BorderRadius.circular(IAMSizes.productImageRadius),
-          color: dark ? IAMColors.darkerGrey : IAMColors.white,
-        ),
-        child: Column(
-          children: [
-            IAMRoundedContainer(
-              height: 180,
-              padding: const EdgeInsets.all(IAMSizes.sm),
-              backgroundColor: dark ? IAMColors.dark : IAMColors.light,
-              child: Stack(
-                children: [
-                  IAMRoundedImage(
-                    imageUrl: imageUrl,
-                    applyImageRadius: true,
-                    isNetworkImage: isNetwork,
-                  ),
-                  if (discountPercent != null)
-                    Positioned(
-                      top: 7,
-                      left: 7,
-                      child: IAMRoundedContainer(
-                        radius: IAMSizes.sm,
-                        backgroundColor: const Color.fromARGB(255, 24, 24, 24)
-                            .withOpacity(0.8),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: IAMSizes.sm,
-                          vertical: IAMSizes.xs,
+          width: 180,
+          padding: const EdgeInsets.all(1),
+          decoration: BoxDecoration(
+            boxShadow: [IAMShadowStyle.verticalProductShadow],
+            borderRadius: BorderRadius.circular(IAMSizes.productImageRadius),
+            color: dark ? IAMColors.darkerGrey : IAMColors.white,
+          ),
+          child: Column(
+            children: [
+              IAMRoundedContainer(
+                height: 180,
+                padding: const EdgeInsets.all(IAMSizes.sm),
+                backgroundColor: dark ? IAMColors.dark : IAMColors.light,
+                child: Stack(
+                  children: [
+                    IAMRoundedImage(
+                      imageUrl: imageUrl,
+                      applyImageRadius: true,
+                      isNetworkImage: isNetwork,
+                    ),
+                    if (discountPercent != null)
+                      Positioned(
+                        top: 7,
+                        left: 7,
+                        child: IAMRoundedContainer(
+                          radius: IAMSizes.sm,
+                          backgroundColor: const Color.fromARGB(
+                            255,
+                            24,
+                            24,
+                            24,
+                          ).withOpacity(0.8),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: IAMSizes.sm,
+                            vertical: IAMSizes.xs,
+                          ),
+                          child: Text(
+                            '$discountPercent%',
+                            style: Theme.of(context).textTheme.labelLarge!
+                                .apply(
+                                  color: const Color.fromARGB(
+                                    255,
+                                    255,
+                                    255,
+                                    255,
+                                  ),
+                                ),
+                          ),
                         ),
-                        child: Text(
-                          '$discountPercent%',
-                          style: Theme.of(context).textTheme.labelLarge!.apply(
-                                color: const Color.fromARGB(255, 255, 255, 255),
-                              ),
+                      ),
+                    Positioned(
+                      top: 2,
+                      right: 2,
+                      child: IAMCircularIcon(
+                        icon: Iconsax.heart5,
+                        color: Colors.red,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: IAMSizes.spaceBtwItems / 2),
+              Padding(
+                padding: const EdgeInsets.only(left: IAMSizes.sm),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    IAMProductTitleText(title: title, smallSize: true),
+                    const SizedBox(height: IAMSizes.spaceBtwItems / 2),
+                    IAMBrandTitleWithVerifiedIcon(title: brand),
+                  ],
+                ),
+              ),
+              const Spacer(),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(left: IAMSizes.sm),
+                    child: IAMProductPriceText(
+                      price: _formatPrice(displayPrice),
+                    ),
+                  ),
+                  GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () async {
+                      await _addToCart(context);
+                    },
+                    child: Container(
+                      decoration: const BoxDecoration(
+                        color: IAMColors.dark,
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(IAMSizes.cardRadiusMd),
+                          bottomRight: Radius.circular(
+                            IAMSizes.productImageRadius,
+                          ),
+                        ),
+                      ),
+                      child: SizedBox(
+                        width: IAMSizes.iconLg * 1.2,
+                        height: IAMSizes.iconLg * 1.2,
+                        child: const Center(
+                          child: Icon(Iconsax.add, color: IAMColors.white),
                         ),
                       ),
                     ),
-                  Positioned(
-                    top: 2,
-                    right: 2,
-                    child: IAMCircularIcon(
-                      icon: Iconsax.heart5,
-                      color: Colors.red,
-                    ),
                   ),
                 ],
               ),
-            ),
-            const SizedBox(height: IAMSizes.spaceBtwItems / 2),
-            Padding(
-              padding: const EdgeInsets.only(left: IAMSizes.sm),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  IAMProductTitleText(title: title, smallSize: true),
-                  const SizedBox(height: IAMSizes.spaceBtwItems / 2),
-                  IAMBrandTitleWithVerifiedIcon(title: brand),
-                ],
-              ),
-            ),
-            const Spacer(),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(left: IAMSizes.sm),
-                  child: IAMProductPriceText(
-                    price: _formatPrice(displayPrice),
-                  ),
-                ),
-                Container(
-                  decoration: const BoxDecoration(
-                    color: IAMColors.dark,
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(IAMSizes.cardRadiusMd),
-                      bottomRight: Radius.circular(IAMSizes.productImageRadius),
-                    ),
-                  ),
-                  child: SizedBox(
-                    width: IAMSizes.iconLg * 1.2,
-                    height: IAMSizes.iconLg * 1.2,
-                    child: Center(
-                      child: const Icon(Iconsax.add, color: IAMColors.white),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
       );
     });
+  }
+
+  Future<void> _addToCart(BuildContext context) async {
+    final code = product?.productCode;
+    if (code == null || code.isEmpty) return;
+    final isLoggedIn =
+        Get.isRegistered<AuthController>() &&
+        AuthController.instance.isLoggedIn.value;
+
+    if (!isLoggedIn) {
+      final storage = IAMLocalStorage();
+      final existing = storage.readData<List>('guest_cart') ?? [];
+      final cart = existing
+          .map((e) => Map<String, dynamic>.from(e as Map))
+          .toList();
+      final index = cart.indexWhere((e) => e['productCode'] == code);
+      if (index >= 0) {
+        cart[index]['qty'] = (cart[index]['qty'] as int? ?? 0) + 1;
+      } else {
+        cart.add({'productCode': code, 'qty': 1});
+      }
+      await storage.saveData('guest_cart', cart);
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Item added to cart (guest).')),
+      );
+      return;
+    }
+
+    final res = await ApiMiddleware.cart.add(productCode: code, qty: 1);
+    if (!context.mounted) return;
+
+    final msg = res.success
+        ? (res.message.isNotEmpty ? res.message : 'Item added to cart.')
+        : (res.message.isNotEmpty
+              ? res.message
+              : 'Unable to add item to cart.');
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
   static String _formatPrice(num value) {

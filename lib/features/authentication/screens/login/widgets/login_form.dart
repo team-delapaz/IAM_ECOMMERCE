@@ -51,7 +51,7 @@ class _IAMLoginFormState extends State<IAMLoginForm> {
     }
 
     await ApiMiddleware.setToken(res.data!.token!.accessToken);
-    AuthController.instance.login();
+    AuthController.instance.login(res.data!.user);
 
     final successMsg =
         res.message.isNotEmpty ? res.message : 'You are now signed in.';
