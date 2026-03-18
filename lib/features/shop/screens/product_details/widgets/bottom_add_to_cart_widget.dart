@@ -90,13 +90,16 @@ class _IAMBottomAddToCartState extends State<IAMBottomAddToCart> {
     final dark = IAMHelperFunctions.isDarkMode(context);
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: IAMSizes.defaultSpace, vertical: IAMSizes.defaultSpace / 2),
+      padding: const EdgeInsets.symmetric(
+        horizontal: IAMSizes.defaultSpace,
+        vertical: IAMSizes.defaultSpace / 2,
+      ),
       decoration: BoxDecoration(
         color: dark ? IAMColors.darkerGrey : IAMColors.light,
-        borderRadius:  const BorderRadius.only(
+        borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(IAMSizes.cardRadiusLg),
           topRight: Radius.circular(IAMSizes.cardRadiusLg),
-        )
+        ),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -134,8 +137,7 @@ class _IAMBottomAddToCartState extends State<IAMBottomAddToCart> {
             onPressed: widget.product != null ? _addToCart : null,
             style: ElevatedButton.styleFrom(
               padding: const EdgeInsets.all(IAMSizes.md),
-              backgroundColor: IAMColors.warning,
-              side: const BorderSide(color: IAMColors.black),
+              backgroundColor: Color(0xFFDBA724),
             ),
             child: const Text('Add to Cart'),
           ),

@@ -13,6 +13,15 @@ import 'package:iam_ecomm/utils/local_storage/storage_utility.dart';
 class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
 
+  double _calculateSubtotal() {
+    // TODO: Replace this with your real cart item price calculation
+    return 1500.00;
+  }
+
+  double _deliveryFee() {
+    return 100.00;
+  }
+
   @override
   State<CartScreen> createState() => _CartScreenState();
 }
@@ -130,6 +139,10 @@ class _CartScreenState extends State<CartScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final subtotal = _calculateSubtotal();
+    final delivery = _deliveryFee();
+    final total = subtotal + delivery;
+
     return Scaffold(
       appBar: IAMAppBar(
         showBackArrow: true,

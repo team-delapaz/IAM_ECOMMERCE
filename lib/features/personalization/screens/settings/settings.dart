@@ -81,21 +81,21 @@ class SettingScreen extends StatelessWidget {
                     title: 'Bank Account',
                     subTitle: 'Manage Connected Banks',
                   ),
-                  IAMSettingMenu(
-                    icon: Iconsax.discount_shape,
-                    title: 'Vouchers',
-                    subTitle: 'Manage Discount Coupons',
-                  ),
+                  // IAMSettingMenu(
+                  //   icon: Iconsax.discount_shape,
+                  //   title: 'Vouchers',
+                  //   subTitle: 'Manage Discount Coupons',
+                  // ),
                   IAMSettingMenu(
                     icon: Iconsax.gift,
                     title: 'Invite Friends',
-                    subTitle: 'Share and Referral Settings',
+                    subTitle: 'Share Referral Code',
                   ),
                   //INVITE FRIENDS VIEWS USER ID WHRE USERS CAN COPY AND WILL THEN SEND A DOWNLOADABLE APP URL WITH THEIR REFERRAL CODE AUTOMATICALLY INSERTED
                   IAMSettingMenu(
                     icon: Iconsax.message_question,
                     title: 'Help Center',
-                    subTitle: 'Help Articles and FAQs',
+                    subTitle: 'FAQs',
                   ),
                   // IAMSettingMenu(
                   //   icon: Iconsax.notification,

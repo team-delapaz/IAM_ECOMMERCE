@@ -10,25 +10,50 @@ class IAMLoginHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Image(
-          height: 150,
-          image: AssetImage(
-            dark ? IAMImages.lightAppLogo : IAMImages.darkAppLogo,
+    final theme = Theme.of(context);
+
+    return Padding(
+      padding: const EdgeInsets.only(
+        top: 60,
+        left: IAMSizes.defaultSpace,
+        right: IAMSizes.defaultSpace,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Center(
+            child: Material(
+              elevation: 10,
+              shape: const CircleBorder(),
+              child: CircleAvatar(
+                radius: 50,
+                backgroundColor: Colors.white,
+                child: ClipOval(
+                  child: Image.asset(
+                    dark ? IAMImages.lightAppLogo : IAMImages.darkAppLogo,
+                    height: 70,
+                    fit: BoxFit.contain,
+                  ),
+                ),
+              ),
+            ),
           ),
-        ),
-        Text(
-          IAMTexts.loginTitle,
-          style: Theme.of(context).textTheme.headlineMedium,
-        ),
-        const SizedBox(height: IAMSizes.sm),
-        Text(
-          IAMTexts.loginSubTitle,
-          style: Theme.of(context).textTheme.bodyMedium,
-        ),
-      ],
+          const SizedBox(height: IAMSizes.spaceBtwSections),
+          Text(
+            IAMTexts.loginTitle,
+            style: theme.textTheme.headlineMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: IAMSizes.sm),
+          Text(
+            IAMTexts.loginSubTitle,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

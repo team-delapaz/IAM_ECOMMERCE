@@ -11,22 +11,30 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (!Get.isRegistered<ThemeController>()) {
-      Get.put(ThemeController(), permanent: true);
-    }
-    if (!Get.isRegistered<AuthController>()) {
-      Get.put(AuthController(), permanent: true);
-    }
+      // return GetMaterialApp(
+      //   debugShowCheckedModeBanner: false,
+      //   themeMode: ThemeMode.system,
+      //   theme: IAMTheme.lightTheme,
+      //   darkTheme: IAMTheme.darkTheme,
+      //   home: const OnBoardingScreen(),
+      // );
 
-    final themeController = ThemeController.instance;
+      if (!Get.isRegistered<ThemeController>()) {
+        Get.put(ThemeController(), permanent: true);
+      }
+      if (!Get.isRegistered<AuthController>()) {
+        Get.put(AuthController(), permanent: true);
+      }
 
-    return Obx(
-      () => GetMaterialApp(
-        themeMode: themeController.isDarkMode ? ThemeMode.dark : ThemeMode.light,
-        theme: IAMTheme.lightTheme,
-        darkTheme: IAMTheme.darkTheme,
-        home: const OnBoardingScreen(),
-      ),
+      final themeController = ThemeController.instance;
+
+      return Obx(
+        () => GetMaterialApp(
+          themeMode: themeController.isDarkMode ? ThemeMode.dark : ThemeMode.light,
+          theme: IAMTheme.lightTheme,
+          darkTheme: IAMTheme.darkTheme,
+          home: const OnBoardingScreen(),
+        ),
     );
   }
 }

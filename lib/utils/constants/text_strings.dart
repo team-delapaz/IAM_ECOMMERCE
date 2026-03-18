@@ -24,6 +24,7 @@ class IAMTexts {
   static const String firstName = "First Name";
   static const String lastName = "Last Name";
   static const String email = "E-Mail";
+  static const String userid = "User ID";
   static const String password = "Password";
   static const String newPassword = "New Password";
   static const String username = "Username";
@@ -43,9 +44,9 @@ class IAMTexts {
   static const String resendEmailIn = "Resend email in";
 
   // -- Authentication Headings Text
-  static const String loginTitle = "Welcome Back,";
+  static const String loginTitle = "Hello!";
   static const String loginSubTitle =
-      "Discover Limitless Choices and Unmatched Convenience.";
+      "Your trusted source for premium wellness products and business opportunities.";
   static const String signupTitle = "Let's create your account";
   static const String forgetPasswordTitle = "Forget password";
   static const String forgetPasswordSubTitle =

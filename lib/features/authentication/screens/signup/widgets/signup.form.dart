@@ -6,6 +6,7 @@ import 'package:iam_ecomm/utils/api/api.dart';
 import 'package:iam_ecomm/utils/constants/sizes.dart';
 import 'package:iam_ecomm/utils/constants/text_strings.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:iam_ecomm/utils/api/api.dart';
 
 class IAMSignupForm extends StatefulWidget {
   const IAMSignupForm({super.key});
@@ -16,56 +17,100 @@ class IAMSignupForm extends StatefulWidget {
 
 class _IAMSignupFormState extends State<IAMSignupForm> {
   final _formKey = GlobalKey<FormState>();
+  bool _isLoading = false;
+  bool _obscurePassword = true;
+
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
+  final _usernameController = TextEditingController();
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
-  bool _obscurePassword = true;
-  bool _loading = false;
+
+  Future<void> _submitForm() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final res = await ApiMiddleware.auth.signup(
+        email: _emailController.text.trim(),
+        mobileNo: _phoneController.text.trim(),
+        password: _passwordController.text,
+        firstName: _firstNameController.text.trim(),
+        lastName: _lastNameController.text.trim(),
+      );
+
+      if (!mounted) return;
+
+      setState(() {
+        _isLoading = false;
+      });
+
+      /// -------- ADDED: Handle API response properly --------
+      if (res.success) {
+        /// Save token if returned by API
+        if (res.data != null &&
+            res.data["token"] != null &&
+            res.data["token"]["accessToken"] != null) {
+          await ApiMiddleware.setToken(res.data["token"]["accessToken"]);
+        }
+
+        Get.snackbar(
+          "Success",
+          res.message ?? "Account created successfully",
+          snackPosition: SnackPosition.BOTTOM,
+          duration: const Duration(seconds: 3),
+        );
+
+        /// Navigate to verify email
+        Get.to(() => const VerifyEmailScreen());
+      } else {
+        Get.snackbar(
+          "Signup Failed",
+          res.message ?? "Unable to create account",
+          snackPosition: SnackPosition.BOTTOM,
+          duration: const Duration(seconds: 3),
+        );
+      }
+
+      /// -----------------------------------------------------
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() {
+        _isLoading = false;
+      });
+
+      Get.snackbar(
+        "Error",
+        "Server error. Please try again later.",
+        snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 3),
+      );
+    }
+  }
 
   @override
   void dispose() {
     _firstNameController.dispose();
     _lastNameController.dispose();
+    _usernameController.dispose();
     _emailController.dispose();
     _phoneController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
 
-  Future<void> _submit() async {
-    if (!(_formKey.currentState?.validate() ?? false)) return;
-    setState(() => _loading = true);
-    final res = await ApiMiddleware.auth.signup(
-      email: _emailController.text.trim(),
-      mobileNo: _phoneController.text.trim(),
-      password: _passwordController.text,
-      firstName: _firstNameController.text.trim(),
-      lastName: _lastNameController.text.trim(),
-    );
-    if (!mounted) return;
-    setState(() => _loading = false);
-
-    if (!res.success) {
-      final msg =
-          res.message.isNotEmpty ? res.message : 'Signup failed. Please try again.';
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(msg)),
-      );
-      return;
-    }
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Signup successful. Please verify your email.')),
-    );
-    Get.to(() => const VerifyEmailScreen());
-  }
-
   @override
   Widget build(BuildContext context) {
     return Form(
       key: _formKey,
+      autovalidateMode: AutovalidateMode.onUserInteraction,
       child: Column(
         children: [
           Row(
@@ -79,7 +124,7 @@ class _IAMSignupFormState extends State<IAMSignupForm> {
                     prefixIcon: Icon(Iconsax.user),
                   ),
                   validator: (v) =>
-                      (v == null || v.trim().isEmpty) ? 'Required' : null,
+                      (v == null || v.isEmpty) ? 'Required Field*' : null,
                 ),
               ),
               const SizedBox(width: IAMSizes.spaceBtwInputFields),
@@ -92,23 +137,14 @@ class _IAMSignupFormState extends State<IAMSignupForm> {
                     prefixIcon: Icon(Iconsax.user),
                   ),
                   validator: (v) =>
-                      (v == null || v.trim().isEmpty) ? 'Required' : null,
+                      (v == null || v.isEmpty) ? 'Required Field*' : null,
                 ),
               ),
             ],
           ),
+
           const SizedBox(height: IAMSizes.spaceBtwInputFields),
 
-          //Username (optional / display only for now)
-          TextFormField(
-            expands: false,
-            decoration: const InputDecoration(
-              labelText: IAMTexts.username,
-              prefixIcon: Icon(Iconsax.user_edit),
-            ),
-          ),
-          const SizedBox(height: IAMSizes.spaceBtwInputFields),
-          //Email
           TextFormField(
             controller: _emailController,
             expands: false,
@@ -116,11 +152,16 @@ class _IAMSignupFormState extends State<IAMSignupForm> {
               labelText: IAMTexts.email,
               prefixIcon: Icon(Iconsax.direct),
             ),
-            validator: (v) =>
-                (v == null || v.trim().isEmpty) ? 'Required' : null,
+            validator: (v) {
+              if (v == null || v.isEmpty) return 'Required Field*';
+              final regex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+              if (!regex.hasMatch(v)) return 'Invalid email';
+              return null;
+            },
           ),
+
           const SizedBox(height: IAMSizes.spaceBtwInputFields),
-          //Phone number
+
           TextFormField(
             controller: _phoneController,
             expands: false,
@@ -128,43 +169,51 @@ class _IAMSignupFormState extends State<IAMSignupForm> {
               labelText: IAMTexts.phoneNo,
               prefixIcon: Icon(Iconsax.call),
             ),
-            validator: (v) =>
-                (v == null || v.trim().isEmpty) ? 'Required' : null,
+            validator: (v) {
+              if (v == null || v.isEmpty) return 'Required Field*';
+              final regex = RegExp(r'^[0-9]+$');
+              if (!regex.hasMatch(v)) return 'Invalid phone number';
+              return null;
+            },
           ),
+
           const SizedBox(height: IAMSizes.spaceBtwInputFields),
-          //Password
+
           TextFormField(
             controller: _passwordController,
             obscureText: _obscurePassword,
-            expands: false,
+            obscuringCharacter: '•',
             decoration: InputDecoration(
-              labelText: IAMTexts.password,
               prefixIcon: const Icon(Iconsax.password_check),
+              labelText: IAMTexts.password,
               suffixIcon: IconButton(
-                icon: Icon(
-                  _obscurePassword ? Iconsax.eye_slash : Iconsax.eye,
-                ),
+                icon: Icon(_obscurePassword ? Iconsax.eye_slash : Iconsax.eye),
                 onPressed: () =>
                     setState(() => _obscurePassword = !_obscurePassword),
               ),
             ),
             validator: (v) =>
-                (v == null || v.isEmpty) ? 'Required' : null,
+                (v == null || v.isEmpty) ? 'Required Field*' : null,
           ),
+
           const SizedBox(height: IAMSizes.spaceBtwSections),
-          //Terms and Conditions Checkbox
+
           const IAMTermsAndConditions(),
+
           const SizedBox(height: IAMSizes.spaceBtwSections),
-          //Sign up button
+
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: _loading ? null : _submit,
-              child: _loading
+              onPressed: _isLoading ? null : _submitForm,
+              child: _isLoading
                   ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
+                      height: 22,
+                      width: 22,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
                     )
                   : const Text(IAMTexts.createAccount),
             ),

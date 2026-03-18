@@ -3,41 +3,55 @@ import 'package:flutter/material.dart';
 class IAMCheckboxTheme {
   IAMCheckboxTheme._();
 
-  /// Customizable Light Text Theme
+  static const Color _goldPrimary = Color(0xFFDBA724);
+  static const Color _goldLight = Color(0xFFE8C45A);
+  static const Color _goldSoft = Color(0xFFF1DFA0);
+
+  /// ---------------- LIGHT THEME ----------------
   static CheckboxThemeData lightCheckboxTheme = CheckboxThemeData(
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+
     checkColor: WidgetStateProperty.resolveWith((states) {
       if (states.contains(WidgetState.selected)) {
         return Colors.white;
-      } else {
-        return Colors.black;
       }
+      return Colors.black;
     }),
+
     fillColor: WidgetStateProperty.resolveWith((states) {
       if (states.contains(WidgetState.selected)) {
-        return Colors.amber[300];
-      } else {
-        return Colors.transparent;
+        return _goldPrimary; // Strong gold when selected
       }
+      return Colors.transparent;
     }),
+
+    side: const BorderSide(
+      color: _goldLight, // Light gold border
+      width: 1.2,
+    ),
   );
 
-  /// Customizable Dark Text Theme
+  /// ---------------- DARK THEME ----------------
   static CheckboxThemeData darkCheckboxTheme = CheckboxThemeData(
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+
     checkColor: WidgetStateProperty.resolveWith((states) {
       if (states.contains(WidgetState.selected)) {
-        return Colors.white;
-      } else {
         return Colors.black;
       }
+      return Colors.white;
     }),
+
     fillColor: WidgetStateProperty.resolveWith((states) {
       if (states.contains(WidgetState.selected)) {
-        return Colors.amber[300];
-      } else {
-        return Colors.transparent;
+        return _goldLight; // Softer gold for dark mode
       }
+      return Colors.transparent;
     }),
+
+    side: const BorderSide(
+      color: _goldSoft, // Softer border for dark mode
+      width: 1.2,
+    ),
   );
 }

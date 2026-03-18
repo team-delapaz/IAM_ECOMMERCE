@@ -23,6 +23,8 @@ class _IAMLoginFormState extends State<IAMLoginForm> {
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
   bool _loading = false;
+  String? _emailError;
+  String? _passwordError;
 
   @override
   void dispose() {
@@ -33,12 +35,20 @@ class _IAMLoginFormState extends State<IAMLoginForm> {
 
   Future<void> _submit() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
-    setState(() => _loading = true);
+
+    setState(() {
+      _loading = true;
+      _emailError = null;
+      _passwordError = null;
+    });
+
     final res = await ApiMiddleware.auth.login(
       _emailController.text.trim(),
       _passwordController.text,
     );
+
     if (!mounted) return;
+
     setState(() => _loading = false);
 
     if (!res.success || res.data?.token == null) {
@@ -71,6 +81,7 @@ class _IAMLoginFormState extends State<IAMLoginForm> {
   Widget build(BuildContext context) {
     return Form(
       key: _formKey,
+      autovalidateMode: AutovalidateMode.onUserInteraction,
       child: Padding(
         padding: const EdgeInsets.symmetric(
           vertical: IAMSizes.spaceBtwSections,
@@ -84,14 +95,25 @@ class _IAMLoginFormState extends State<IAMLoginForm> {
                 prefixIcon: Icon(Iconsax.direct_right),
                 labelText: IAMTexts.email,
               ),
-              validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+              validator: (v) {
+                if (v == null || v.trim().isEmpty) return 'Required Field*';
+                if (_emailError != null) return _emailError;
+                return null;
+              },
               textInputAction: TextInputAction.next,
             ),
+
             const SizedBox(height: IAMSizes.spaceBtwInputFields),
             //password
             TextFormField(
+              onChanged: (_) {
+                if (_emailError != null) {
+                  setState(() => _emailError = null);
+                }
+              },
               controller: _passwordController,
               obscureText: _obscurePassword,
+              obscuringCharacter: '•', //Hide Password
               decoration: InputDecoration(
                 prefixIcon: const Icon(Iconsax.password_check),
                 labelText: IAMTexts.password,
@@ -101,10 +123,16 @@ class _IAMLoginFormState extends State<IAMLoginForm> {
                       setState(() => _obscurePassword = !_obscurePassword),
                 ),
               ),
-              validator: (v) => (v == null || v.isEmpty) ? 'Required' : null,
+              validator: (v) {
+                if (v == null || v.isEmpty) return 'Required Field*';
+                if (_passwordError != null) return _passwordError;
+                return null;
+              },
               textInputAction: TextInputAction.done,
+
               onFieldSubmitted: (_) => _submit(),
             ),
+
             const SizedBox(height: IAMSizes.spaceBtwInputFields / 2),
 
             // Remember me and forget password
@@ -126,6 +154,7 @@ class _IAMLoginFormState extends State<IAMLoginForm> {
                 ),
               ],
             ),
+
             const SizedBox(height: IAMSizes.spaceBtwSections),
 
             //Sign in button
@@ -142,6 +171,7 @@ class _IAMLoginFormState extends State<IAMLoginForm> {
                     : Text(IAMTexts.signIn),
               ),
             ),
+
             const SizedBox(height: IAMSizes.spaceBtwItems),
 
             //Create Account Button
