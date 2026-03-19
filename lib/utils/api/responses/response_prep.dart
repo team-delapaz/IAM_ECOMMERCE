@@ -361,6 +361,66 @@ class PaymentData {
   }
 }
 
+// Address API Response Classes
+
+class AddressItem {
+  final int autoId;
+  final String idNo;
+  final String recipientName;
+  final String mobileNo;
+  final String country;
+  final String province;
+  final String city;
+  final String barangay;
+  final String streetAddress;
+  final String postalCode;
+  final String completeAddress;
+  final bool isDefault;
+  final bool isActive;
+  final String createdAt;
+  final String? updatedAt;
+
+  AddressItem({
+    required this.autoId,
+    required this.idNo,
+    required this.recipientName,
+    required this.mobileNo,
+    required this.country,
+    required this.province,
+    required this.city,
+    required this.barangay,
+    required this.streetAddress,
+    required this.postalCode,
+    required this.completeAddress,
+    required this.isDefault,
+    required this.isActive,
+    required this.createdAt,
+    this.updatedAt,
+  });
+
+  static AddressItem? fromJson(dynamic json) {
+    final m = asMap(json);
+    if (m == null) return null;
+    return AddressItem(
+      autoId: (m['autoId'] as int?) ?? 0,
+      idNo: m['idNo'] as String? ?? '',
+      recipientName: m['recipientName'] as String? ?? '',
+      mobileNo: m['mobileNo'] as String? ?? '',
+      country: m['country'] as String? ?? '',
+      province: m['province'] as String? ?? '',
+      city: m['city'] as String? ?? '',
+      barangay: m['barangay'] as String? ?? '',
+      streetAddress: m['streetAddress'] as String? ?? '',
+      postalCode: m['postalCode'] as String? ?? '',
+      completeAddress: m['completeAddress'] as String? ?? '',
+      isDefault: (m['isDefault'] as bool?) ?? false,
+      isActive: (m['isActive'] as bool?) ?? false,
+      createdAt: m['createdAt'] as String? ?? '',
+      updatedAt: m['updatedAt'] as String?,
+    );
+  }
+}
+
 
 class CartItemPayload {
   final String productCode;

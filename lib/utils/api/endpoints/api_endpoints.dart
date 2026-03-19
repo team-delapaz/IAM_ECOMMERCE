@@ -33,4 +33,9 @@ class ApiEndpoints {
   static String locationProvinces(String country) => '/Location/Provinces/$country';
   static String locationCities(String country, String province) => '/Location/Cities/$country/$province';
   static String locationBarangays(String country, String province, String city) => '/Location/Barangays/$country/$province/$city';
+
+  // Address APIs
+  static const String address = '/Address';
+  static String addressById(int autoId) => '/Address/$autoId';
+  static String addressDefault(int autoId) => '/Address/$autoId/default';
 }

@@ -7,21 +7,32 @@ class CheckoutApi {
 
   final ApiClient _client;
 
-  Future<ApiResponse<dynamic>> checkout({String? notes}) {
+  Future<ApiResponse<dynamic>> checkout({
+    required String fullName,
+    required String mobileNo,
+    required String emailAddress,
+    required String country,
+    required String province,
+    required String city,
+    required String barangay,
+    required String streetAddress,
+    required String postalCode,
+    required String completeAddress,
+    String? notes,
+  }) {
     return _client.post<dynamic>(
       ApiEndpoints.checkout,
-      // body: notes == null ? null : {'notes': notes},
       body: {
-        // 'fullName': fullName,
-        // 'mobileNo': mobileNo,
-        // 'emailAddress': emailAddress,
-        // 'country': country,
-        // 'province': province,
-        // 'city': city,
-        // 'barangay': barangay,
-        // 'streetAddress': streetAddress,
-        // 'postalCode': postalCode,
-        // 'completeAddress': completeAddress,
+        'fullName': fullName,
+        'mobileNo': mobileNo,
+        'emailAddress': emailAddress,
+        'country': country,
+        'province': province,
+        'city': city,
+        'barangay': barangay,
+        'streetAddress': streetAddress,
+        'postalCode': postalCode,
+        'completeAddress': completeAddress,
         if (notes != null) 'notes': notes,
       },
     );

@@ -64,7 +64,7 @@ await ApiMiddleware.init();
 
 ## Checkout
 
-- `ApiMiddleware.checkout.checkout(notes: 'optional note')` → `ApiResponse<dynamic>`
+- `ApiMiddleware.checkout.checkout(fullName: ..., mobileNo: ..., emailAddress: ..., country: ..., province: ..., city: ..., barangay: ..., streetAddress: ..., postalCode: ..., completeAddress: ..., notes: 'optional note')` → `ApiResponse<dynamic>`
 
 ## Location
 
@@ -72,6 +72,15 @@ await ApiMiddleware.init();
 - `ApiMiddleware.location.getProvinces(country)` → `ApiResponse<List<ProvinceItem?>>`
 - `ApiMiddleware.location.getCities(country, province)` → `ApiResponse<List<CityItem?>>`
 - `ApiMiddleware.location.getBarangays(country, province, city)` → `ApiResponse<List<BarangayItem?>>`
+
+## Address
+
+- `ApiMiddleware.address.getAddresses()` → `ApiResponse<List<AddressItem?>>`
+- `ApiMiddleware.address.getAddress(autoId)` → `ApiResponse<AddressItem?>`
+- `ApiMiddleware.address.addAddress(recipientName: ..., mobileNo: ..., country: ..., province: ..., city: ..., barangay: ..., streetAddress: ..., postalCode: ..., completeAddress: ..., isDefault: ...)` → `ApiResponse<AddressItem?>`
+- `ApiMiddleware.address.updateAddress(autoId: ..., recipientName: ..., mobileNo: ..., country: ..., province: ..., city: ..., barangay: ..., streetAddress: ..., postalCode: ..., completeAddress: ..., isDefault: ...)` → `ApiResponse<AddressItem?>`
+- `ApiMiddleware.address.deleteAddress(autoId)` → `ApiResponse<dynamic>`
+- `ApiMiddleware.address.setDefaultAddress(autoId)` → `ApiResponse<dynamic>`
 
 ## Response handling
 
