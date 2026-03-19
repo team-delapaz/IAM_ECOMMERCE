@@ -1,4 +1,4 @@
-# middleware v1 
+# middleware v1
 
 Use `ApiMiddleware` instead of raw HTTP. All calls return `ApiResponse<T>`: `status`, `success`, `message`, `data`. Network and HTTP errors are caught and returned as an `ApiResponse` with `success: false`, so you don't have to try/catch for normal flow na.
 
@@ -57,14 +57,21 @@ await ApiMiddleware.init();
 
 - `ApiMiddleware.payment.getPaymentMethods()` → `ApiResponse<List<PaymentMethodItem?>>`
 - `ApiMiddleware.payment.getPaymentProviders()` → `ApiResponse<List<PaymentProviderItem?>>`
- - `ApiMiddleware.payment.createPayment(...)` → `ApiResponse<dynamic>`
- - `ApiMiddleware.payment.callbackPayment(...)` → `ApiResponse<dynamic>`
- - `ApiMiddleware.payment.getPaymentByTransaction(transactionId)` → `ApiResponse<dynamic>`
- - `ApiMiddleware.payment.getPaymentStatus(refNo)` → `ApiResponse<dynamic>`
+- `ApiMiddleware.payment.createPayment(...)` → `ApiResponse<dynamic>`
+- `ApiMiddleware.payment.callbackPayment(...)` → `ApiResponse<dynamic>`
+- `ApiMiddleware.payment.getPaymentByTransaction(transactionId)` → `ApiResponse<dynamic>`
+- `ApiMiddleware.payment.getPaymentStatus(refNo)` → `ApiResponse<dynamic>`
 
 ## Checkout
 
 - `ApiMiddleware.checkout.checkout(notes: 'optional note')` → `ApiResponse<dynamic>`
+
+## Location
+
+- `ApiMiddleware.location.getCountries()` → `ApiResponse<List<CountryItem?>>`
+- `ApiMiddleware.location.getProvinces(country)` → `ApiResponse<List<ProvinceItem?>>`
+- `ApiMiddleware.location.getCities(country, province)` → `ApiResponse<List<CityItem?>>`
+- `ApiMiddleware.location.getBarangays(country, province, city)` → `ApiResponse<List<BarangayItem?>>`
 
 ## Response handling
 
@@ -78,7 +85,7 @@ final token = res.data?.token?.accessToken;
 final user = res.data?.user;
 ```
 
-Typed models for login and products live in `responses/response_prep.dart`. 
+Typed models for login and products live in `responses/response_prep.dart`.
 
 To follow to : some response mapping is left dynamic until some of thee API contracts are fixed.
 

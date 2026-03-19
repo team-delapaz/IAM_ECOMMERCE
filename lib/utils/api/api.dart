@@ -3,6 +3,7 @@ import 'core/auth_token_store.dart';
 import 'services/auth_api.dart';
 import 'services/cart_api.dart';
 import 'services/checkout_api.dart';
+import 'services/location_api.dart';
 import 'services/member_api.dart';
 import 'services/payment_api.dart';
 import 'services/products_api.dart';
@@ -22,6 +23,7 @@ class ApiMiddleware {
   static final AuthApi auth = AuthApi(_client);
   static final CartApi cart = CartApi(_client);
   static final CheckoutApi checkout = CheckoutApi(_client);
+  static final LocationApi location = LocationApi(_client);
   static final MemberApi member = MemberApi(_client);
   static final PaymentApi payment = PaymentApi(_client);
   static final ProductsApi products = ProductsApi(_client);

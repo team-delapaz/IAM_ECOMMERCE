@@ -27,4 +27,10 @@ class ApiEndpoints {
   static const String paymentCallback = '/Payment/Callback';
   static String paymentByTransaction(String transactionId) => '/Payment/$transactionId';
   static String paymentStatusByRef(String refNo) => '/Payment/Status/$refNo';
+
+  // Location APIs
+  static const String locationCountries = '/Location/Countries';
+  static String locationProvinces(String country) => '/Location/Provinces/$country';
+  static String locationCities(String country, String province) => '/Location/Cities/$country/$province';
+  static String locationBarangays(String country, String province, String city) => '/Location/Barangays/$country/$province/$city';
 }

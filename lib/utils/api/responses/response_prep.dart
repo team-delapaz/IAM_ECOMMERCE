@@ -331,3 +331,61 @@ class CartItemPayload {
     );
   }
 }
+
+// Location API Response Classes
+
+class CountryItem {
+  final String country;
+
+  CountryItem({required this.country});
+
+  static CountryItem? fromJson(dynamic json) {
+    final m = asMap(json);
+    if (m == null) return null;
+    return CountryItem(
+      country: m['country'] as String? ?? '',
+    );
+  }
+}
+
+class ProvinceItem {
+  final String province;
+
+  ProvinceItem({required this.province});
+
+  static ProvinceItem? fromJson(dynamic json) {
+    final m = asMap(json);
+    if (m == null) return null;
+    return ProvinceItem(
+      province: m['province'] as String? ?? '',
+    );
+  }
+}
+
+class CityItem {
+  final String city;
+
+  CityItem({required this.city});
+
+  static CityItem? fromJson(dynamic json) {
+    final m = asMap(json);
+    if (m == null) return null;
+    return CityItem(
+      city: m['city'] as String? ?? '',
+    );
+  }
+}
+
+class BarangayItem {
+  final String barangay;
+
+  BarangayItem({required this.barangay});
+
+  static BarangayItem? fromJson(dynamic json) {
+    final m = asMap(json);
+    if (m == null) return null;
+    return BarangayItem(
+      barangay: m['barangay'] as String? ?? '',
+    );
+  }
+}
