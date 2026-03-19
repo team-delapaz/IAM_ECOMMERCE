@@ -82,6 +82,11 @@ await ApiMiddleware.init();
 - `ApiMiddleware.address.deleteAddress(autoId)` → `ApiResponse<dynamic>`
 - `ApiMiddleware.address.setDefaultAddress(autoId)` → `ApiResponse<dynamic>`
 
+## Orders
+
+- `ApiMiddleware.orders.getOrders()` → `ApiResponse<List<OrderItem?>>`
+- `ApiMiddleware.orders.getOrderDetail(refNo)` → `ApiResponse<OrderDetailItem?>`
+
 ## Response handling
 
 ```dart

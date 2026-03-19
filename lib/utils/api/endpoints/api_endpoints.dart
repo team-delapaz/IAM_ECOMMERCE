@@ -38,4 +38,8 @@ class ApiEndpoints {
   static const String address = '/Address';
   static String addressById(int autoId) => '/Address/$autoId';
   static String addressDefault(int autoId) => '/Address/$autoId/default';
+
+  // Orders APIs
+  static const String orders = '/Orders';
+  static String orderByRefNo(String refNo) => '/Orders/$refNo';
 }

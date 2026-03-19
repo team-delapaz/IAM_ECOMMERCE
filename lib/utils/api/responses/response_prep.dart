@@ -421,6 +421,205 @@ class AddressItem {
   }
 }
 
+// Orders API Response Classes
+
+class OrderItem {
+  final String orderRefno;
+  final String orderDate;
+  final num totalAmount;
+  final int orderStatusId;
+  final String orderStatusName;
+  final int paymentStatusId;
+  final String paymentStatusName;
+  final int itemCount;
+  final String paymentProvider;
+  final String imageUrl;
+
+  OrderItem({
+    required this.orderRefno,
+    required this.orderDate,
+    required this.totalAmount,
+    required this.orderStatusId,
+    required this.orderStatusName,
+    required this.paymentStatusId,
+    required this.paymentStatusName,
+    required this.itemCount,
+    required this.paymentProvider,
+    required this.imageUrl,
+  });
+
+  static OrderItem? fromJson(dynamic json) {
+    final m = asMap(json);
+    if (m == null) return null;
+    return OrderItem(
+      orderRefno: m['orderRefno'] as String? ?? '',
+      orderDate: m['orderDate'] as String? ?? '',
+      totalAmount: (m['totalAmount'] as num?) ?? 0,
+      orderStatusId: (m['orderStatusId'] as int?) ?? 0,
+      orderStatusName: m['orderStatusName'] as String? ?? '',
+      paymentStatusId: (m['paymentStatusId'] as int?) ?? 0,
+      paymentStatusName: m['paymentStatusName'] as String? ?? '',
+      itemCount: (m['itemCount'] as int?) ?? 0,
+      paymentProvider: m['paymentProvider'] as String? ?? '',
+      imageUrl: m['imageUrl'] as String? ?? '',
+    );
+  }
+}
+
+class OrderDetailItem {
+  final String orderRefno;
+  final String cartRefno;
+  final String orderDate;
+  final num subtotalAmount;
+  final num shippingAmount;
+  final num voucherDiscountAmount;
+  final num discountAmount;
+  final num totalAmount;
+  final int orderStatusId;
+  final String orderStatusName;
+  final int paymentStatusId;
+  final String paymentStatusName;
+  final String paymentProvider;
+  final String paymentMethod;
+  final String paymentStatusMessage;
+  final String gatewayReference;
+  final String checkoutUrl;
+  final ShippingInfo? shippingInfo;
+  final List<OrderProductItem?> items;
+
+  OrderDetailItem({
+    required this.orderRefno,
+    required this.cartRefno,
+    required this.orderDate,
+    required this.subtotalAmount,
+    required this.shippingAmount,
+    required this.voucherDiscountAmount,
+    required this.discountAmount,
+    required this.totalAmount,
+    required this.orderStatusId,
+    required this.orderStatusName,
+    required this.paymentStatusId,
+    required this.paymentStatusName,
+    required this.paymentProvider,
+    required this.paymentMethod,
+    required this.paymentStatusMessage,
+    required this.gatewayReference,
+    required this.checkoutUrl,
+    this.shippingInfo,
+    required this.items,
+  });
+
+  static OrderDetailItem? fromJson(dynamic json) {
+    final m = asMap(json);
+    if (m == null) return null;
+    final itemsList = (m['items'] is List ? (m['items'] as List) : const [])
+        .map((e) => OrderProductItem.fromJson(e))
+        .whereType<OrderProductItem>()
+        .toList();
+    return OrderDetailItem(
+      orderRefno: m['orderRefno'] as String? ?? '',
+      cartRefno: m['cartRefno'] as String? ?? '',
+      orderDate: m['orderDate'] as String? ?? '',
+      subtotalAmount: (m['subtotalAmount'] as num?) ?? 0,
+      shippingAmount: (m['shippingAmount'] as num?) ?? 0,
+      voucherDiscountAmount: (m['voucherDiscountAmount'] as num?) ?? 0,
+      discountAmount: (m['discountAmount'] as num?) ?? 0,
+      totalAmount: (m['totalAmount'] as num?) ?? 0,
+      orderStatusId: (m['orderStatusId'] as int?) ?? 0,
+      orderStatusName: m['orderStatusName'] as String? ?? '',
+      paymentStatusId: (m['paymentStatusId'] as int?) ?? 0,
+      paymentStatusName: m['paymentStatusName'] as String? ?? '',
+      paymentProvider: m['paymentProvider'] as String? ?? '',
+      paymentMethod: m['paymentMethod'] as String? ?? '',
+      paymentStatusMessage: m['paymentStatusMessage'] as String? ?? '',
+      gatewayReference: m['gatewayReference'] as String? ?? '',
+      checkoutUrl: m['checkoutUrl'] as String? ?? '',
+      shippingInfo: ShippingInfo.fromJson(m['shippingInfo']),
+      items: itemsList,
+    );
+  }
+}
+
+class ShippingInfo {
+  final String fullName;
+  final String mobileNo;
+  final String emailAddress;
+  final String country;
+  final String province;
+  final String city;
+  final String barangay;
+  final String streetAddress;
+  final String postalCode;
+  final String completeAddress;
+  final String notes;
+
+  ShippingInfo({
+    required this.fullName,
+    required this.mobileNo,
+    required this.emailAddress,
+    required this.country,
+    required this.province,
+    required this.city,
+    required this.barangay,
+    required this.streetAddress,
+    required this.postalCode,
+    required this.completeAddress,
+    required this.notes,
+  });
+
+  static ShippingInfo? fromJson(dynamic json) {
+    final m = asMap(json);
+    if (m == null) return null;
+    return ShippingInfo(
+      fullName: m['fullName'] as String? ?? '',
+      mobileNo: m['mobileNo'] as String? ?? '',
+      emailAddress: m['emailAddress'] as String? ?? '',
+      country: m['country'] as String? ?? '',
+      province: m['province'] as String? ?? '',
+      city: m['city'] as String? ?? '',
+      barangay: m['barangay'] as String? ?? '',
+      streetAddress: m['streetAddress'] as String? ?? '',
+      postalCode: m['postalCode'] as String? ?? '',
+      completeAddress: m['completeAddress'] as String? ?? '',
+      notes: m['notes'] as String? ?? '',
+    );
+  }
+}
+
+class OrderProductItem {
+  final String productCode;
+  final String productName;
+  final int qty;
+  final num sellingPrice;
+  final num lineTotal;
+  final String imageUrl;
+  final String altText;
+
+  OrderProductItem({
+    required this.productCode,
+    required this.productName,
+    required this.qty,
+    required this.sellingPrice,
+    required this.lineTotal,
+    required this.imageUrl,
+    required this.altText,
+  });
+
+  static OrderProductItem? fromJson(dynamic json) {
+    final m = asMap(json);
+    if (m == null) return null;
+    return OrderProductItem(
+      productCode: m['productCode'] as String? ?? '',
+      productName: m['productName'] as String? ?? '',
+      qty: (m['qty'] as int?) ?? 0,
+      sellingPrice: (m['sellingPrice'] as num?) ?? 0,
+      lineTotal: (m['lineTotal'] as num?) ?? 0,
+      imageUrl: m['imageUrl'] as String? ?? '',
+      altText: m['altText'] as String? ?? '',
+    );
+  }
+}
+
 
 class CartItemPayload {
   final String productCode;
