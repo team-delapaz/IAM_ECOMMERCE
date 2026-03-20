@@ -9,7 +9,6 @@ class IAMHomeCategories extends StatelessWidget {
   const IAMHomeCategories({super.key});
 
   static const List<String> _categoryImages = [
-    IAMImages.sjkProducts,
     IAMImages.amazingBarley1,
     IAMImages.amazingSkinCare,
     IAMImages.deliciousJuiceDrinks1,
@@ -20,7 +19,7 @@ class IAMHomeCategories extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 80,
+      height: 105,
       child: ListView.builder(
         shrinkWrap: true,
         itemCount: ProductCategories.ids.length,
@@ -33,6 +32,7 @@ class IAMHomeCategories extends StatelessWidget {
           return IAMVerticalImageText(
             image: image,
             title: name,
+            applyIconTint: false,
             onTap: () {
               Get.find<NavigationController>().navigateToStore(index);
             },

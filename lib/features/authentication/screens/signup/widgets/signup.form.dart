@@ -6,7 +6,6 @@ import 'package:iam_ecomm/utils/api/api.dart';
 import 'package:iam_ecomm/utils/constants/sizes.dart';
 import 'package:iam_ecomm/utils/constants/text_strings.dart';
 import 'package:iconsax/iconsax.dart';
-import 'package:iam_ecomm/utils/api/api.dart';
 
 class IAMSignupForm extends StatefulWidget {
   const IAMSignupForm({super.key});
@@ -60,21 +59,21 @@ class _IAMSignupFormState extends State<IAMSignupForm> {
           await ApiMiddleware.setToken(res.data["token"]["accessToken"]);
         }
 
-        Get.snackbar(
-          "Success",
-          res.message ?? "Account created successfully",
-          snackPosition: SnackPosition.BOTTOM,
-          duration: const Duration(seconds: 3),
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(res.message ?? "Account created successfully"),
+            duration: const Duration(seconds: 3),
+          ),
         );
 
         /// Navigate to verify email
         Get.to(() => const VerifyEmailScreen());
       } else {
-        Get.snackbar(
-          "Signup Failed",
-          res.message ?? "Unable to create account",
-          snackPosition: SnackPosition.BOTTOM,
-          duration: const Duration(seconds: 3),
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(res.message ?? "Unable to create account"),
+            duration: const Duration(seconds: 3),
+          ),
         );
       }
 
@@ -86,11 +85,11 @@ class _IAMSignupFormState extends State<IAMSignupForm> {
         _isLoading = false;
       });
 
-      Get.snackbar(
-        "Error",
-        "Server error. Please try again later.",
-        snackPosition: SnackPosition.BOTTOM,
-        duration: const Duration(seconds: 3),
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Server error. Please try again later."),
+          duration: Duration(seconds: 3),
+        ),
       );
     }
   }

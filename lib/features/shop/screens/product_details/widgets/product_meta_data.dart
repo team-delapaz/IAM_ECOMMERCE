@@ -31,10 +31,11 @@ class IAMProductMetaData extends StatelessWidget {
         : 'AMAZING BARLEY';
 
     return Obx(() {
-      final showMember = auth.isLoggedIn.value;
+      final showMember = auth.isLoggedIn.value && auth.isMember;
       final regularPrice = product?.regularPrice ?? 1000.0;
       final memberPrice = product?.memberPrice ?? 500.0;
-      final discountPercent = showMember && regularPrice > 0 && memberPrice < regularPrice
+      final discountPercent =
+          showMember && regularPrice > 0 && memberPrice < regularPrice
           ? ((regularPrice - memberPrice) / regularPrice * 100).round()
           : null;
       final displayPrice = showMember ? memberPrice : regularPrice;
@@ -54,10 +55,9 @@ class IAMProductMetaData extends StatelessWidget {
                   ),
                   child: Text(
                     '$discountPercent%',
-                    style: Theme.of(context)
-                        .textTheme
-                        .labelLarge!
-                        .apply(color: IAMColors.black),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.labelLarge!.apply(color: IAMColors.black),
                   ),
                 ),
               if (discountPercent != null)
@@ -65,10 +65,9 @@ class IAMProductMetaData extends StatelessWidget {
               if (showMember && memberPrice < regularPrice)
                 Text(
                   '₱${_formatPrice(regularPrice)}',
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleSmall!
-                      .apply(decoration: TextDecoration.lineThrough),
+                  style: Theme.of(context).textTheme.titleSmall!.apply(
+                    decoration: TextDecoration.lineThrough,
+                  ),
                 ),
               if (showMember && memberPrice < regularPrice)
                 const SizedBox(width: IAMSizes.spaceBtwItems),
@@ -78,28 +77,28 @@ class IAMProductMetaData extends StatelessWidget {
               ),
             ],
           ),
-        const SizedBox(height: IAMSizes.spaceBtwItems / 1.5),
-        IAMProductTitleText(title: title),
-        const SizedBox(height: IAMSizes.spaceBtwItems / 1.5),
-        Row(
-          children: [
-            const IAMProductTitleText(title: 'Status'),
-            const SizedBox(width: IAMSizes.spaceBtwItems),
-            Text(
-              product?.isActive == true ? 'In Stock' : 'Out of Stock',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-          ],
-        ),
-        const SizedBox(height: IAMSizes.spaceBtwItems / 1.5),
-        Row(
-          children: [
-            IAMBrandTitleWithVerifiedIcon(
-              title: brand,
-              brandTextSize: TextSizes.medium,
-            ),
-          ],
-        ),
+          const SizedBox(height: IAMSizes.spaceBtwItems / 1.5),
+          IAMProductTitleText(title: title),
+          const SizedBox(height: IAMSizes.spaceBtwItems / 1.5),
+          Row(
+            children: [
+              const IAMProductTitleText(title: 'Status'),
+              const SizedBox(width: IAMSizes.spaceBtwItems),
+              Text(
+                product?.isActive == true ? 'In Stock' : 'Out of Stock',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+            ],
+          ),
+          const SizedBox(height: IAMSizes.spaceBtwItems / 1.5),
+          Row(
+            children: [
+              IAMBrandTitleWithVerifiedIcon(
+                title: brand,
+                brandTextSize: TextSizes.medium,
+              ),
+            ],
+          ),
         ],
       );
     });

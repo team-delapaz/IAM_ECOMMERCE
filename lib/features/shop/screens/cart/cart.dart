@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iam_ecomm/common/widgets/appbar/appbar.dart';
 import 'package:iam_ecomm/features/authentication/controllers/auth_controller.dart';
+import 'package:iam_ecomm/features/authentication/screens/login/login.dart';
+import 'package:iam_ecomm/features/authentication/screens/signup/signup.dart';
 import 'package:iam_ecomm/features/shop/screens/checkout/checkout.dart';
 import 'package:iam_ecomm/utils/api/api.dart';
 import 'package:iam_ecomm/utils/api/core/api_response.dart';
@@ -12,15 +14,6 @@ import 'package:iam_ecomm/utils/local_storage/storage_utility.dart';
 
 class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
-
-  double _calculateSubtotal() {
-    // TODO: Replace this with your real cart item price calculation
-    return 1500.00;
-  }
-
-  double _deliveryFee() {
-    return 100.00;
-  }
 
   @override
   State<CartScreen> createState() => _CartScreenState();
@@ -37,7 +30,9 @@ class _CartScreenState extends State<CartScreen> {
 
   Future<_CartViewModel> _loadCart() async {
     final isLoggedIn =
-        Get.isRegistered<AuthController>() && AuthController.instance.isLoggedIn.value;
+        Get.isRegistered<AuthController>() &&
+        AuthController.instance.isLoggedIn.value;
+    final showMemberPrice = isLoggedIn && AuthController.instance.isMember;
 
     if (isLoggedIn) {
       ///////Integrated Logged-in Cart
@@ -58,10 +53,7 @@ class _CartScreenState extends State<CartScreen> {
             ),
           )
           .toList();
-      return _CartViewModel(
-        items: items,
-        subtotal: cart.subtotal,
-      );
+      return _CartViewModel(items: items, subtotal: cart.subtotal);
     }
 
     ////TEmporary section while waiting for guest session api
@@ -88,9 +80,11 @@ class _CartScreenState extends State<CartScreen> {
 
       final product = productMap[code];
       final name = product?.productName ?? code;
-      final price = product?.memberPrice ?? 0;
+      final price =
+          (showMemberPrice ? product?.memberPrice : product?.regularPrice) ?? 0;
+      final unitPrice = price;
       final imageUrl = product?.imageUrl ?? '';
-      final lineTotal = price * qty;
+      final lineTotal = unitPrice * qty;
       subtotal += lineTotal;
 
       items.add(
@@ -99,8 +93,8 @@ class _CartScreenState extends State<CartScreen> {
           name: name,
           imageUrl: imageUrl,
           qty: qty,
-          price: price,
-          lineTotal: lineTotal,
+          price: price.toDouble(),
+          lineTotal: lineTotal.toDouble(),
         ),
       );
     }
@@ -110,7 +104,8 @@ class _CartScreenState extends State<CartScreen> {
 
   Future<void> _updateQuantity(_CartItemView item, int newQty) async {
     final isLoggedIn =
-        Get.isRegistered<AuthController>() && AuthController.instance.isLoggedIn.value;
+        Get.isRegistered<AuthController>() &&
+        AuthController.instance.isLoggedIn.value;
 
     if (isLoggedIn) {
       final safeQty = newQty < 0 ? 0 : newQty;
@@ -119,7 +114,9 @@ class _CartScreenState extends State<CartScreen> {
       final storage = IAMLocalStorage();
       final raw = storage.readData<List>('guest_cart') ?? [];
       final cart = raw.map((e) => Map<String, dynamic>.from(e as Map)).toList();
-      final index = cart.indexWhere((e) => e['productCode'] == item.productCode);
+      final index = cart.indexWhere(
+        (e) => e['productCode'] == item.productCode,
+      );
       if (index >= 0) {
         if (newQty <= 0) {
           cart.removeAt(index);
@@ -139,10 +136,6 @@ class _CartScreenState extends State<CartScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final subtotal = widget._calculateSubtotal();
-    final delivery = widget._deliveryFee();
-    final total = subtotal + delivery;
-
     return Scaffold(
       appBar: IAMAppBar(
         showBackArrow: true,
@@ -168,7 +161,8 @@ class _CartScreenState extends State<CartScreen> {
             }
             return ListView.separated(
               itemCount: model.items.length,
-              separatorBuilder: (_, __) => const SizedBox(height: IAMSizes.spaceBtwSections),
+              separatorBuilder: (_, __) =>
+                  const SizedBox(height: IAMSizes.spaceBtwSections),
               itemBuilder: (context, index) {
                 final item = model.items[index];
                 return Container(
@@ -219,39 +213,38 @@ class _CartScreenState extends State<CartScreen> {
                         children: [
                           Text(
                             '₱${item.lineTotal.toStringAsFixed(2)}',
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyLarge
+                            style: Theme.of(context).textTheme.bodyLarge
                                 ?.copyWith(fontWeight: FontWeight.w600),
                           ),
                           const SizedBox(height: 8),
                           Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 6,
-                      vertical: 2,
-                    ),
-                    decoration: BoxDecoration(
-                      borderRadius:
-                          BorderRadius.circular(IAMSizes.cardRadiusSm),
-                      border: Border.all(
-                        color: Theme.of(context)
-                            .dividerColor
-                            .withOpacity(0.6),
-                      ),
-                      color: Theme.of(context).colorScheme.surface,
-                    ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 6,
+                                  vertical: 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(
+                                    IAMSizes.cardRadiusSm,
+                                  ),
+                                  border: Border.all(
+                                    color: Theme.of(
+                                      context,
+                                    ).dividerColor.withOpacity(0.6),
+                                  ),
+                                  color: Theme.of(context).colorScheme.surface,
+                                ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     GestureDetector(
                                       onTap: item.qty > 1
                                           ? () => _updateQuantity(
-                                                item,
-                                                item.qty - 1,
-                                              )
+                                              item,
+                                              item.qty - 1,
+                                            )
                                           : () => _removeItem(item),
                                       child: const Icon(Icons.remove, size: 16),
                                     ),
@@ -261,9 +254,9 @@ class _CartScreenState extends State<CartScreen> {
                                       ),
                                       child: Text(
                                         '${item.qty}',
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodyMedium,
+                                        style: Theme.of(
+                                          context,
+                                        ).textTheme.bodyMedium,
                                       ),
                                     ),
                                     GestureDetector(
@@ -300,47 +293,65 @@ class _CartScreenState extends State<CartScreen> {
         builder: (context, snapshot) {
           final model = snapshot.data;
           final hasItems = model != null && model.items.isNotEmpty;
-          final subtotal = model?.subtotal ?? 0;
+          final subtotal = (model?.subtotal ?? 0).toDouble();
           return Padding(
             padding: const EdgeInsets.all(IAMSizes.defaultSpace),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Subtotal',
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                    Text(
-                      '₱${subtotal.toStringAsFixed(2)}',
-                      style: Theme.of(context)
-                          .textTheme
-                          .titleMedium
-                          ?.copyWith(fontWeight: FontWeight.w600),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: IAMSizes.spaceBtwItems),
                 ElevatedButton(
-                  onPressed: hasItems
-                      ? () => Get.to(() => const CheckoutScreen())
-                      : null,
+                  onPressed: !hasItems
+                      ? null
+                      : () async {
+                          final isLoggedIn =
+                              Get.isRegistered<AuthController>() &&
+                                  AuthController.instance.isLoggedIn.value;
+
+                          if (!isLoggedIn) {
+                            await showDialog<bool>(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                title: const Text('Have an account?'),
+                                content: const Text(
+                                  'Have an account? Login now.\nNew to IAM? Signup here.',
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.of(context).pop(true);
+                                      Get.to(() => const LoginScreen());
+                                    },
+                                    child: const Text('Login now'),
+                                  ),
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.of(context).pop(true);
+                                      Get.to(() => const SignupScreen());
+                                    },
+                                    child: const Text('Signup here'),
+                                  ),
+                                ],
+                              ),
+                            );
+                            return;
+                          }
+
+                          await Get.to(() => const CheckoutScreen());
+                        },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: IAMColors.warning,
                     foregroundColor: IAMColors.white,
-                    padding: const EdgeInsets.symmetric(
-                      vertical: IAMSizes.md,
-                    ),
+                    padding: const EdgeInsets.symmetric(vertical: IAMSizes.md),
                     shape: RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(IAMSizes.cardRadiusLg),
+                      borderRadius: BorderRadius.circular(
+                        IAMSizes.cardRadiusLg,
+                      ),
                     ),
                   ),
-                  child:
-                      Text('Checkout ₱${subtotal.toStringAsFixed(2)}'),
+                  child: Text(
+                    hasItems ? 'Checkout ₱${subtotal.toStringAsFixed(2)}' : 'Checkout',
+                  ),
                 ),
               ],
             ),

@@ -28,7 +28,8 @@ class _IAMBottomAddToCartState extends State<IAMBottomAddToCart> {
     final code = widget.product?.productCode;
     if (code == null || code.isEmpty) return;
     final isLoggedIn =
-        Get.isRegistered<AuthController>() && AuthController.instance.isLoggedIn.value;
+        Get.isRegistered<AuthController>() &&
+        AuthController.instance.isLoggedIn.value;
 
     ////TEmporary section while waiting for guest session api
     if (!isLoggedIn) {
@@ -56,24 +57,22 @@ class _IAMBottomAddToCartState extends State<IAMBottomAddToCart> {
     if (!mounted) return;
 
     if (res.success) {
-      final msg =
-          res.message.isNotEmpty ? res.message : 'Item added to cart.';
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(msg)),
-      );
+      final msg = res.message.isNotEmpty ? res.message : 'Item added to cart.';
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
     } else {
       final msg = res.message.isNotEmpty
           ? res.message
           : 'Unable to add item to cart.';
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Add to cart failed: $msg')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Add to cart failed: $msg')));
     }
   }
 
   Future<void> _checkout() async {
     final isLoggedIn =
-        Get.isRegistered<AuthController>() && AuthController.instance.isLoggedIn.value;
+        Get.isRegistered<AuthController>() &&
+        AuthController.instance.isLoggedIn.value;
 
     await _addToCart();
     if (!mounted) return;
@@ -89,59 +88,62 @@ class _IAMBottomAddToCartState extends State<IAMBottomAddToCart> {
   Widget build(BuildContext context) {
     final dark = IAMHelperFunctions.isDarkMode(context);
 
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: IAMSizes.defaultSpace,
-        vertical: IAMSizes.defaultSpace / 2,
-      ),
-      decoration: BoxDecoration(
-        color: dark ? IAMColors.darkerGrey : IAMColors.light,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(IAMSizes.cardRadiusLg),
-          topRight: Radius.circular(IAMSizes.cardRadiusLg),
+    return SafeArea(
+      top: false,
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: IAMSizes.defaultSpace,
+          vertical: IAMSizes.defaultSpace / 2,
         ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            children: [
-              GestureDetector(
-                onTap: () {
-                  if (_qty > 1) setState(() => _qty--);
-                },
-                child: IAMCircularIcon(
-                  icon: Iconsax.minus,
-                  backgroundColor: IAMColors.darkGrey,
-                  width: 40,
-                  height: 40,
-                  color: IAMColors.white,
-                ),
-              ),
-              const SizedBox(width: IAMSizes.spaceBtwItems),
-              Text('$_qty', style: Theme.of(context).textTheme.titleSmall),
-              const SizedBox(width: IAMSizes.spaceBtwItems),
-              GestureDetector(
-                onTap: () => setState(() => _qty++),
-                child: IAMCircularIcon(
-                  icon: Iconsax.add,
-                  backgroundColor: IAMColors.warning,
-                  width: 40,
-                  height: 40,
-                  color: IAMColors.white,
-                ),
-              ),
-            ],
+        decoration: BoxDecoration(
+          color: dark ? IAMColors.darkerGrey : IAMColors.light,
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(IAMSizes.cardRadiusLg),
+            topRight: Radius.circular(IAMSizes.cardRadiusLg),
           ),
-          ElevatedButton(
-            onPressed: widget.product != null ? _addToCart : null,
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.all(IAMSizes.md),
-              backgroundColor: Color(0xFFDBA724),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                GestureDetector(
+                  onTap: () {
+                    if (_qty > 1) setState(() => _qty--);
+                  },
+                  child: IAMCircularIcon(
+                    icon: Iconsax.minus,
+                    backgroundColor: IAMColors.darkGrey,
+                    width: 40,
+                    height: 40,
+                    color: IAMColors.white,
+                  ),
+                ),
+                const SizedBox(width: IAMSizes.spaceBtwItems),
+                Text('$_qty', style: Theme.of(context).textTheme.titleSmall),
+                const SizedBox(width: IAMSizes.spaceBtwItems),
+                GestureDetector(
+                  onTap: () => setState(() => _qty++),
+                  child: IAMCircularIcon(
+                    icon: Iconsax.add,
+                    backgroundColor: IAMColors.warning,
+                    width: 40,
+                    height: 40,
+                    color: IAMColors.white,
+                  ),
+                ),
+              ],
             ),
-            child: const Text('Add to Cart'),
-          ),
-        ],
+            ElevatedButton(
+              onPressed: widget.product != null ? _addToCart : null,
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.all(IAMSizes.md),
+                backgroundColor: const Color(0xFFDBA724),
+              ),
+              child: const Text('Add to Cart'),
+            ),
+          ],
+        ),
       ),
     );
   }

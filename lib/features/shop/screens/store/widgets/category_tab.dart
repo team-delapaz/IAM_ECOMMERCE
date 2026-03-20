@@ -35,8 +35,10 @@ class _IAMCategoryTabState extends State<IAMCategoryTab> {
   Widget build(BuildContext context) {
     final controller = Get.find<StoreController>();
     final categoryId = widget.categoryId;
-    final categoryName = ProductCategories.names[
-        ProductCategories.ids.indexOf(categoryId).clamp(0, ProductCategories.names.length - 1)];
+    final categoryName =
+        ProductCategories.names[ProductCategories.ids
+            .indexOf(categoryId)
+            .clamp(0, ProductCategories.names.length - 1)];
 
     return ListView(
       shrinkWrap: true,
@@ -46,13 +48,13 @@ class _IAMCategoryTabState extends State<IAMCategoryTab> {
           padding: const EdgeInsets.all(IAMSizes.defaultSpace),
           child: Column(
             children: [
-              IAMBrandShowCase(
+              /*IAMBrandShowCase(
                 images: [
                   IAMImages.pibarcap,
                   IAMImages.pibarcho,
                   IAMImages.piacaibr,
                 ],
-              ),
+              ),*/
               const SizedBox(height: IAMSizes.spaceBtwItems),
               IAMSectionHeading(title: categoryName, onPressed: () {}),
               const SizedBox(height: IAMSizes.spaceBtwItems),

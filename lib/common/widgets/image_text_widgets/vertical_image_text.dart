@@ -10,12 +10,14 @@ class IAMVerticalImageText extends StatelessWidget {
     required this.title,
     this.textColor = IAMColors.white,
     this.backgroundColor,
+    this.applyIconTint = true,
     this.onTap,
   });
 
   final String image, title;
   final Color textColor;
   final Color? backgroundColor;
+  final bool applyIconTint;
   final void Function()? onTap;
 
   @override
@@ -41,21 +43,24 @@ class IAMVerticalImageText extends StatelessWidget {
                 child: Image(
                   image: AssetImage(image),
                   fit: BoxFit.cover,
-                  color: dark ? IAMColors.light : IAMColors.dark,
+                  color: applyIconTint
+                      ? (dark ? IAMColors.light : IAMColors.dark)
+                      : null,
                 ),
               ),
             ),
             //Text
             const SizedBox(height: IAMSizes.spaceBtwItems / 2),
             SizedBox(
-              width: 55,
+              width: 90,
               child: Text(
                 title,
                 style: Theme.of(
                   context,
                 ).textTheme.labelMedium!.apply(color: textColor),
-                maxLines: 1,
+                maxLines: 2,
                 overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
               ),
             ),
           ],

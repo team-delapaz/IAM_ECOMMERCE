@@ -1,12 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:iam_ecomm/common/texts/section_heading.dart';
 import 'package:iam_ecomm/common/widgets/container/rounded_container.dart';
+import 'package:iam_ecomm/features/shop/controllers/products/checkout_controller.dart';
 import 'package:iam_ecomm/utils/api/api.dart';
 import 'package:iam_ecomm/utils/api/core/api_response.dart';
 import 'package:iam_ecomm/utils/api/responses/response_prep.dart';
 import 'package:iam_ecomm/utils/constants/colors.dart';
+import 'package:iam_ecomm/utils/constants/image_strings.dart';
 import 'package:iam_ecomm/utils/constants/sizes.dart';
 import 'package:iam_ecomm/utils/helpers/helper_functions.dart';
+
+String _iconForMethodCode(String methodCode) {
+  switch (methodCode.toUpperCase()) {
+    case 'IAMWALLET':
+      return IAMImages.iamwallet;
+    case 'PAYMAYA':
+      return IAMImages.maya;
+    case 'GCASH':
+      return IAMImages.gcash;
+    default:
+      return IAMImages.iamwallet;
+  }
+}
 
 class IAMBillingPaymentSection extends StatefulWidget {
   const IAMBillingPaymentSection({super.key});
@@ -21,9 +37,14 @@ class _IAMBillingPaymentSectionState extends State<IAMBillingPaymentSection> {
   bool _loading = true;
   String? _error;
 
+  late final CheckoutController _checkout;
+
   @override
   void initState() {
     super.initState();
+    _checkout = Get.isRegistered<CheckoutController>()
+        ? CheckoutController.instance
+        : Get.put(CheckoutController());
     _loadPayment();
   }
 
@@ -32,43 +53,31 @@ class _IAMBillingPaymentSectionState extends State<IAMBillingPaymentSection> {
       _loading = true;
       _error = null;
     });
-    try {
-      final ApiResponse<List<PaymentMethodItem?>> methodsRes =
-          await ApiMiddleware.payment.getPaymentMethods();
-      final ApiResponse<List<PaymentProviderItem?>> providersRes =
-          await ApiMiddleware.payment.getPaymentProviders();
+    final ApiResponse<List<PaymentMethodItem?>> methodsRes = await ApiMiddleware
+        .payment
+        .getPaymentMethods();
+    final methods = methodsRes.data ?? [];
+    final methodList =
+        methods.whereType<PaymentMethodItem>().where((m) => m.isActive).toList()
+          ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
 
-      final methods = methodsRes.data ?? [];
-      final providers = providersRes.data ?? [];
-
-      if (methods.isEmpty || providers.isEmpty) {
-        _error = 'No payment methods available.';
-        _current = null;
-      } else {
-        final methodList = methods.whereType<PaymentMethodItem>().toList();
-        final providerList = providers.whereType<PaymentProviderItem>().toList();
-
-        PaymentMethodItem method = methodList.firstWhere(
-          (m) => m.isActive,
-          orElse: () => methodList.first,
-        );
-
-        PaymentProviderItem provider = providerList.firstWhere(
-          (p) => p.providerCode == method.methodCode && p.isActive,
-          orElse: () => providerList.first,
-        );
-
-        _current = _PaymentViewModel(method: method, provider: provider);
-      }
-    } catch (e) {
-      _error = 'Unable to load payment methods.';
-      _current = null;
-    } finally {
-      if (mounted) {
-        setState(() {
-          _loading = false;
-        });
-      }
+    if (mounted) {
+      setState(() {
+        _loading = false;
+        if (!methodsRes.success) {
+          _error = methodsRes.message;
+          _current = null;
+        } else if (methodList.isEmpty) {
+          _error = 'No payment methods available.';
+          _current = null;
+        } else {
+          // Methods loaded successfully, but do NOT auto-select.
+          // Leave `_current` null and show a placeholder until the
+          // user explicitly chooses a payment method.
+          _error = null;
+          _current = null;
+        }
+      });
     }
   }
 
@@ -76,81 +85,117 @@ class _IAMBillingPaymentSectionState extends State<IAMBillingPaymentSection> {
   Widget build(BuildContext context) {
     final dark = IAMHelperFunctions.isDarkMode(context);
 
-    ///will comment out muna to for integration of paymnet methods and providers
-    // final controller = Get.put(CheckoutController());
-    // return existing controller-based UI...
+    return Obx(() {
+      final providerSelected = _checkout.selectedPaymentProviderCode.isNotEmpty;
 
-    if (_loading) {
-      return const SizedBox(
-        height: 60,
-        child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
-      );
-    }
-    if (_error != null || _current == null) {
-      return Text(_error ?? 'Unable to load payment methods.');
-    }
-    final model = _current!;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        IAMSectionHeading(
-          title: 'Payment Method',
-          buttonTitle: 'Change',
-          onPressed: () => _showSelector(context),
-        ),
-        const SizedBox(height: IAMSizes.spaceBtwItems / 2),
-        Row(
+      if (!providerSelected) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            IAMRoundedContainer(
-              width: 60,
-              height: 35,
-              backgroundColor: dark ? IAMColors.light : IAMColors.white,
-              padding: const EdgeInsets.all(IAMSizes.sm),
-              child: Center(
-                child: Text(
-                  model.provider.providerCode,
-                  style: Theme.of(context).textTheme.labelSmall,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
+            const IAMSectionHeading(
+              title: 'Payment Method',
+              showActionButton: false,
             ),
-            const SizedBox(width: IAMSizes.spaceBtwItems / 2),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+            const SizedBox(height: IAMSizes.spaceBtwItems / 2),
+            Opacity(
+              opacity: 0.6,
+              child: Row(
                 children: [
-                  Text(
-                    model.method.methodName,
-                    style: Theme.of(context).textTheme.bodyLarge,
-                    overflow: TextOverflow.ellipsis,
+                  IAMRoundedContainer(
+                    width: 60,
+                    height: 35,
+                    backgroundColor: dark ? IAMColors.light : IAMColors.white,
+                    padding: const EdgeInsets.all(IAMSizes.sm),
+                    child: const SizedBox.shrink(),
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    model.provider.providerName,
-                    style: Theme.of(context).textTheme.bodySmall,
-                    overflow: TextOverflow.ellipsis,
+                  const SizedBox(width: IAMSizes.spaceBtwItems / 2),
+                  Expanded(
+                    child: Text(
+                      'Select a payment provider first',
+                      style: Theme.of(context).textTheme.bodyLarge,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                 ],
               ),
             ),
           ],
-        ),
-      ],
-    );
+        );
+      }
+
+      if (_loading) {
+        return const SizedBox(
+          height: 60,
+          child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+        );
+      }
+
+      if (_error != null) {
+        return Text(_error ?? 'Unable to load payment methods.');
+      }
+      final hasSelection = _current != null;
+      final iconPath = hasSelection
+          ? _iconForMethodCode(_current!.method.methodCode)
+          : null;
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          IAMSectionHeading(
+            title: 'Payment Method',
+            buttonTitle: hasSelection ? 'Change' : 'Select',
+            onPressed: providerSelected ? () => _showSelector(context) : null,
+          ),
+          const SizedBox(height: IAMSizes.spaceBtwItems / 2),
+          Row(
+            children: [
+              IAMRoundedContainer(
+                width: 60,
+                height: 35,
+                backgroundColor: dark ? IAMColors.light : IAMColors.white,
+                padding: const EdgeInsets.all(IAMSizes.sm),
+                child: Center(
+                  child: hasSelection && iconPath != null
+                      ? Image.asset(
+                          iconPath,
+                          fit: BoxFit.contain,
+                          errorBuilder: (_, __, ___) => Text(
+                            _current!.method.methodCode,
+                            style: Theme.of(context).textTheme.labelSmall,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        )
+                      : const SizedBox.shrink(),
+                ),
+              ),
+              const SizedBox(width: IAMSizes.spaceBtwItems / 2),
+              Expanded(
+                child: Text(
+                  hasSelection
+                      ? _current!.method.methodName
+                      : 'Select Payment Method',
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: hasSelection ? null : Theme.of(context).hintColor,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+        ],
+      );
+    });
   }
 
   Future<void> _showSelector(BuildContext context) async {
-    final ApiResponse<List<PaymentMethodItem?>> methodsRes =
-        await ApiMiddleware.payment.getPaymentMethods();
-    final ApiResponse<List<PaymentProviderItem?>> providersRes =
-        await ApiMiddleware.payment.getPaymentProviders();
-
+    final ApiResponse<List<PaymentMethodItem?>> methodsRes = await ApiMiddleware
+        .payment
+        .getPaymentMethods();
     final methods = methodsRes.data ?? [];
-    final providers = providersRes.data ?? [];
-    final methodList = methods.whereType<PaymentMethodItem>().toList();
-    final providerList = providers.whereType<PaymentProviderItem>().toList();
-    if (methodList.isEmpty || providerList.isEmpty) return;
+    final methodList =
+        methods.whereType<PaymentMethodItem>().where((m) => m.isActive).toList()
+          ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+    if (methodList.isEmpty) return;
 
     final selected = await showModalBottomSheet<PaymentMethodItem>(
       context: context,
@@ -163,7 +208,17 @@ class _IAMBillingPaymentSectionState extends State<IAMBillingPaymentSection> {
           itemBuilder: (context, index) {
             final m = methodList[index];
             final isSelected = _current?.method.methodCode == m.methodCode;
+            final iconPath = _iconForMethodCode(m.methodCode);
             return ListTile(
+              leading: SizedBox(
+                width: 48,
+                height: 28,
+                child: Image.asset(
+                  iconPath,
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                ),
+              ),
               title: Text(m.methodName),
               subtitle: Text(m.methodCode),
               trailing: isSelected
@@ -176,25 +231,23 @@ class _IAMBillingPaymentSectionState extends State<IAMBillingPaymentSection> {
       },
     );
 
-    if (selected == null) return;
+    if (selected != null && mounted) {
+      setState(() {
+        _current = _PaymentViewModel(method: selected);
+      });
 
-    PaymentProviderItem provider = providerList.firstWhere(
-      (p) => p.providerCode == selected.methodCode && p.isActive,
-      orElse: () => providerList.first,
-    );
-
-    setState(() {
-      _current = _PaymentViewModel(method: selected, provider: provider);
-    });
+      _checkout.setPaymentMethod(
+        name: selected.methodName,
+        image: _iconForMethodCode(selected.methodCode),
+      );
+      // Also set the provider code so checkout can proceed
+      _checkout.selectedPaymentProviderCode.value = selected.methodCode;
+    }
   }
 }
 
 class _PaymentViewModel {
   final PaymentMethodItem method;
-  final PaymentProviderItem provider;
 
-  _PaymentViewModel({
-    required this.method,
-    required this.provider,
-  });
+  _PaymentViewModel({required this.method});
 }

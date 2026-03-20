@@ -131,7 +131,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   const Divider(),
                   const SizedBox(height: IAMSizes.spaceBtwItems),
 
-                  Center(
+                  /*Center(
                     child: TextButton(
                       onPressed: () {},
                       child: const Text(
@@ -139,7 +139,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         style: TextStyle(color: Colors.red),
                       ),
                     ),
-                  ),
+                  ),*/
                 ],
               ),
             ),

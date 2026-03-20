@@ -22,14 +22,18 @@ class IAMHomeAppBar extends StatelessWidget {
             ).textTheme.labelMedium!.apply(color: IAMColors.lightGrey),
           ),
           Obx(
-            () => Text(
-              AuthController.instance.isLoggedIn.value
-                  ? IAMTexts.homeAppbarSubTitleLoggedIn
-                  : IAMTexts.homeAppbarSubTitleLoggedOut,
-              style: Theme.of(
-                context,
-              ).textTheme.headlineSmall!.apply(color: IAMColors.white),
-            ),
+            () {
+              final isLoggedIn = AuthController.instance.isLoggedIn.value;
+              final user = AuthController.instance.user.value;
+              return Text(
+                isLoggedIn && user != null
+                    ? 'Welcome, ${user.firstName}!'
+                    : IAMTexts.homeAppbarSubTitleLoggedOut,
+                style: Theme.of(
+                  context,
+                ).textTheme.headlineSmall!.apply(color: IAMColors.white),
+              );
+            },
           ),
         ],
       ),
