@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iam_ecomm/common/widgets/appbar/appbar.dart';
 import 'package:iam_ecomm/features/authentication/controllers/auth_controller.dart';
+import 'package:iam_ecomm/features/authentication/screens/login/login.dart';
+import 'package:iam_ecomm/features/authentication/screens/signup/signup.dart';
 import 'package:iam_ecomm/features/shop/screens/checkout/checkout.dart';
 import 'package:iam_ecomm/utils/api/api.dart';
 import 'package:iam_ecomm/utils/api/core/api_response.dart';
@@ -13,23 +15,12 @@ import 'package:iam_ecomm/utils/local_storage/storage_utility.dart';
 class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
 
-  double _calculateSubtotal() {
-    // TODO: Replace this with your real cart item price calculation
-    return 1500.00;
-  }
-
-  double _deliveryFee() {
-    return 100.00;
-  }
-
   @override
   State<CartScreen> createState() => _CartScreenState();
 }
 
 class _CartScreenState extends State<CartScreen> {
   late Future<_CartViewModel> _cartFuture;
-
-  static const double _deliveryFee = 100.00;
 
   @override
   void initState() {
@@ -303,68 +294,51 @@ class _CartScreenState extends State<CartScreen> {
           final model = snapshot.data;
           final hasItems = model != null && model.items.isNotEmpty;
           final subtotal = (model?.subtotal ?? 0).toDouble();
-          final delivery = hasItems ? _deliveryFee : 0.0;
-          final grandTotal = subtotal + delivery;
           return Padding(
             padding: const EdgeInsets.all(IAMSizes.defaultSpace),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Subtotal',
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                    Text(
-                      '₱${subtotal.toStringAsFixed(2)}',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: IAMSizes.spaceBtwItems / 2),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Delivery Fee',
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                    Text(
-                      '₱${delivery.toStringAsFixed(2)}',
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: IAMSizes.spaceBtwItems),
-                const Divider(),
-                const SizedBox(height: IAMSizes.spaceBtwItems),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Grand Total',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    Text(
-                      '₱${grandTotal.toStringAsFixed(2)}',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: IAMSizes.spaceBtwItems),
                 ElevatedButton(
-                  onPressed: hasItems
-                      ? () => Get.to(() => const CheckoutScreen())
-                      : null,
+                  onPressed: !hasItems
+                      ? null
+                      : () async {
+                          final isLoggedIn =
+                              Get.isRegistered<AuthController>() &&
+                                  AuthController.instance.isLoggedIn.value;
+
+                          if (!isLoggedIn) {
+                            await showDialog<bool>(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                title: const Text('Have an account?'),
+                                content: const Text(
+                                  'Have an account? Login now.\nNew to IAM? Signup here.',
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.of(context).pop(true);
+                                      Get.to(() => const LoginScreen());
+                                    },
+                                    child: const Text('Login now'),
+                                  ),
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.of(context).pop(true);
+                                      Get.to(() => const SignupScreen());
+                                    },
+                                    child: const Text('Signup here'),
+                                  ),
+                                ],
+                              ),
+                            );
+                            return;
+                          }
+
+                          await Get.to(() => const CheckoutScreen());
+                        },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: IAMColors.warning,
                     foregroundColor: IAMColors.white,
@@ -375,7 +349,9 @@ class _CartScreenState extends State<CartScreen> {
                       ),
                     ),
                   ),
-                  child: Text('Checkout ₱${grandTotal.toStringAsFixed(2)}'),
+                  child: Text(
+                    hasItems ? 'Checkout ₱${subtotal.toStringAsFixed(2)}' : 'Checkout',
+                  ),
                 ),
               ],
             ),

@@ -5,8 +5,7 @@ import 'package:iam_ecomm/common/widgets/container/rounded_container.dart';
 import 'package:iam_ecomm/common/widgets/products.cart/coupon_widget.dart';
 import 'package:iam_ecomm/common/widgets/success_screen/success_screen.dart';
 import 'package:iam_ecomm/features/authentication/controllers/auth_controller.dart';
-import 'package:iam_ecomm/features/authentication/screens/login/login.dart';
-import 'package:iam_ecomm/features/authentication/screens/signup/signup.dart';
+import 'package:iam_ecomm/features/shop/controllers/products/checkout_controller.dart';
 import 'package:iam_ecomm/features/shop/screens/checkout/widget/billing_address_section.dart';
 import 'package:iam_ecomm/features/shop/screens/checkout/widget/billing_amount_section.dart';
 import 'package:iam_ecomm/features/shop/screens/checkout/widget/billing_payment_provider_section.dart';
@@ -32,11 +31,16 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   late Future<_CartViewModel> _cartFuture;
   final _notesController = TextEditingController();
   AddressItem? _selectedAddress;
+  bool _hasSavedAddress = false;
+  late final CheckoutController _checkoutController;
 
   @override
   void initState() {
     super.initState();
     _cartFuture = _loadCart();
+    _checkoutController = Get.isRegistered<CheckoutController>()
+        ? CheckoutController.instance
+        : Get.put(CheckoutController());
   }
 
   @override
@@ -115,40 +119,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   ////temp din na section while waiting for guest session api, local storage muna.
   Future<void> _placeOrder(_CartViewModel model) async {
-    final isLoggedIn =
-        Get.isRegistered<AuthController>() &&
-        AuthController.instance.isLoggedIn.value;
-    if (!isLoggedIn) {
-      await showDialog<void>(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Sign up required'),
-          content: const Text('You need to sign up or log in to check out.'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                Get.to(() => const LoginScreen());
-              },
-              child: const Text('Existing member? Login'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                Get.to(() => const SignupScreen());
-              },
-              child: const Text('Sign up'),
-            ),
-          ],
-        ),
-      );
-      return;
-    }
-
     final selectedAddress = _selectedAddress;
     if (selectedAddress == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -157,25 +127,44 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       return;
     }
 
-    final memberRes = await ApiMiddleware.member.getMember();
-    if (!memberRes.success || memberRes.data == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            memberRes.message.isNotEmpty ? memberRes.message : 'Unable to load your profile.',
+    // Determine if the user is logged in (member) or checking out as guest.
+    final isLoggedIn =
+        Get.isRegistered<AuthController>() &&
+        AuthController.instance.isLoggedIn.value;
+
+    String emailAddress = '';
+    String memberIdno = '';
+    if (isLoggedIn) {
+      final memberRes = await ApiMiddleware.member.getMember();
+      if (!memberRes.success || memberRes.data == null) {
+        // Fallback: use idNo from selected address if available
+        memberIdno = selectedAddress.idNo ?? '';
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              memberRes.message.isNotEmpty
+                  ? memberRes.message
+                  : 'Unable to load your profile. Proceeding with address info.',
+            ),
           ),
-        ),
-      );
-      return;
+        );
+      } else {
+        final member = memberRes.data!;
+        emailAddress = member.emailAddress;
+        memberIdno = member.idno;
+      }
+    } else {
+      // Not logged in: fallback to address idNo if available
+      memberIdno = selectedAddress.idNo ?? '';
     }
 
-    final member = memberRes.data!;
-    final notes = _notesController.text.trim();
+    final notesInput = _notesController.text.trim();
+    final notesToSend = notesInput.isEmpty ? 'checkout' : notesInput;
 
     final res = await ApiMiddleware.checkout.checkout(
       fullName: selectedAddress.recipientName,
       mobileNo: selectedAddress.mobileNo,
-      emailAddress: member.emailAddress,
+      emailAddress: emailAddress,
       country: selectedAddress.country,
       province: selectedAddress.province,
       city: selectedAddress.city,
@@ -183,7 +172,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       streetAddress: selectedAddress.streetAddress,
       postalCode: selectedAddress.postalCode,
       completeAddress: selectedAddress.completeAddress,
-      notes: notes.isEmpty ? null : notes,
+      notes: notesToSend,
     );
     if (!res.success) {
       final msg = res.message.isNotEmpty ? res.message : 'Checkout failed.';
@@ -194,6 +183,39 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     final data = res.data as Map<String, dynamic>? ?? {};
     final orderRef = data['orderRefno'] as String? ?? '';
     final totalAmount = (data['totalAmount'] as num?) ?? model.subtotal;
+
+    // After a successful checkout, create a payment record using the selected
+    // payment provider/method and the order reference from the checkout API.
+    final providerCode = _checkoutController.selectedPaymentProviderCode.value;
+    if (providerCode.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select a payment provider.')),
+      );
+      return;
+    }
+
+    final paymentRes = await ApiMiddleware.payment.createPayment(
+      orderNo: orderRef,
+      idno: memberIdno,
+      amount: totalAmount,
+      currency: 'PHP',
+      paymentProvider: providerCode,
+      paymentMethod: providerCode,
+      description: 'Checkout',
+      clientReferenceNo: orderRef,
+    );
+
+    if (!paymentRes.success) {
+      final msg = paymentRes.message.isNotEmpty
+          ? paymentRes.message
+          : 'Unable to create payment.';
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+      return;
+    }
+
+    // Log raw payment response for inspection during integration.
+    // ignore: avoid_print
+    print('createPayment response: ${paymentRes.data}');
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -301,8 +323,21 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         IAMBillingPaymentSection(),
                         const SizedBox(height: IAMSizes.spaceBtwItems),
                         IAMBillingAddressSection(
+                          onAddressAvailabilityChanged: (hasAddress) {
+                            setState(() => _hasSavedAddress = hasAddress);
+                          },
                           onAddressSelected: (addr) {
-                            setState(() => _selectedAddress = addr);
+                            // Always set _selectedAddress, even on initial load
+                            if (_selectedAddress != addr) {
+                              setState(() {
+                                _selectedAddress = addr;
+                                _hasSavedAddress = addr != null;
+                              });
+                            } else if (_hasSavedAddress != (addr != null)) {
+                              setState(() {
+                                _hasSavedAddress = addr != null;
+                              });
+                            }
                           },
                         ),
                       ],
@@ -320,26 +355,59 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           final model = snapshot.data;
           final hasItems = model != null && model.items.isNotEmpty;
           final subtotal = model?.subtotal ?? 0;
-          final canCheckout = hasItems && _selectedAddress != null;
-          return Padding(
-            padding: const EdgeInsets.all(IAMSizes.defaultSpace),
-            child: ElevatedButton(
-              onPressed: canCheckout ? () => _placeOrder(model) : null,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: IAMColors.warning,
-                foregroundColor: IAMColors.white,
-                padding: const EdgeInsets.symmetric(vertical: IAMSizes.md),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(IAMSizes.cardRadiusLg),
-                ),
+          return Obx(() {
+            final paymentMethodSelected =
+                _checkoutController.selectedPaymentMethod.value.name.isNotEmpty;
+            String? warningMessage;
+            if (!hasItems) {
+              warningMessage = 'Your cart is empty.';
+            } else if (!paymentMethodSelected) {
+              warningMessage = 'Please select a payment method.';
+            }
+            return Padding(
+              padding: const EdgeInsets.all(IAMSizes.defaultSpace),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  ElevatedButton(
+                    onPressed: () {
+                      if (!hasItems) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Your cart is empty.')),
+                        );
+                        return;
+                      }
+                      if (!paymentMethodSelected) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Please select a payment method.')),
+                        );
+                        return;
+                      }
+                      _placeOrder(model);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: IAMColors.warning,
+                      foregroundColor: IAMColors.white,
+                      padding: const EdgeInsets.symmetric(vertical: IAMSizes.md),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(IAMSizes.cardRadiusLg),
+                      ),
+                    ),
+                    child: Text('Checkout ₱${subtotal.toStringAsFixed(2)}'),
+                  ),
+                  if (warningMessage != null) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      warningMessage,
+                      style: const TextStyle(color: Colors.red, fontWeight: FontWeight.w600),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ],
               ),
-              child: Text(
-                canCheckout
-                    ? 'Checkout ₱${subtotal.toStringAsFixed(2)}'
-                    : 'Select a shipping address',
-              ),
-            ),
-          );
+            );
+          });
         },
       ),
     );

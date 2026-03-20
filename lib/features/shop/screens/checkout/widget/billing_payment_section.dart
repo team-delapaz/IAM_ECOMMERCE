@@ -71,8 +71,11 @@ class _IAMBillingPaymentSectionState extends State<IAMBillingPaymentSection> {
           _error = 'No payment methods available.';
           _current = null;
         } else {
+          // Methods loaded successfully, but do NOT auto-select.
+          // Leave `_current` null and show a placeholder until the
+          // user explicitly chooses a payment method.
           _error = null;
-          _current = _PaymentViewModel(method: methodList.first);
+          _current = null;
         }
       });
     }
@@ -81,96 +84,107 @@ class _IAMBillingPaymentSectionState extends State<IAMBillingPaymentSection> {
   @override
   Widget build(BuildContext context) {
     final dark = IAMHelperFunctions.isDarkMode(context);
-    final providerSelected = _checkout.selectedPaymentProviderCode.isNotEmpty;
 
-    if (!providerSelected) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const IAMSectionHeading(
-            title: 'Payment Method',
-            showActionButton: false,
-          ),
-          const SizedBox(height: IAMSizes.spaceBtwItems / 2),
-          Opacity(
-            opacity: 0.6,
-            child: Row(
-              children: [
-                IAMRoundedContainer(
-                  width: 60,
-                  height: 35,
-                  backgroundColor: dark ? IAMColors.light : IAMColors.white,
-                  padding: const EdgeInsets.all(IAMSizes.sm),
-                  child: const SizedBox.shrink(),
-                ),
-                const SizedBox(width: IAMSizes.spaceBtwItems / 2),
-                Expanded(
-                  child: Text(
-                    'Select a payment provider first',
-                    style: Theme.of(context).textTheme.bodyLarge,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      );
-    }
+    return Obx(() {
+      final providerSelected = _checkout.selectedPaymentProviderCode.isNotEmpty;
 
-    if (_loading) {
-      return const SizedBox(
-        height: 60,
-        child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
-      );
-    }
-
-    if (_error != null || _current == null) {
-      return Text(_error ?? 'Unable to load payment methods.');
-    }
-    final model = _current!;
-    final iconPath = _iconForMethodCode(model.method.methodCode);
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        IAMSectionHeading(
-          title: 'Payment Method',
-          buttonTitle: 'Change',
-          onPressed: providerSelected ? () => _showSelector(context) : null,
-        ),
-        const SizedBox(height: IAMSizes.spaceBtwItems / 2),
-        Row(
+      if (!providerSelected) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            IAMRoundedContainer(
-              width: 60,
-              height: 35,
-              backgroundColor: dark ? IAMColors.light : IAMColors.white,
-              padding: const EdgeInsets.all(IAMSizes.sm),
-              child: Center(
-                child: Image.asset(
-                  iconPath,
-                  fit: BoxFit.contain,
-                  errorBuilder: (_, __, ___) => Text(
-                    model.method.methodCode,
-                    style: Theme.of(context).textTheme.labelSmall,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ),
+            const IAMSectionHeading(
+              title: 'Payment Method',
+              showActionButton: false,
             ),
-            const SizedBox(width: IAMSizes.spaceBtwItems / 2),
-            Expanded(
-              child: Text(
-                model.method.methodName,
-                style: Theme.of(context).textTheme.bodyLarge,
-                overflow: TextOverflow.ellipsis,
+            const SizedBox(height: IAMSizes.spaceBtwItems / 2),
+            Opacity(
+              opacity: 0.6,
+              child: Row(
+                children: [
+                  IAMRoundedContainer(
+                    width: 60,
+                    height: 35,
+                    backgroundColor: dark ? IAMColors.light : IAMColors.white,
+                    padding: const EdgeInsets.all(IAMSizes.sm),
+                    child: const SizedBox.shrink(),
+                  ),
+                  const SizedBox(width: IAMSizes.spaceBtwItems / 2),
+                  Expanded(
+                    child: Text(
+                      'Select a payment provider first',
+                      style: Theme.of(context).textTheme.bodyLarge,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
-        ),
-      ],
-    );
+        );
+      }
+
+      if (_loading) {
+        return const SizedBox(
+          height: 60,
+          child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+        );
+      }
+
+      if (_error != null) {
+        return Text(_error ?? 'Unable to load payment methods.');
+      }
+      final hasSelection = _current != null;
+      final iconPath = hasSelection
+          ? _iconForMethodCode(_current!.method.methodCode)
+          : null;
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          IAMSectionHeading(
+            title: 'Payment Method',
+            buttonTitle: hasSelection ? 'Change' : 'Select',
+            onPressed: providerSelected ? () => _showSelector(context) : null,
+          ),
+          const SizedBox(height: IAMSizes.spaceBtwItems / 2),
+          Row(
+            children: [
+              IAMRoundedContainer(
+                width: 60,
+                height: 35,
+                backgroundColor: dark ? IAMColors.light : IAMColors.white,
+                padding: const EdgeInsets.all(IAMSizes.sm),
+                child: Center(
+                  child: hasSelection && iconPath != null
+                      ? Image.asset(
+                          iconPath,
+                          fit: BoxFit.contain,
+                          errorBuilder: (_, __, ___) => Text(
+                            _current!.method.methodCode,
+                            style: Theme.of(context).textTheme.labelSmall,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        )
+                      : const SizedBox.shrink(),
+                ),
+              ),
+              const SizedBox(width: IAMSizes.spaceBtwItems / 2),
+              Expanded(
+                child: Text(
+                  hasSelection
+                      ? _current!.method.methodName
+                      : 'Select Payment Method',
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: hasSelection ? null : Theme.of(context).hintColor,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+        ],
+      );
+    });
   }
 
   Future<void> _showSelector(BuildContext context) async {
@@ -221,6 +235,13 @@ class _IAMBillingPaymentSectionState extends State<IAMBillingPaymentSection> {
       setState(() {
         _current = _PaymentViewModel(method: selected);
       });
+
+      _checkout.setPaymentMethod(
+        name: selected.methodName,
+        image: _iconForMethodCode(selected.methodCode),
+      );
+      // Also set the provider code so checkout can proceed
+      _checkout.selectedPaymentProviderCode.value = selected.methodCode;
     }
   }
 }

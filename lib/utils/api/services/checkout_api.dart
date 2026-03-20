@@ -18,7 +18,7 @@ class CheckoutApi {
     required String streetAddress,
     required String postalCode,
     required String completeAddress,
-    String? notes,
+    required String notes,
   }) {
     return _client.post<dynamic>(
       ApiEndpoints.checkout,
@@ -33,7 +33,7 @@ class CheckoutApi {
         'streetAddress': streetAddress,
         'postalCode': postalCode,
         'completeAddress': completeAddress,
-        if (notes != null) 'notes': notes,
+        'notes': notes,
       },
     );
   }

@@ -30,6 +30,10 @@ class CheckoutController extends GetxController {
     selectedPaymentMethod.value = PaymentMethodModel.empty();
   }
 
+  void setPaymentMethod({required String name, required String image}) {
+    selectedPaymentMethod.value = PaymentMethodModel(image: image, name: name);
+  }
+
   void clearPaymentProvider() {
     selectedPaymentProviderCode.value = '';
     selectedPaymentProviderName.value = '';

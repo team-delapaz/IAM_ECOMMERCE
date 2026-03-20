@@ -76,13 +76,12 @@ class _IAMBillingPaymentProviderSectionState
           _current = null;
           _checkout.clearPaymentProvider();
         } else {
+          // Providers loaded successfully, but do NOT auto-select.
+          // Leave `_current` null and show a placeholder until the
+          // user explicitly chooses a provider.
           _error = null;
-          final first = providerList.first;
-          _current = _PaymentViewModel(provider: first);
-          _checkout.setPaymentProvider(
-            code: first.providerCode,
-            name: first.providerName,
-          );
+          _current = null;
+          _checkout.clearPaymentProvider();
         }
       });
     }
@@ -98,18 +97,21 @@ class _IAMBillingPaymentProviderSectionState
         child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
       );
     }
-    if (_error != null || _current == null) {
+    if (_error != null) {
       return Text(_error ?? 'Unable to load payment providers.');
     }
-    final model = _current!;
-    final iconPath = _iconForProviderCode(model.provider.providerCode);
+
+    final hasSelection = _current != null;
+    final iconPath = hasSelection
+        ? _iconForProviderCode(_current!.provider.providerCode)
+        : null;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         IAMSectionHeading(
           title: 'Payment Provider',
-          buttonTitle: 'Change',
+          buttonTitle: hasSelection ? 'Change' : 'Select',
           onPressed: () => _showSelector(context),
         ),
         const SizedBox(height: IAMSizes.spaceBtwItems / 2),
@@ -121,22 +123,30 @@ class _IAMBillingPaymentProviderSectionState
               backgroundColor: dark ? IAMColors.light : IAMColors.white,
               padding: const EdgeInsets.all(IAMSizes.sm),
               child: Center(
-                child: Image.asset(
-                  iconPath,
-                  fit: BoxFit.contain,
-                  errorBuilder: (_, __, ___) => Text(
-                    model.provider.providerCode,
-                    style: Theme.of(context).textTheme.labelSmall,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
+                child: hasSelection && iconPath != null
+                    ? Image.asset(
+                        iconPath,
+                        fit: BoxFit.contain,
+                        errorBuilder: (_, __, ___) => Text(
+                          _current!.provider.providerCode,
+                          style: Theme.of(context).textTheme.labelSmall,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      )
+                    : const SizedBox.shrink(),
               ),
             ),
             const SizedBox(width: IAMSizes.spaceBtwItems / 2),
             Expanded(
               child: Text(
-                model.provider.providerName,
-                style: Theme.of(context).textTheme.bodyLarge,
+                hasSelection
+                    ? _current!.provider.providerName
+                    : 'Select Payment Provider',
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: hasSelection
+                          ? null
+                          : Theme.of(context).hintColor,
+                    ),
                 overflow: TextOverflow.ellipsis,
               ),
             ),

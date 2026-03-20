@@ -9,9 +9,14 @@ import 'package:iam_ecomm/utils/constants/sizes.dart';
 import 'package:iconsax/iconsax.dart';
 
 class IAMBillingAddressSection extends StatefulWidget {
-  const IAMBillingAddressSection({super.key, this.onAddressSelected});
+  const IAMBillingAddressSection({
+    super.key,
+    this.onAddressSelected,
+    this.onAddressAvailabilityChanged,
+  });
 
   final ValueChanged<AddressItem?>? onAddressSelected;
+  final ValueChanged<bool>? onAddressAvailabilityChanged;
 
   @override
   State<IAMBillingAddressSection> createState() =>
@@ -67,6 +72,7 @@ class _IAMBillingAddressSectionState extends State<IAMBillingAddressSection> {
       _selectedAddress = selected;
     });
 
+    widget.onAddressAvailabilityChanged?.call(list.isNotEmpty);
     widget.onAddressSelected?.call(_selectedAddress);
   }
 

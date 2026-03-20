@@ -3,10 +3,13 @@ import 'package:get/get.dart';
 import 'package:iam_ecomm/features/authentication/controllers/auth_controller.dart';
 import 'package:iam_ecomm/features/authentication/screens/password_configuration/forget_password.dart';
 import 'package:iam_ecomm/features/authentication/screens/signup/signup.dart';
+import 'package:iam_ecomm/features/personalization/screens/address/add_new_address.dart';
 import 'package:iam_ecomm/navigation_menu.dart';
 import 'package:iam_ecomm/utils/api/api.dart';
+import 'package:iam_ecomm/utils/api/responses/response_prep.dart';
 import 'package:iam_ecomm/utils/constants/sizes.dart';
 import 'package:iam_ecomm/utils/constants/text_strings.dart';
+import 'package:iam_ecomm/utils/local_storage/storage_utility.dart';
 import 'package:iconsax/iconsax.dart';
 
 class IAMLoginForm extends StatefulWidget {
@@ -24,6 +27,79 @@ class _IAMLoginFormState extends State<IAMLoginForm> {
   bool _loading = false;
   String? _emailError;
   String? _passwordError;
+
+  Future<void> _mergeGuestCartIntoServer() async {
+    final storage = IAMLocalStorage();
+    final raw = storage.readData<List>('guest_cart') ?? [];
+    if (raw.isEmpty) return;
+
+    // Merge duplicate productCode entries so we can reduce API calls.
+    final Map<String, int> qtyByCode = {};
+    for (final entry in raw) {
+      final map = Map<String, dynamic>.from(entry as Map);
+      final code = map['productCode'] as String? ?? '';
+      if (code.isEmpty) continue;
+
+      final qtyValue = map['qty'];
+      final qty = qtyValue is int
+          ? qtyValue
+          : qtyValue is num
+              ? qtyValue.toInt()
+              : int.tryParse(qtyValue?.toString() ?? '') ?? 0;
+      if (qty <= 0) continue;
+
+      qtyByCode[code] = (qtyByCode[code] ?? 0) + qty;
+    }
+
+    if (qtyByCode.isEmpty) return;
+
+    bool anySuccess = false;
+    for (final e in qtyByCode.entries) {
+      final res = await ApiMiddleware.cart.add(
+        productCode: e.key,
+        qty: e.value,
+      );
+      anySuccess = anySuccess || res.success;
+    }
+
+    // Only clear once we know at least one cart item was added successfully.
+    if (anySuccess) {
+      await storage.removeData('guest_cart');
+    }
+  }
+
+  Future<void> _ensureHasAddressOrPrompt() async {
+    // Some newly created accounts (and guest->member conversions) may not
+    // have any saved shipping address yet.
+    const maxAttempts = 5;
+
+    for (var attempt = 0; attempt < maxAttempts; attempt++) {
+      final res = await ApiMiddleware.address.getAddresses();
+      final addresses =
+          res.data?.whereType<AddressItem>().toList() ?? const [];
+
+      if (res.success && addresses.isNotEmpty) return;
+
+      if (res.success && addresses.isEmpty) {
+        // Force the user to add at least one address before continuing.
+        await Get.to(() => const AddNewAddressScreen());
+        continue;
+      }
+
+      // If the address API fails, don't block login forever.
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            res.message.isNotEmpty
+                ? res.message
+                : 'Unable to load addresses right now.',
+          ),
+        ),
+      );
+      return;
+    }
+  }
 
   @override
   void dispose() {
@@ -66,6 +142,18 @@ class _IAMLoginFormState extends State<IAMLoginForm> {
       await ApiMiddleware.clearToken();
     }
     AuthController.instance.login(res.data!.user);
+
+    // If the user previously added items as a guest, merge those items
+    // into the server cart after successful login.
+    await _mergeGuestCartIntoServer();
+    if (!mounted) return;
+
+    await _ensureHasAddressOrPrompt();
+    if (!mounted) return;
+
+    // Always go to Home tab after login
+    final navController = Get.find<NavigationController>();
+    navController.selectedIndex.value = 0;
 
     final successMsg = res.message.isNotEmpty
         ? res.message
