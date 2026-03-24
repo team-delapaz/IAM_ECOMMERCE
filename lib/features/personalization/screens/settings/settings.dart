@@ -5,7 +5,8 @@ import 'package:iam_ecomm/common/widgets/appbar/appbar.dart';
 import 'package:iam_ecomm/common/widgets/custom_shapes/containers/primary_header_container.dart';
 import 'package:iam_ecomm/common/widgets/list_tiles/settings_menu_tile.dart';
 import 'package:iam_ecomm/common/widgets/list_tiles/user_profile_tile.dart';
-import 'package:iam_ecomm/features/personalization/screens/address/add_new_address.dart';
+import 'package:iam_ecomm/features/authentication/controllers/auth_controller.dart';
+import 'package:iam_ecomm/utils/theme/theme_controller.dart';
 import 'package:iam_ecomm/features/personalization/screens/address/address.dart';
 import 'package:iam_ecomm/features/personalization/screens/profile/profile.dart';
 import 'package:iam_ecomm/features/shop/screens/cart/cart.dart';
@@ -75,26 +76,30 @@ class SettingScreen extends StatelessWidget {
                     subTitle: 'Track In-Progress and Completed Orders',
                     onTap: () => Get.to(() => const OrderScreen()),
                   ),
-                  IAMSettingMenu(
+
+                  /*IAMSettingMenu(
                     icon: Iconsax.bank,
                     title: 'Bank Account',
                     subTitle: 'Manage Connected Banks',
-                  ),
-                  IAMSettingMenu(
-                    icon: Iconsax.discount_shape,
-                    title: 'Vouchers',
-                    subTitle: 'Manage Discount Coupons',
-                  ),
-                  IAMSettingMenu(
+                  ),*/
+
+                  // IAMSettingMenu(
+                  //   icon: Iconsax.discount_shape,
+                  //   title: 'Vouchers',
+                  //   subTitle: 'Manage Discount Coupons',
+                  // ),
+
+                  /*IAMSettingMenu(
                     icon: Iconsax.gift,
                     title: 'Invite Friends',
-                    subTitle: 'Share and Referral Settings',
-                  ),
+                    subTitle: 'Share Referral Code',
+                  ),*/
+
                   //INVITE FRIENDS VIEWS USER ID WHRE USERS CAN COPY AND WILL THEN SEND A DOWNLOADABLE APP URL WITH THEIR REFERRAL CODE AUTOMATICALLY INSERTED
                   IAMSettingMenu(
                     icon: Iconsax.message_question,
                     title: 'Help Center',
-                    subTitle: 'Help Articles and FAQs',
+                    subTitle: 'FAQs',
                   ),
                   // IAMSettingMenu(
                   //   icon: Iconsax.notification,
@@ -120,32 +125,52 @@ class SettingScreen extends StatelessWidget {
                   //   title: 'Load Data',
                   //   subTitle: 'Upload Data to your Cloud Firebase',
                   // ),
-                  IAMSettingMenu(
+
+                  /*IAMSettingMenu(
                     icon: Iconsax.location,
                     title: 'Geolocation',
                     subTitle:
                         'Use your current location to show nearby results',
                     trailing: Switch(value: true, onChanged: (value) {}),
-                  ), // IAMSettingMenu
+                  ), */
+
+                  // IAMSettingMenu
                   // IAMSettingMenu(
                   //   icon: Iconsax.security_user,
                   //   title: 'Safe Mode',
                   //   subTitle: 'Search result is safe for all ages',
                   //   trailing: Switch(value: false, onChanged: (value) {}),
-                  // ), // IAMSettingMenu
+                  // ),
+                  //
+                  //                  // Dark / Light Mode
                   IAMSettingMenu(
+                    icon: Iconsax.moon,
+                    title: 'Dark Mode',
+                    subTitle: 'Switch between light and dark theme',
+                    trailing: Obx(() {
+                      final controller = ThemeController.instance;
+                      return Switch(
+                        value: controller.isDarkMode,
+                        onChanged: controller.toggleTheme,
+                      );
+                    }),
+                  ),
+                  //
+                  //
+                  //// IAMSettingMenu
+                  /*IAMSettingMenu(
                     icon: Iconsax.image,
                     title: 'HD Image Quality',
                     subTitle: 'Use high-quality images',
                     trailing: Switch(value: false, onChanged: (value) {}),
-                  ),
+                  ),*/
 
                   //Logout Button
                   const SizedBox(height: IAMSizes.spaceBtwSections),
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton(
-                      onPressed: () {},
+                      onPressed: () => AuthController.instance.logout(),
                       child: const Text('Logout'),
                     ),
                   ),

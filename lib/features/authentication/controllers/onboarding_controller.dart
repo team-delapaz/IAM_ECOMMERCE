@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
-import 'package:iam_ecomm/features/authentication/screens/login/login.dart';
+import 'package:iam_ecomm/navigation_menu.dart';
 
 class OnboardingController extends GetxController {
   static OnboardingController get instance => Get.find();
@@ -21,7 +21,8 @@ class OnboardingController extends GetxController {
   //Update Current index and jump to next page
   void nextPage() {
     if (currentPageIndex.value == 2) {
-      Get.to(LoginScreen());
+      // Login is optional - proceed to main app (Home)
+      Get.offAll(() => const NavigationMenu());
     } else {
       int page = currentPageIndex.value + 1;
       pageController.jumpToPage(page);
@@ -30,11 +31,7 @@ class OnboardingController extends GetxController {
 
   //Update Current Index and jump to the last page
   void skipPage() {
-    currentPageIndex.value = 2;
-    pageController.animateToPage(
-      2,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
-    );
+    // Skip onboarding and proceed to main app (Home)
+    Get.offAll(() => const NavigationMenu());
   }
 }

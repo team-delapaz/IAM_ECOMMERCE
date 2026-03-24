@@ -7,6 +7,7 @@ import 'package:iam_ecomm/features/authentication/screens/widgets/onboarding_pag
 import 'package:iam_ecomm/features/authentication/screens/widgets/onboarding_skip.dart';
 import 'package:iam_ecomm/utils/constants/image_strings.dart';
 import 'package:iam_ecomm/utils/constants/text_strings.dart';
+import 'package:lottie/lottie.dart';
 
 class OnBoardingScreen extends StatelessWidget {
   const OnBoardingScreen({super.key});

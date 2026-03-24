@@ -15,12 +15,16 @@ dependencies:
 
   # Utility Packages
   http: ^1.1.0
+  dio: ^5.9.0
+  flutter_secure_storage: ^10.0.0
   intl: ^0.18.1
   logger: ^2.0.1
   url_launcher: ^6.3.2
   flutter_native_splash: ^2.4.7
   smooth_page_indicator: ^1.2.1
   carousel_slider: ^5.1.1
+  flutter_slidable: ^4.0.3
+  lottie: ^3.1.0
 
   # Icons
   cupertino_icons: ^1.0.8
@@ -40,6 +44,8 @@ dev_dependencies:
     sdk: flutter
 
   flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.14.1
+  image: ^4.8.0
 
 flutter:
   uses-material-design: true
@@ -47,13 +53,12 @@ flutter:
   # ------------------- LOCAL ASSETS --------------------
 
   assets:
-    - assets/logos/
-    - assets/icons/
     - assets/images/
     - assets/images/onboarding_images/
     - assets/images/animations/
     - assets/images/categories/
     - assets/images/products/
+    - assets/images/products_whitebg/
     - assets/images/packages/
     - assets/images/payments/
     - assets/images/users/
@@ -82,17 +87,36 @@ flutter:
         - asset: assets/fonts/Poppins-Black.ttf
           weight: 900
 
+  
+
 # ------------------- SPLASH CONFIG ---------------------
 flutter_native_splash:
   color: "#FFFFFF"
   color_dark: "#272727"
-  image: assets\images\iamlogopng.png
-  image_dark: assets\images\iamlogo.png
-
+  image: assets/images/ecom_app_icon_xs.png
+  image_dark: assets/images/ecom_app_icon_xs.png
+  
+  # App icon properties for better corner rounding
+  android: true
+  ios: true
+  android_gravity: center
+  ios_content_mode: center
+  
+  # Size and padding adjustments
   android_12:
     color: "#FFFFFF"
     color_dark: "#272727"
-    image: assets\images\iamlogopng.png
-    image_dark: assets\images\iamlogo.png
+    image: assets/images/ecom_app_icon_xs.png
+    image_dark: assets/images/ecom_app_icon_xs.png
+    icon_background_color: "#FFFFFF"
+    icon_background_color_dark: "#272727"
 
   web: false
+
+# ------------------- APP ICON CONFIG --------------------
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/ecom_app_icon.png"
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/images/ecom_app_icon.png"

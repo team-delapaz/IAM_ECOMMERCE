@@ -4,7 +4,7 @@ class IAMColors {
   IAMColors._();
 
   // Basic Colors
-  static const Color primary = Color(0xFFFFD54F);
+  static const Color primary = Color(0xFFD4AF37);
   static const Color secondary = Color.fromARGB(255, 26, 26, 26);
   static const Color accent = Color(0xFFFFF8E1);
 

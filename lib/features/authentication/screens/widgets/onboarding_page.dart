@@ -15,14 +15,20 @@ class OnboardingPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(IAMSizes.defaultSpace),
+      padding: const EdgeInsets.all(24.0),
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Image(
-            width: IAMHelperFunctions.screenWidth() * 0.8,
-            height: IAMHelperFunctions.screenHeight() * 0.6,
-            image: AssetImage(image),
+          // Centered and smaller image
+          Center(
+            child: Image(
+              image: AssetImage(image),
+              width: 200, // Adjust size as needed
+              height: 200,
+              fit: BoxFit.contain,
+            ),
           ),
+          const SizedBox(height: 200),
           Text(
             title,
             style: Theme.of(context).textTheme.headlineMedium,
@@ -38,4 +44,34 @@ class OnboardingPage extends StatelessWidget {
       ),
     );
   }
+
+  /*@override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(IAMSizes.defaultSpace),
+      child: Column(
+        children: [
+          Transform.scale(
+            scale: 1,
+            child: Image(
+              width: IAMHelperFunctions.screenWidth() * 0.8,
+              height: IAMHelperFunctions.screenHeight() * 0.6,
+              image: AssetImage(image),
+            ),
+          ),
+          Text(
+            title,
+            style: Theme.of(context).textTheme.headlineMedium,
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: IAMSizes.spaceBtwItems),
+          Text(
+            subTitle,
+            style: Theme.of(context).textTheme.bodyMedium,
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }*/
 }

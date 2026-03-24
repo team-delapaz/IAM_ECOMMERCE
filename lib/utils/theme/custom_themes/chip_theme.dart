@@ -6,7 +6,7 @@ class IAMChipTheme {
   static ChipThemeData lightChipTheme = ChipThemeData(
     disabledColor: Colors.grey[200],
     labelStyle: const TextStyle(color: Colors.black),
-    selectedColor: Colors.amber[200],
+    selectedColor: Color(0xFFDBA724),
     padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12),
     checkmarkColor: Colors.white,
   );
@@ -14,7 +14,7 @@ class IAMChipTheme {
   static ChipThemeData darkChipTheme = ChipThemeData(
     disabledColor: Colors.grey[400],
     labelStyle: const TextStyle(color: Colors.white),
-    selectedColor: Colors.amber[200],
+    selectedColor: Color(0xFFDBA724),
     padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12),
     checkmarkColor: Colors.white,
   );

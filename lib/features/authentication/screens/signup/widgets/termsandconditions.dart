@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:iam_ecomm/features/authentication/screens/signup/widgets/privacy_policy_screen.dart';
+import 'package:iam_ecomm/features/authentication/screens/signup/widgets/terms_conditions_screen.dart';
 import 'package:iam_ecomm/utils/constants/colors.dart';
 import 'package:iam_ecomm/utils/constants/sizes.dart';
 import 'package:iam_ecomm/utils/constants/text_strings.dart';
@@ -25,20 +28,39 @@ class IAMTermsAndConditions extends StatelessWidget {
                 text: ' ${IAMTexts.iAgreeTo} ',
                 style: Theme.of(context).textTheme.bodySmall,
               ),
-              TextSpan(
-                text: '${IAMTexts.privacyPolicy} ',
-                style: Theme.of(context).textTheme.bodyMedium!.apply(
-                  color: dark ? IAMColors.white : IAMColors.primary,
+
+              WidgetSpan(
+                child: GestureDetector(
+                  onTap: () {
+                    Get.to(() => const PrivacyPolicyScreen());
+                  },
+                  child: Text(
+                    IAMTexts.privacyPolicy,
+                    style: Theme.of(context).textTheme.bodyMedium!.apply(
+                      color: dark ? IAMColors.white : IAMColors.primary,
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
                 ),
               ),
+
               TextSpan(
-                text: '${IAMTexts.and} ',
+                text: ' ${IAMTexts.and} ',
                 style: Theme.of(context).textTheme.bodySmall,
               ),
-              TextSpan(
-                text: '${IAMTexts.termsOfUse} ',
-                style: Theme.of(context).textTheme.bodyMedium!.apply(
-                  color: dark ? IAMColors.white : IAMColors.primary,
+
+              WidgetSpan(
+                child: GestureDetector(
+                  onTap: () {
+                    Get.to(() => const TermsConditionsScreen());
+                  },
+                  child: Text(
+                    IAMTexts.termsOfUse,
+                    style: Theme.of(context).textTheme.bodyMedium!.apply(
+                      color: dark ? IAMColors.white : IAMColors.primary,
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
                 ),
               ),
             ],
