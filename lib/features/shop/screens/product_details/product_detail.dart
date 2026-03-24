@@ -27,14 +27,16 @@ class ProductDetailScreen extends StatelessWidget {
 
     const qty = 1;
     final isLoggedIn =
-        Get.isRegistered<AuthController>() && AuthController.instance.isLoggedIn.value;
+        Get.isRegistered<AuthController>() &&
+        AuthController.instance.isLoggedIn.value;
 
     if (!isLoggedIn) {
       ////TEmporary section while waiting for guest session api
       final storage = IAMLocalStorage();
       final existing = storage.readData<List>('guest_cart') ?? [];
-      final cart =
-          existing.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+      final cart = existing
+          .map((e) => Map<String, dynamic>.from(e as Map))
+          .toList();
       final index = cart.indexWhere((e) => e['productCode'] == code);
       if (index >= 0) {
         final current = cart[index]['qty'] as int? ?? 0;
@@ -54,9 +56,9 @@ class ProductDetailScreen extends StatelessWidget {
       final msg = res.message.isNotEmpty
           ? res.message
           : 'Unable to add item to cart.';
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Checkout failed: $msg')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Checkout failed: $msg')));
       return;
     }
     Get.to(() => const CartScreen());
@@ -85,12 +87,12 @@ class ProductDetailScreen extends StatelessWidget {
                   // -- ATTRIBUTES
                   /*IAMProductAttributes(),
                   const SizedBox(height: IAMSizes.spaceBtwSections),*/
-
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed:
-                          product != null ? () => _checkoutProduct(context) : null,
+                      onPressed: product != null
+                          ? () => _checkoutProduct(context)
+                          : null,
                       child: const Text('Checkout'),
                     ),
                   ),

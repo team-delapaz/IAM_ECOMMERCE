@@ -16,7 +16,7 @@ class IAMTexts {
       "From Our Doorstep to Yours - Swift, Secure, and Contactless Delivery!";
 
   // -- Home
-  static const String homeAppbarTitle = "Good day for shopping";
+  static const String homeAppbarTitle = "Discover your path to wellness today";
   static const String homeAppbarSubTitleLoggedOut = "IAM Shopper";
   static const String homeAppbarSubTitleLoggedIn = "IAM User";
 

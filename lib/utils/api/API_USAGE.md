@@ -35,6 +35,8 @@ await ApiMiddleware.init();
 
 - `ApiMiddleware.auth.login(username, password)` → `ApiResponse<LoginData?>`
 - `ApiMiddleware.auth.signup(email: ..., mobileNo: ..., password: ..., firstName: ..., lastName: ...)` → `ApiResponse<dynamic>`
+- `ApiMiddleware.auth.resendVerificationCode(email)` → `ApiResponse<VerificationResponse?>`
+- `ApiMiddleware.auth.verifyCode(email: ..., code: ...)` → `ApiResponse<VerifyResponse?>`
 
 ## Cart
 

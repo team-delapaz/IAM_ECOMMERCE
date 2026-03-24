@@ -126,7 +126,7 @@ class _IAMBottomAddToCartState extends State<IAMBottomAddToCart> {
                   onTap: () => setState(() => _qty++),
                   child: IAMCircularIcon(
                     icon: Iconsax.add,
-                    backgroundColor: IAMColors.warning,
+                    backgroundColor: IAMColors.primary,
                     width: 40,
                     height: 40,
                     color: IAMColors.white,

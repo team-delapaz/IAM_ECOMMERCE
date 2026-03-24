@@ -6,6 +6,8 @@ class ApiEndpoints {
 
   static const String authLogin = '/Auth/Login';
   static const String authSignup = '/Auth/Signup';
+  static const String authResendVerificationCode = '/Auth/ResendVerificationCode';
+  static const String authVerifyCode = '/Auth/VerifyCode';
 
   static const String cart = '/Cart';
   static const String cartAdd = '/Cart/Add';

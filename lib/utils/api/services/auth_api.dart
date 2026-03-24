@@ -34,4 +34,26 @@ class AuthApi {
       },
     );
   }
+
+  Future<ApiResponse<VerificationResponse?>> resendVerificationCode(String email) {
+    return _client.post<VerificationResponse?>(
+      ApiEndpoints.authResendVerificationCode,
+      body: {'email': email},
+      fromJsonData: VerificationResponse.fromJson,
+    );
+  }
+
+  Future<ApiResponse<VerifyResponse?>> verifyCode({
+    required String email,
+    required String code,
+  }) {
+    return _client.post<VerifyResponse?>(
+      ApiEndpoints.authVerifyCode,
+      body: {
+        'email': email,
+        'code': code,
+      },
+      fromJsonData: VerifyResponse.fromJson,
+    );
+  }
 }

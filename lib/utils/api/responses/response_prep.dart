@@ -42,6 +42,38 @@ class TokenInfo {
   }
 }
 
+class VerificationResponse {
+  final bool isSent;
+  final String message;
+
+  VerificationResponse({required this.isSent, required this.message});
+
+  static VerificationResponse? fromJson(dynamic json) {
+    final m = asMap(json);
+    if (m == null) return null;
+    return VerificationResponse(
+      isSent: (m['isSent'] as bool?) ?? false,
+      message: m['message'] as String? ?? '',
+    );
+  }
+}
+
+class VerifyResponse {
+  final bool isVerified;
+  final String message;
+
+  VerifyResponse({required this.isVerified, required this.message});
+
+  static VerifyResponse? fromJson(dynamic json) {
+    final m = asMap(json);
+    if (m == null) return null;
+    return VerifyResponse(
+      isVerified: (m['isVerified'] as bool?) ?? false,
+      message: m['message'] as String? ?? '',
+    );
+  }
+}
+
 class UserInfo {
   final String idno;
   final String codedIdno;

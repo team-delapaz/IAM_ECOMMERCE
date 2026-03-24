@@ -380,18 +380,24 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       }
                       if (!paymentMethodSelected) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Please select a payment method.')),
+                          const SnackBar(
+                            content: Text('Please select a payment method.'),
+                          ),
                         );
                         return;
                       }
                       _placeOrder(model);
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: IAMColors.warning,
+                      backgroundColor: IAMColors.primary,
                       foregroundColor: IAMColors.white,
-                      padding: const EdgeInsets.symmetric(vertical: IAMSizes.md),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: IAMSizes.md,
+                      ),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(IAMSizes.cardRadiusLg),
+                        borderRadius: BorderRadius.circular(
+                          IAMSizes.cardRadiusLg,
+                        ),
                       ),
                     ),
                     child: Text('Checkout ₱${subtotal.toStringAsFixed(2)}'),
@@ -400,7 +406,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     const SizedBox(height: 8),
                     Text(
                       warningMessage,
-                      style: const TextStyle(color: Colors.red, fontWeight: FontWeight.w600),
+                      style: const TextStyle(
+                        color: Colors.red,
+                        fontWeight: FontWeight.w600,
+                      ),
                       textAlign: TextAlign.center,
                     ),
                   ],

@@ -222,7 +222,7 @@ class _IAMBillingPaymentSectionState extends State<IAMBillingPaymentSection> {
               title: Text(m.methodName),
               subtitle: Text(m.methodCode),
               trailing: isSelected
-                  ? const Icon(Icons.check_circle, color: IAMColors.warning)
+                  ? const Icon(Icons.check_circle, color: IAMColors.primary)
                   : const Icon(Icons.radio_button_unchecked),
               onTap: () => Navigator.of(context).pop(m),
             );
