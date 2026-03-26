@@ -35,6 +35,8 @@ await ApiMiddleware.init();
 
 - `ApiMiddleware.auth.login(username, password)` → `ApiResponse<LoginData?>`
 - `ApiMiddleware.auth.signup(email: ..., mobileNo: ..., password: ..., firstName: ..., lastName: ...)` → `ApiResponse<dynamic>`
+- `ApiMiddleware.auth.resendVerificationCode(email)` → `ApiResponse<VerificationResponse?>`
+- `ApiMiddleware.auth.verifyCode(email: ..., code: ...)` → `ApiResponse<VerifyResponse?>`
 
 ## Cart
 
@@ -86,6 +88,18 @@ await ApiMiddleware.init();
 
 - `ApiMiddleware.orders.getOrders()` → `ApiResponse<List<OrderItem?>>`
 - `ApiMiddleware.orders.getOrderDetail(refNo)` → `ApiResponse<OrderDetailItem?>`
+
+## Product Review
+
+- `ApiMiddleware.productReview.addReview(productCode: ..., rating: ..., reviewComment: ...)` → `ApiResponse<dynamic>`
+- `ApiMiddleware.productReview.getReviews(productCode)` → `ApiResponse<List<ProductReviewItem?>>`
+
+## Wishlist
+
+- `ApiMiddleware.wishlist.addWishlist(productCode)` → `ApiResponse<dynamic>`
+- `ApiMiddleware.wishlist.getWishlist()` → `ApiResponse<List<WishlistItem?>>`
+- `ApiMiddleware.wishlist.removeWishlist(productCode)` → `ApiResponse<dynamic>`
+- `ApiMiddleware.wishlist.checkWishlist(productCode)` → `ApiResponse<WishlistCheckItem?>`
 
 ## Response handling
 

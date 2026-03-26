@@ -36,6 +36,7 @@ dependencies:
 
   # Product Specific
   readmore: ^3.0.0
+  webview_flutter: ^4.13.1
 
   # ---------------- PACKAGE END---------------------
 

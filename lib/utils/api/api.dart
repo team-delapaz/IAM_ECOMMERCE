@@ -8,7 +8,9 @@ import 'services/location_api.dart';
 import 'services/member_api.dart';
 import 'services/orders_api.dart';
 import 'services/payment_api.dart';
+import 'services/product_review_api.dart';
 import 'services/products_api.dart';
+import 'services/wishlist_api.dart';
 
 /// Single entry point for API calls...
 ///
@@ -30,7 +32,9 @@ class ApiMiddleware {
   static final MemberApi member = MemberApi(_client);
   static final OrdersApi orders = OrdersApi(_client);
   static final PaymentApi payment = PaymentApi(_client);
+  static final ProductReviewApi productReview = ProductReviewApi(_client);
   static final ProductsApi products = ProductsApi(_client);
+  static final WishlistApi wishlist = WishlistApi(_client);
 
   static Future<void> init() async {
     final token = await _tokenStore.read();

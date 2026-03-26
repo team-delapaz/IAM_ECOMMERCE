@@ -42,6 +42,129 @@ class TokenInfo {
   }
 }
 
+class VerificationResponse {
+  final bool isSent;
+  final String message;
+
+  VerificationResponse({required this.isSent, required this.message});
+
+  static VerificationResponse? fromJson(dynamic json) {
+    final m = asMap(json);
+    if (m == null) return null;
+    return VerificationResponse(
+      isSent: (m['isSent'] as bool?) ?? false,
+      message: m['message'] as String? ?? '',
+    );
+  }
+}
+
+class VerifyResponse {
+  final bool isVerified;
+  final String message;
+
+  VerifyResponse({required this.isVerified, required this.message});
+
+  static VerifyResponse? fromJson(dynamic json) {
+    final m = asMap(json);
+    if (m == null) return null;
+    return VerifyResponse(
+      isVerified: (m['isVerified'] as bool?) ?? false,
+      message: m['message'] as String? ?? '',
+    );
+  }
+}
+
+// Product Review API Response Classes
+
+class ProductReviewItem {
+  final int autoId;
+  final String productCode;
+  final int rating;
+  final String reviewComment;
+  final String createdAt;
+  final String? firstName;
+  final String? lastName;
+
+  ProductReviewItem({
+    required this.autoId,
+    required this.productCode,
+    required this.rating,
+    required this.reviewComment,
+    required this.createdAt,
+    this.firstName,
+    this.lastName,
+  });
+
+  static ProductReviewItem? fromJson(dynamic json) {
+    final m = asMap(json);
+    if (m == null) return null;
+    return ProductReviewItem(
+      autoId: (m['autoId'] as int?) ?? 0,
+      productCode: m['productCode'] as String? ?? '',
+      rating: (m['rating'] as int?) ?? 0,
+      reviewComment: m['reviewComment'] as String? ?? '',
+      createdAt: m['createdAt'] as String? ?? '',
+      firstName: m['firstName'] as String?,
+      lastName: m['lastName'] as String?,
+    );
+  }
+}
+
+// Wishlist API Response Classes
+
+class WishlistItem {
+  final String productCode;
+  final String productName;
+  final num sellingPrice;
+  final String shortDesc;
+  final String imageUrl;
+  final String altText;
+  final String createdAt;
+
+  WishlistItem({
+    required this.productCode,
+    required this.productName,
+    required this.sellingPrice,
+    required this.shortDesc,
+    required this.imageUrl,
+    required this.altText,
+    required this.createdAt,
+  });
+
+  static WishlistItem? fromJson(dynamic json) {
+    final m = asMap(json);
+    if (m == null) return null;
+    return WishlistItem(
+      productCode: m['productCode'] as String? ?? '',
+      productName: m['productName'] as String? ?? '',
+      sellingPrice: (m['sellingPrice'] as num?) ?? 0,
+      shortDesc: m['shortDesc'] as String? ?? '',
+      imageUrl: m['imageUrl'] as String? ?? '',
+      altText: m['altText'] as String? ?? '',
+      createdAt: m['createdAt'] as String? ?? '',
+    );
+  }
+}
+
+class WishlistCheckItem {
+  final String productCode;
+  final bool isWishlisted;
+
+  WishlistCheckItem({
+    required this.productCode,
+    required this.isWishlisted,
+  });
+
+  static WishlistCheckItem? fromJson(dynamic json) {
+    final m = asMap(json);
+    if (m == null) return null;
+    return WishlistCheckItem(
+      productCode: m['productCode'] as String? ?? '',
+      isWishlisted: (m['isWishlisted'] as bool?) ?? false,
+    );
+  }
+}
+
 class UserInfo {
   final String idno;
   final String codedIdno;
