@@ -17,6 +17,7 @@ import 'package:iam_ecomm/utils/api/responses/response_prep.dart';
 import 'package:iam_ecomm/utils/constants/colors.dart';
 import 'package:iam_ecomm/utils/constants/image_strings.dart';
 import 'package:iam_ecomm/utils/constants/sizes.dart';
+import 'package:iam_ecomm/utils/formatters/formatter.dart';
 import 'package:iam_ecomm/utils/helpers/helper_functions.dart';
 import 'package:iam_ecomm/utils/local_storage/storage_utility.dart';
 
@@ -138,7 +139,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       final memberRes = await ApiMiddleware.member.getMember();
       if (!memberRes.success || memberRes.data == null) {
         // Fallback: use idNo from selected address if available
-        memberIdno = selectedAddress.idNo ?? '';
+        memberIdno = selectedAddress.idNo;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -155,7 +156,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       }
     } else {
       // Not logged in: fallback to address idNo if available
-      memberIdno = selectedAddress.idNo ?? '';
+      memberIdno = selectedAddress.idNo;
     }
 
     final notesInput = _notesController.text.trim();
@@ -232,7 +233,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         image: IAMImages.successfulPaymentIcon,
         title: 'Payment Successful!',
         subTitle: orderRef.isNotEmpty
-            ? 'Order $orderRef · Total ₱${totalAmount.toStringAsFixed(2)}'
+            ? 'Order $orderRef · Total ${IAMFormatter.formatCurrency(totalAmount.toDouble())}'
             : 'Your items will be shipped soon!',
         onPressed: () => Get.offAll(() => const NavigationMenu()),
       ),
@@ -289,7 +290,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         ),
                         subtitle: Text('x${item.qty}  ·  ${item.productCode}'),
                         trailing: Text(
-                          '₱${item.lineTotal.toStringAsFixed(2)}',
+                          IAMFormatter.formatCurrency(item.lineTotal.toDouble()),
                           style: Theme.of(context).textTheme.bodyLarge
                               ?.copyWith(fontWeight: FontWeight.w600),
                         ),
@@ -400,7 +401,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         ),
                       ),
                     ),
-                    child: Text('Checkout ₱${subtotal.toStringAsFixed(2)}'),
+                    child: Text(
+                      'Checkout ${IAMFormatter.formatCurrency(subtotal.toDouble())}',
+                    ),
                   ),
                   if (warningMessage != null) ...[
                     const SizedBox(height: 8),

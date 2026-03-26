@@ -10,6 +10,7 @@ import 'package:iam_ecomm/utils/api/core/api_response.dart';
 import 'package:iam_ecomm/utils/api/responses/response_prep.dart';
 import 'package:iam_ecomm/utils/constants/colors.dart';
 import 'package:iam_ecomm/utils/constants/sizes.dart';
+import 'package:iam_ecomm/utils/formatters/formatter.dart';
 import 'package:iam_ecomm/utils/local_storage/storage_utility.dart';
 
 class CartScreen extends StatefulWidget {
@@ -338,8 +339,7 @@ class _CartScreenState extends State<CartScreen> {
                 final model = snapshot.data;
                 final hasItems = model != null && model.items.isNotEmpty;
                 final subtotal = (model?.subtotal ?? 0).toDouble();
-                final shippingFee =
-                    50.0; // replace with your calculation if needed
+                final shippingFee = 50.0; // replace with your calculation if needed
 
                 return Container(
                   padding: const EdgeInsets.symmetric(
@@ -359,7 +359,7 @@ class _CartScreenState extends State<CartScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Subtotal: ₱${subtotal.toStringAsFixed(2)}',
+                            'Subtotal: ${IAMFormatter.formatCurrency(subtotal)}',
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w500,
@@ -367,7 +367,7 @@ class _CartScreenState extends State<CartScreen> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'Shipping: ₱${shippingFee.toStringAsFixed(2)}',
+                            'Shipping: ${IAMFormatter.formatCurrency(shippingFee)}',
                             style: const TextStyle(
                               fontSize: 14,
                               color: Colors.grey,

@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iam_ecomm/common/texts/section_heading.dart';
-import 'package:iam_ecomm/common/widgets/categories/brand_showcase.dart';
 import 'package:iam_ecomm/common/widgets/layouts/grid_layout.dart';
+import 'package:iam_ecomm/common/widgets/loaders/skeleton.dart';
 import 'package:iam_ecomm/common/widgets/products/product_cards/product_card_vertical.dart';
 import 'package:iam_ecomm/features/shop/controllers/store_controller.dart';
-import 'package:iam_ecomm/utils/constants/image_strings.dart';
 import 'package:iam_ecomm/utils/constants/product_categories.dart';
 import 'package:iam_ecomm/utils/constants/sizes.dart';
 
@@ -60,10 +59,7 @@ class _IAMCategoryTabState extends State<IAMCategoryTab> {
               const SizedBox(height: IAMSizes.spaceBtwItems),
               Obx(() {
                 if (controller.loadingByCategory[categoryId] == true) {
-                  return const Padding(
-                    padding: EdgeInsets.all(IAMSizes.defaultSpace),
-                    child: Center(child: CircularProgressIndicator()),
-                  );
+                  return const IAMProductGridSkeleton(itemCount: 4);
                 }
                 final err = controller.errorByCategory[categoryId];
                 if (err != null && err.isNotEmpty) {

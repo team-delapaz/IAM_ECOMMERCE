@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iam_ecomm/features/authentication/controllers/auth_controller.dart';
 import 'package:iam_ecomm/features/authentication/screens/password_configuration/forget_password.dart';
+import 'package:iam_ecomm/features/authentication/screens/signup/resend_verification_email.dart';
 import 'package:iam_ecomm/features/authentication/screens/signup/signup.dart';
 import 'package:iam_ecomm/features/personalization/screens/address/add_new_address.dart';
 import 'package:iam_ecomm/navigation_menu.dart';
@@ -27,6 +28,12 @@ class _IAMLoginFormState extends State<IAMLoginForm> {
   bool _loading = false;
   String? _emailError;
   String? _passwordError;
+  bool _showVerifyEmailAction = false;
+
+  bool _isEmailVerificationError(String message) {
+    final m = message.toLowerCase();
+    return m.contains('verify') && m.contains('email');
+  }
 
   Future<void> _mergeGuestCartIntoServer() async {
     final storage = IAMLocalStorage();
@@ -116,6 +123,7 @@ class _IAMLoginFormState extends State<IAMLoginForm> {
       _loading = true;
       _emailError = null;
       _passwordError = null;
+      _showVerifyEmailAction = false;
     });
 
     final res = await ApiMiddleware.auth.login(
@@ -132,6 +140,7 @@ class _IAMLoginFormState extends State<IAMLoginForm> {
       setState(() {
         _emailError = null;
         _passwordError = msg;
+        _showVerifyEmailAction = _isEmailVerificationError(msg);
       });
       return;
     }
@@ -142,7 +151,7 @@ class _IAMLoginFormState extends State<IAMLoginForm> {
     } else {
       await ApiMiddleware.clearToken();
     }
-    AuthController.instance.login(res.data!.user);
+    final loggedInUser = res.data!.user;
 
     // If the user previously added items as a guest, merge those items
     // into the server cart after successful login.
@@ -178,13 +187,11 @@ class _IAMLoginFormState extends State<IAMLoginForm> {
         ).showSnackBar(SnackBar(content: Text(successMsg)));
       }
 
-      // Set NavigationController to Home tab (index 0) with delay to override any other initialization
-      final navController = Get.put(NavigationController());
-
-      // Small delay to ensure our navigation overrides any other initialization
-      await Future.delayed(const Duration(milliseconds: 0));
-
+      final navController = Get.isRegistered<NavigationController>()
+          ? Get.find<NavigationController>()
+          : Get.put(NavigationController());
       navController.selectedIndex.value = 0;
+      AuthController.instance.login(loggedInUser);
       print(
         'DEBUG: NavigationController selectedIndex set to: ${navController.selectedIndex.value}',
       );
@@ -204,8 +211,11 @@ class _IAMLoginFormState extends State<IAMLoginForm> {
 
     print('DEBUG: Address prompt completed, navigating to NavigationMenu');
     // After adding address, go to NavigationMenu with Home tab selected
-    final navController = Get.put(NavigationController());
+    final navController = Get.isRegistered<NavigationController>()
+        ? Get.find<NavigationController>()
+        : Get.put(NavigationController());
     navController.selectedIndex.value = 0;
+    AuthController.instance.login(loggedInUser);
     print(
       'DEBUG: NavigationController selectedIndex set to: ${navController.selectedIndex.value}',
     );
@@ -216,10 +226,6 @@ class _IAMLoginFormState extends State<IAMLoginForm> {
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(SnackBar(content: Text(successMsg)));
-
-    // Small delay to ensure all reactive updates complete
-    await Future.delayed(const Duration(milliseconds: 100));
-    if (!mounted) return;
 
     print('DEBUG: About to call Get.offAll(NavigationMenu)');
     Get.offAll(const NavigationMenu());
@@ -260,6 +266,7 @@ class _IAMLoginFormState extends State<IAMLoginForm> {
                   setState(() {
                     _emailError = null;
                     _passwordError = null;
+                    _showVerifyEmailAction = false;
                   });
                 }
               },
@@ -278,6 +285,7 @@ class _IAMLoginFormState extends State<IAMLoginForm> {
                   setState(() {
                     _emailError = null;
                     _passwordError = null;
+                    _showVerifyEmailAction = false;
                   });
                 }
               },
@@ -306,6 +314,22 @@ class _IAMLoginFormState extends State<IAMLoginForm> {
 
               onFieldSubmitted: (_) => _submit(),
             ),
+            if (_showVerifyEmailAction) ...[
+              const SizedBox(height: IAMSizes.sm),
+              Align(
+                alignment: Alignment.center,
+                child: TextButton(
+                  onPressed: () {
+                    Get.to(
+                      () => ResendVerificationEmailScreen(
+                        initialEmail: _emailController.text.trim(),
+                      ),
+                    );
+                  },
+                  child: const Text('Verify Email'),
+                ),
+              ),
+            ],
 
             const SizedBox(height: IAMSizes.spaceBtwInputFields / 2),
 

@@ -6,6 +6,7 @@ import 'package:iam_ecomm/utils/helpers/helper_functions.dart';
 import 'package:iam_ecomm/utils/api/api.dart';
 import 'package:iam_ecomm/features/shop/screens/order/order_detail_screen.dart';
 import 'package:iam_ecomm/utils/api/responses/response_prep.dart';
+import 'package:iam_ecomm/utils/formatters/formatter.dart';
 import 'package:iconsax/iconsax.dart';
 
 class IAMOrderListItems extends StatelessWidget {
@@ -129,7 +130,9 @@ class IAMOrderListItems extends StatelessWidget {
                                       style: Theme.of(context).textTheme.labelMedium,
                                     ),
                                     Text(
-                                      '${order.totalAmount}',
+                                      IAMFormatter.formatCurrency(
+                                        order.totalAmount.toDouble(),
+                                      ),
                                       style: Theme.of(context).textTheme.titleMedium,
                                     ),
                                   ],

@@ -4,6 +4,7 @@ import 'package:iam_ecomm/common/texts/section_heading.dart';
 import 'package:iam_ecomm/common/widgets/appbar/appbar.dart';
 import 'package:iam_ecomm/common/widgets/appbar/tabbar.dart';
 import 'package:iam_ecomm/common/widgets/custom_shapes/containers/search_bar.dart';
+import 'package:iam_ecomm/common/widgets/loaders/skeleton.dart';
 import 'package:iam_ecomm/common/widgets/products.cart/cart_menu_icon.dart';
 import 'package:iam_ecomm/common/widgets/products/product_cards/product_card_horizontal.dart';
 import 'package:iam_ecomm/features/shop/controllers/store_controller.dart';
@@ -26,10 +27,7 @@ class StoreScreen extends StatelessWidget {
 
     // Initialize featured products data
     final controller = Get.find<StoreController>();
-    print('Featured products count: ${controller.featuredProducts.length}');
-    print('Is loading: ${controller.isLoading(1)}');
-    if (controller.featuredProducts.isEmpty && !controller.isLoading(1)) {
-      print('Fetching featured products...');
+    if (controller.featuredProducts.isEmpty && !controller.featuredLoading.value) {
       controller.fetchFeaturedProducts();
     }
 
@@ -89,16 +87,24 @@ class StoreScreen extends StatelessWidget {
                         child: Obx(() {
                           final controller = Get.find<StoreController>();
 
-                          if (controller.isLoading(1)) {
-                            return const Center(
-                              child: CircularProgressIndicator(),
+                          if (controller.featuredLoading.value) {
+                            return ListView.separated(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: 2,
+                              separatorBuilder: (_, __) =>
+                                  const SizedBox(width: IAMSizes.spaceBtwItems),
+                              itemBuilder: (_, __) => const IAMSkeleton(
+                                height: 130,
+                                width: 260,
+                                radius: IAMSizes.cardRadiusLg,
+                              ),
                             );
                           }
 
-                          if (controller.errorFor(1).isNotEmpty) {
+                          if (controller.featuredError.value.isNotEmpty) {
                             return Center(
                               child: Text(
-                                'Error loading products: ${controller.errorFor(1)}',
+                                'Error loading products: ${controller.featuredError.value}',
                                 style: const TextStyle(color: Colors.red),
                               ),
                             );

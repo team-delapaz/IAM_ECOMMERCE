@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:iam_ecomm/utils/constants/sizes.dart';
+import 'package:iam_ecomm/utils/formatters/formatter.dart';
 
 class IAMBillingAmountSection extends StatelessWidget {
   const IAMBillingAmountSection({
@@ -23,7 +24,7 @@ class IAMBillingAmountSection extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text('Subtotal', style: Theme.of(context).textTheme.bodyMedium),
-            Text('₱${subtotal.toStringAsFixed(2)}',
+            Text(IAMFormatter.formatCurrency(subtotal.toDouble()),
                 style: Theme.of(context).textTheme.bodyMedium),
           ],
         ),
@@ -33,7 +34,7 @@ class IAMBillingAmountSection extends StatelessWidget {
           children: [
             Text('Shipping Fee',
                 style: Theme.of(context).textTheme.bodyMedium),
-            Text('₱${shipping.toStringAsFixed(2)}',
+            Text(IAMFormatter.formatCurrency(shipping.toDouble()),
                 style: Theme.of(context).textTheme.labelLarge),
           ],
         ),
@@ -42,7 +43,7 @@ class IAMBillingAmountSection extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text('Tax', style: Theme.of(context).textTheme.bodyMedium),
-            Text('₱${tax.toStringAsFixed(2)}',
+            Text(IAMFormatter.formatCurrency(tax.toDouble()),
                 style: Theme.of(context).textTheme.labelLarge),
           ],
         ),
@@ -52,7 +53,7 @@ class IAMBillingAmountSection extends StatelessWidget {
           children: [
             Text('Order Total',
                 style: Theme.of(context).textTheme.bodyMedium),
-            Text('₱${total.toStringAsFixed(2)}',
+            Text(IAMFormatter.formatCurrency(total.toDouble()),
                 style: Theme.of(context).textTheme.titleMedium),
           ],
         ),

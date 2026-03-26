@@ -3,6 +3,7 @@ import 'package:iam_ecomm/utils/api/api.dart';
 import 'package:iam_ecomm/utils/api/responses/response_prep.dart';
 import 'package:iam_ecomm/utils/api/core/api_response.dart';
 import 'package:iam_ecomm/utils/constants/sizes.dart';
+import 'package:iam_ecomm/utils/formatters/formatter.dart';
 
 class OrderDetailScreen extends StatelessWidget {
   final String refNo;
@@ -18,7 +19,7 @@ class OrderDetailScreen extends StatelessWidget {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
-          if (!snapshot.hasData || snapshot.data == null || !(snapshot.data?.success ?? false)) {
+          if (!snapshot.hasData || snapshot.data == null || !snapshot.data!.success) {
             return const Center(child: Text('Failed to load order details'));
           }
           final order = snapshot.data!.data;
@@ -26,7 +27,7 @@ class OrderDetailScreen extends StatelessWidget {
             return const Center(child: Text('Order not found'));
           }
           final shipping = order.shippingInfo;
-          final items = order.items ?? [];
+          final items = order.items;
           return SingleChildScrollView(
             padding: const EdgeInsets.all(IAMSizes.defaultSpace),
             child: Column(
@@ -37,7 +38,9 @@ class OrderDetailScreen extends StatelessWidget {
                 Text('Date: ${order.orderDate}'),
                 Text('Status: ${order.orderStatusName}'),
                 Text('Payment: ${order.paymentProvider} (${order.paymentStatusMessage})'),
-                Text('Total: ₱${order.totalAmount.toStringAsFixed(2)}'),
+                Text(
+                  'Total: ${IAMFormatter.formatCurrency(order.totalAmount.toDouble())}',
+                ),
                 const Divider(height: 32),
                 Text('Shipping Information', style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: 4),
@@ -55,12 +58,14 @@ class OrderDetailScreen extends StatelessWidget {
                   return Card(
                     margin: const EdgeInsets.symmetric(vertical: 6),
                     child: ListTile(
-                      leading: (item.imageUrl?.isNotEmpty ?? false)
-                          ? Image.network(item.imageUrl!, width: 48, height: 48, fit: BoxFit.cover)
+                      leading: item.imageUrl.isNotEmpty
+                          ? Image.network(item.imageUrl, width: 48, height: 48, fit: BoxFit.cover)
                           : const Icon(Icons.inventory_2_outlined),
-                      title: Text(item.productName ?? ''),
-                      subtitle: Text('Qty: ${item.qty ?? 0}'),
-                      trailing: Text('₱${(item.lineTotal ?? 0).toStringAsFixed(2)}'),
+                      title: Text(item.productName),
+                      subtitle: Text('Qty: ${item.qty}'),
+                      trailing: Text(
+                        IAMFormatter.formatCurrency(item.lineTotal.toDouble()),
+                      ),
                     ),
                   );
                 }),
@@ -69,14 +74,18 @@ class OrderDetailScreen extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text('Subtotal:'),
-                    Text('₱${order.subtotalAmount.toStringAsFixed(2)}'),
+                    Text(
+                      IAMFormatter.formatCurrency(order.subtotalAmount.toDouble()),
+                    ),
                   ],
                 ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text('Shipping:'),
-                    Text('₱${order.shippingAmount.toStringAsFixed(2)}'),
+                    Text(
+                      IAMFormatter.formatCurrency(order.shippingAmount.toDouble()),
+                    ),
                   ],
                 ),
                 if (order.voucherDiscountAmount > 0)
@@ -84,7 +93,9 @@ class OrderDetailScreen extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text('Voucher Discount:'),
-                      Text('-₱${order.voucherDiscountAmount.toStringAsFixed(2)}'),
+                      Text(
+                        '-${IAMFormatter.formatCurrency(order.voucherDiscountAmount.toDouble())}',
+                      ),
                     ],
                   ),
                 if (order.discountAmount > 0)
@@ -92,7 +103,9 @@ class OrderDetailScreen extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text('Discount:'),
-                      Text('-₱${order.discountAmount.toStringAsFixed(2)}'),
+                      Text(
+                        '-${IAMFormatter.formatCurrency(order.discountAmount.toDouble())}',
+                      ),
                     ],
                   ),
                 const SizedBox(height: 8),
@@ -100,7 +113,10 @@ class OrderDetailScreen extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text('Total:', style: TextStyle(fontWeight: FontWeight.bold)),
-                    Text('₱${order.totalAmount.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                    Text(
+                      IAMFormatter.formatCurrency(order.totalAmount.toDouble()),
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
                   ],
                 ),
                 

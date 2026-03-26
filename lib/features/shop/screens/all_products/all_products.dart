@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iam_ecomm/common/widgets/appbar/appbar.dart';
 import 'package:iam_ecomm/common/widgets/layouts/grid_layout.dart';
+import 'package:iam_ecomm/common/widgets/loaders/skeleton.dart';
 import 'package:iam_ecomm/common/widgets/products/product_cards/product_card_vertical.dart';
 import 'package:iam_ecomm/features/shop/controllers/home_controller.dart';
 import 'package:iam_ecomm/utils/constants/sizes.dart';
@@ -46,10 +47,7 @@ class AllProducts extends StatelessWidget {
               Obx(() {
                 final controller = Get.find<HomeController>();
                 if (controller.productsLoading.value) {
-                  return const Padding(
-                    padding: EdgeInsets.all(IAMSizes.defaultSpace),
-                    child: Center(child: CircularProgressIndicator()),
-                  );
+                  return const IAMProductGridSkeleton(itemCount: 6);
                 }
                 if (controller.productsError.value.isNotEmpty) {
                   return Padding(

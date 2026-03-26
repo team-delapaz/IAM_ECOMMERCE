@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:iam_ecomm/common/widgets/container/rounded_container.dart';
 import 'package:iam_ecomm/common/widgets/icons/circular_icon.dart';
 import 'package:iam_ecomm/common/widgets/images/iam_rounded_images.dart';
@@ -61,10 +62,7 @@ class IAMProductCardHorizontal extends StatelessWidget {
   }
 
   static String _formatPrice(num value) {
-    if (value == value.roundToDouble()) {
-      return value.toInt().toString();
-    }
-    return value.toStringAsFixed(2);
+    return NumberFormat('#,##0.00', 'en_PH').format(value);
   }
 
   @override
