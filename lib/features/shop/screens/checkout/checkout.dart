@@ -9,7 +9,6 @@ import 'package:iam_ecomm/features/shop/controllers/products/checkout_controller
 import 'package:iam_ecomm/features/shop/screens/checkout/widget/billing_address_section.dart';
 import 'package:iam_ecomm/features/shop/screens/checkout/widget/billing_amount_section.dart';
 import 'package:iam_ecomm/features/shop/screens/checkout/widget/billing_payment_provider_section.dart';
-import 'package:iam_ecomm/features/shop/screens/checkout/widget/billing_payment_section.dart';
 import 'package:iam_ecomm/navigation_menu.dart';
 import 'package:iam_ecomm/utils/api/api.dart';
 import 'package:iam_ecomm/utils/api/core/api_response.dart';
@@ -321,8 +320,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         const SizedBox(height: IAMSizes.spaceBtwItems),
                         IAMBillingPaymentProviderSection(),
                         const SizedBox(height: IAMSizes.spaceBtwItems),
-                        IAMBillingPaymentSection(),
-                        const SizedBox(height: IAMSizes.spaceBtwItems),
                         IAMBillingAddressSection(
                           onAddressAvailabilityChanged: (hasAddress) {
                             setState(() => _hasSavedAddress = hasAddress);
@@ -357,13 +354,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           final hasItems = model != null && model.items.isNotEmpty;
           final subtotal = model?.subtotal ?? 0;
           return Obx(() {
-            final paymentMethodSelected =
-                _checkoutController.selectedPaymentMethod.value.name.isNotEmpty;
+            final paymentProviderSelected =
+                _checkoutController.selectedPaymentProviderCode.isNotEmpty;
             String? warningMessage;
             if (!hasItems) {
               warningMessage = 'Your cart is empty.';
-            } else if (!paymentMethodSelected) {
-              warningMessage = 'Please select a payment method.';
+            } else if (!paymentProviderSelected) {
+              warningMessage = 'Please select a payment provider.';
             }
             return Padding(
               padding: const EdgeInsets.all(IAMSizes.defaultSpace),
@@ -372,17 +369,19 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   ElevatedButton(
-                    onPressed: () {
+                    onPressed: (!hasItems || !paymentProviderSelected)
+                        ? null
+                        : () {
                       if (!hasItems) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(content: Text('Your cart is empty.')),
                         );
                         return;
                       }
-                      if (!paymentMethodSelected) {
+                      if (!paymentProviderSelected) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content: Text('Please select a payment method.'),
+                            content: Text('Please select a payment provider.'),
                           ),
                         );
                         return;
