@@ -7,7 +7,7 @@ class ApiEndpoints {
   static const String authLogin = '/Auth/Login';
   static const String authSignup = '/Auth/Signup';
   static const String authResendVerificationCode = '/Auth/ResendVerificationCode';
-  static const String authVerifyCode = '/Auth/VerifyCode';
+  static const String authVerifyCode = '/Auth/VerifyEmailCode';
 
   static const String cart = '/Cart';
   static const String cartAdd = '/Cart/Add';
@@ -44,4 +44,13 @@ class ApiEndpoints {
   // Orders APIs
   static const String orders = '/Orders';
   static String orderByRefNo(String refNo) => '/Orders/$refNo';
+
+  // Product Review APIs
+  static const String productReview = '/ProductReview';
+  static String productReviewsByCode(String productCode) => '/ProductReview/$productCode';
+
+  // Wishlist APIs
+  static const String wishlist = '/Wishlist';
+  static String wishlistByProductCode(String productCode) => '/Wishlist/$productCode';
+  static String wishlistCheck(String productCode) => '/Wishlist/Check/$productCode';
 }
