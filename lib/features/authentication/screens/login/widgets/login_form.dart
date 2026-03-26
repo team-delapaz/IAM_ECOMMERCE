@@ -310,18 +310,20 @@ class _IAMLoginFormState extends State<IAMLoginForm> {
             const SizedBox(height: IAMSizes.spaceBtwInputFields / 2),
 
             // Remember me and forget password
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            Wrap(
+              alignment: WrapAlignment.center,
+              spacing: 12,
+              runSpacing: 4,
               children: [
-                //remeber me
+                // remember me
                 Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Checkbox(value: true, onChanged: (value) {}),
                     const Text(IAMTexts.rememberMe),
                   ],
                 ),
-
-                //forgot password
+                // forgot password
                 TextButton(
                   onPressed: () => Get.to(() => const ForgetPassword()),
                   child: const Text(IAMTexts.forgetPassword),

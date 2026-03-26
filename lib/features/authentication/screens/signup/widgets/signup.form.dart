@@ -61,17 +61,17 @@ class _IAMSignupFormState extends State<IAMSignupForm> {
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(res.message ?? "Account created successfully"),
+            content: Text(res.message),
             duration: const Duration(seconds: 3),
           ),
         );
 
         /// Navigate to verify email
-        Get.to(() => const VerifyEmailScreen());
+        Get.to(() => VerifyEmailScreen(email: _emailController.text.trim()));
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(res.message ?? "Unable to create account"),
+            content: Text(res.message),
             duration: const Duration(seconds: 3),
           ),
         );
