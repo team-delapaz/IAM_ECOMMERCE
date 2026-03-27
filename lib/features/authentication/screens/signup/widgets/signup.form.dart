@@ -73,7 +73,7 @@ class _IAMSignupFormState extends State<IAMSignupForm> {
         );
 
         /// Navigate to verify email
-        Get.to(() => const VerifyEmailScreen());
+        Get.to(() => VerifyEmailScreen(email: _emailController.text.trim()));
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

@@ -212,6 +212,8 @@ class ProductItem {
   final String shortDesc;
   final String longDesc;
   final bool isActive;
+  final bool isFeatured;
+  final bool isPopular;
   final String imageUrl;
   final String altText;
 
@@ -225,6 +227,8 @@ class ProductItem {
     required this.shortDesc,
     required this.longDesc,
     required this.isActive,
+    required this.isFeatured,
+    required this.isPopular,
     required this.imageUrl,
     required this.altText,
   });
@@ -242,6 +246,8 @@ class ProductItem {
       shortDesc: m['shortDesc'] as String? ?? '',
       longDesc: m['longDesc'] as String? ?? '',
       isActive: m['isActive'] as bool? ?? false,
+      isFeatured: m['isFeatured'] as bool? ?? false,
+      isPopular: m['isPopular'] as bool? ?? false,
       imageUrl: m['imageUrl'] as String? ?? '',
       altText: m['altText'] as String? ?? '',
     );

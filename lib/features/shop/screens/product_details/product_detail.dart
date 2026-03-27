@@ -5,7 +5,6 @@ import 'package:iam_ecomm/features/authentication/controllers/auth_controller.da
 import 'package:iam_ecomm/features/shop/screens/cart/cart.dart';
 import 'package:iam_ecomm/features/shop/screens/checkout/checkout.dart';
 import 'package:iam_ecomm/features/shop/screens/product_details/widgets/bottom_add_to_cart_widget.dart';
-import 'package:iam_ecomm/features/shop/screens/product_details/widgets/product_attributes.dart';
 import 'package:iam_ecomm/features/shop/screens/product_details/widgets/product_detail_image_slider.dart';
 import 'package:iam_ecomm/features/shop/screens/product_details/widgets/product_meta_data.dart';
 import 'package:iam_ecomm/features/shop/screens/product_details/widgets/rating_share_widget.dart';
@@ -13,6 +12,7 @@ import 'package:iam_ecomm/utils/api/api.dart';
 import 'package:iam_ecomm/utils/api/responses/response_prep.dart';
 import 'package:iam_ecomm/utils/constants/sizes.dart';
 import 'package:iam_ecomm/utils/local_storage/storage_utility.dart';
+import 'package:iam_ecomm/common/widgets/loaders/skeleton.dart';
 import 'package:readmore/readmore.dart';
 import 'package:iconsax/iconsax.dart';
 
@@ -74,6 +74,32 @@ class ProductDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (product == null) {
+      return Scaffold(
+        body: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(IAMSizes.defaultSpace),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: const [
+                IAMSkeleton(height: 280, radius: IAMSizes.cardRadiusLg),
+                SizedBox(height: IAMSizes.spaceBtwSections),
+                IAMSkeleton(height: 18, width: 180),
+                SizedBox(height: IAMSizes.spaceBtwItems),
+                IAMSkeleton(height: 14, width: 120),
+                SizedBox(height: IAMSizes.spaceBtwSections),
+                IAMSkeleton(height: 46, radius: IAMSizes.cardRadiusMd),
+                SizedBox(height: IAMSizes.spaceBtwSections),
+                IAMSkeleton(height: 16, width: 130),
+                SizedBox(height: IAMSizes.spaceBtwItems),
+                IAMSkeleton(height: 80, radius: IAMSizes.cardRadiusMd),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       bottomNavigationBar: IAMBottomAddToCart(product: product),
       body: SingleChildScrollView(

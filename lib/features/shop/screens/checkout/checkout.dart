@@ -9,7 +9,6 @@ import 'package:iam_ecomm/features/shop/controllers/products/checkout_controller
 import 'package:iam_ecomm/features/shop/screens/checkout/widget/billing_address_section.dart';
 import 'package:iam_ecomm/features/shop/screens/checkout/widget/billing_amount_section.dart';
 import 'package:iam_ecomm/features/shop/screens/checkout/widget/billing_payment_provider_section.dart';
-import 'package:iam_ecomm/features/shop/screens/checkout/widget/billing_payment_section.dart';
 import 'package:iam_ecomm/navigation_menu.dart';
 import 'package:iam_ecomm/utils/api/api.dart';
 import 'package:iam_ecomm/utils/api/core/api_response.dart';
@@ -18,6 +17,7 @@ import 'package:iam_ecomm/utils/constants/colors.dart';
 import 'package:iam_ecomm/utils/constants/image_strings.dart';
 import 'package:iam_ecomm/utils/constants/sizes.dart';
 import 'package:iam_ecomm/utils/device/device_utility.dart';
+import 'package:iam_ecomm/utils/formatters/formatter.dart';
 import 'package:iam_ecomm/utils/helpers/helper_functions.dart';
 import 'package:iam_ecomm/utils/local_storage/storage_utility.dart';
 import 'package:flutter/services.dart';
@@ -237,7 +237,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       final memberRes = await ApiMiddleware.member.getMember();
       if (!memberRes.success || memberRes.data == null) {
         // Fallback: use idNo from selected address if available
-        memberIdno = selectedAddress.idNo ?? '';
+        memberIdno = selectedAddress.idNo;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -258,7 +258,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       }
     } else {
       // Not logged in: fallback to address idNo if available
-      memberIdno = selectedAddress.idNo ?? '';
+      memberIdno = selectedAddress.idNo;
     }
 
     final notesInput = _notesController.text.trim();
@@ -369,7 +369,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         image: IAMImages.successfulPaymentIcon,
         title: 'Payment Successful!',
         subTitle: orderRef.isNotEmpty
-            ? 'Order $orderRef · Total ₱${totalAmount.toStringAsFixed(2)}'
+            ? 'Order $orderRef · Total ${IAMFormatter.formatCurrency(totalAmount.toDouble())}'
             : 'Your items will be shipped soon!',
         onPressed: () => Get.offAll(() => const NavigationMenu()),
       ),
@@ -426,7 +426,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         ),
                         subtitle: Text('x${item.qty}  ·  ${item.productCode}'),
                         trailing: Text(
-                          '₱${item.lineTotal.toStringAsFixed(2)}',
+                          IAMFormatter.formatCurrency(item.lineTotal.toDouble()),
                           style: Theme.of(context).textTheme.bodyLarge
                               ?.copyWith(fontWeight: FontWeight.w600),
                         ),
@@ -456,8 +456,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         const Divider(),
                         const SizedBox(height: IAMSizes.spaceBtwItems),
                         IAMBillingPaymentProviderSection(),
-                        const SizedBox(height: IAMSizes.spaceBtwItems),
-                        IAMBillingPaymentSection(),
                         const SizedBox(height: IAMSizes.spaceBtwItems),
                         IAMBillingAddressSection(
                           onAddressAvailabilityChanged: (hasAddress) {
@@ -493,13 +491,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           final hasItems = model != null && model.items.isNotEmpty;
           final subtotal = model?.subtotal ?? 0;
           return Obx(() {
-            final paymentMethodSelected =
-                _checkoutController.selectedPaymentMethod.value.name.isNotEmpty;
+            final paymentProviderSelected =
+                _checkoutController.selectedPaymentProviderCode.isNotEmpty;
             String? warningMessage;
             if (!hasItems) {
               warningMessage = 'Your cart is empty.';
-            } else if (!paymentMethodSelected) {
-              warningMessage = 'Please select a payment method.';
+            } else if (!paymentProviderSelected) {
+              warningMessage = 'Please select a payment provider.';
             }
             return Padding(
               padding: const EdgeInsets.all(IAMSizes.defaultSpace),
@@ -508,7 +506,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   ElevatedButton(
-                    onPressed: () {
+                    onPressed: (!hasItems || !paymentProviderSelected)
+                        ? null
+                        : () {
                       if (!hasItems) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
@@ -526,7 +526,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         );
                         return;
                       }
-                      if (!paymentMethodSelected) {
+                      if (!paymentProviderSelected) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: const Text(
@@ -558,7 +558,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         ),
                       ),
                     ),
-                    child: Text('Checkout ₱${subtotal.toStringAsFixed(2)}'),
+                    child: Text(
+                      'Checkout ${IAMFormatter.formatCurrency(subtotal.toDouble())}',
+                    ),
                   ),
                   if (warningMessage != null) ...[
                     const SizedBox(height: 8),
