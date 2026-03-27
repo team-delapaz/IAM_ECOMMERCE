@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:iam_ecomm/common/widgets/container/rounded_container.dart';
 import 'package:iam_ecomm/utils/constants/colors.dart';
 import 'package:iam_ecomm/utils/constants/sizes.dart';
@@ -7,6 +8,7 @@ import 'package:iam_ecomm/utils/api/api.dart';
 import 'package:iam_ecomm/features/shop/screens/order/order_detail_screen.dart';
 import 'package:iam_ecomm/utils/api/responses/response_prep.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:intl/intl.dart';
 
 class IAMOrderListItems extends StatefulWidget {
   const IAMOrderListItems({super.key});
@@ -21,6 +23,7 @@ class _IAMOrderListItemsState extends State<IAMOrderListItems> {
   @override
   Widget build(BuildContext context) {
     final dark = IAMHelperFunctions.isDarkMode(context);
+    final formatter = NumberFormat.currency(locale: 'en_PH', symbol: '₱');
 
     return Column(
       children: [
@@ -51,7 +54,7 @@ class _IAMOrderListItemsState extends State<IAMOrderListItems> {
                     children: [
                       _buildTab('Processing', 0, tabWidth),
                       _buildTab('Delivered', 1, tabWidth),
-                      _buildTab('Canceled', 2, tabWidth),
+                      _buildTab('Cancelled', 2, tabWidth),
                     ],
                   ),
                 ],
@@ -102,45 +105,148 @@ class _IAMOrderListItemsState extends State<IAMOrderListItems> {
                             );
                           },
                           child: IAMRoundedContainer(
-                            showBorder: true,
                             padding: const EdgeInsets.all(IAMSizes.md),
                             backgroundColor: dark
                                 ? IAMColors.dark
                                 : IAMColors.light,
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
+                                // ORDER NUMBER + COPY
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      '#${order.orderRefno}',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleMedium!
+                                          .apply(fontWeightDelta: 2),
+                                    ),
+                                    IconButton(
+                                      onPressed: () {
+                                        Clipboard.setData(
+                                          ClipboardData(text: order.orderRefno),
+                                        );
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                              'Order number copied!',
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                      icon: const Icon(Iconsax.copy),
+                                      iconSize: IAMSizes.iconSm,
+                                    ),
+                                  ],
+                                ),
+
+                                const SizedBox(
+                                  height: IAMSizes.spaceBtwItems / 2,
+                                ),
+
                                 Row(
                                   children: [
-                                    const Icon(Iconsax.routing),
+                                    // Badge icon
+                                    Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: IAMColors.primary,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Icon(
+                                        Iconsax.routing,
+                                        size: 20,
+                                        color: IAMColors.grey,
+                                      ),
+                                    ),
                                     const SizedBox(
                                       width: IAMSizes.spaceBtwItems / 2,
                                     ),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            order.orderStatusName,
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .bodyLarge!
-                                                .apply(
-                                                  color: IAMColors.primary,
-                                                  fontWeightDelta: 1,
-                                                ),
-                                          ),
-                                          Text(
-                                            order.orderDate,
-                                            style: Theme.of(
-                                              context,
-                                            ).textTheme.headlineSmall,
-                                          ),
-                                        ],
+                                    // Status & subtitle
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          order.orderStatusName,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodyMedium!
+                                              .apply(
+                                                color: IAMColors.primary,
+                                                fontWeightDelta: 1,
+                                              ),
+                                        ),
+                                        Text(
+                                          "We're processing your order now!",
+                                          style: Theme.of(
+                                            context,
+                                          ).textTheme.labelMedium,
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                                // const Divider(),
+                                const SizedBox(height: IAMSizes.spaceBtwItems),
+
+                                // ORDER DETAILS: Date with icon
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: IAMColors.grey,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Icon(
+                                        Iconsax.calendar,
+                                        size: 20,
+                                        color: IAMColors.darkGrey,
                                       ),
                                     ),
-                                    IconButton(
+                                    const SizedBox(
+                                      width: IAMSizes.spaceBtwItems / 2,
+                                    ),
+                                    // Date text
+                                    Text(
+                                      DateFormat(
+                                        'dd-MMM-yyyy, hh:mma',
+                                      ).format(DateTime.parse(order.orderDate)),
+                                      style: Theme.of(
+                                        context,
+                                      ).textTheme.titleMedium,
+                                    ),
+                                  ],
+                                ),
+
+                                const SizedBox(height: IAMSizes.spaceBtwItems),
+                                Divider(color: Colors.grey[400], thickness: 1),
+
+                                const SizedBox(
+                                  height: IAMSizes.spaceBtwItems / 2,
+                                ),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      'Total: ${formatter.format(order.totalAmount)}',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleMedium!
+                                          .apply(
+                                            fontWeightDelta: 1,
+                                            color: IAMColors.dark,
+                                          ),
+                                    ),
+                                    TextButton.icon(
                                       onPressed: () {
                                         Navigator.of(context).push(
                                           MaterialPageRoute(
@@ -151,73 +257,12 @@ class _IAMOrderListItemsState extends State<IAMOrderListItems> {
                                         );
                                       },
                                       icon: const Icon(
-                                        Iconsax.arrow_right_34,
-                                        size: IAMSizes.iconSm,
+                                        Iconsax.arrow_right_3,
+                                        size: 20,
                                       ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: IAMSizes.spaceBtwItems),
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: Row(
-                                        children: [
-                                          const Icon(Iconsax.tag),
-                                          const SizedBox(
-                                            width: IAMSizes.spaceBtwItems / 2,
-                                          ),
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  'Order',
-                                                  style: Theme.of(
-                                                    context,
-                                                  ).textTheme.labelMedium,
-                                                ),
-                                                Text(
-                                                  '#${order.orderRefno}',
-                                                  style: Theme.of(
-                                                    context,
-                                                  ).textTheme.titleMedium,
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    Expanded(
-                                      child: Row(
-                                        children: [
-                                          const Icon(Iconsax.calendar),
-                                          const SizedBox(
-                                            width: IAMSizes.spaceBtwItems / 2,
-                                          ),
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  'Total',
-                                                  style: Theme.of(
-                                                    context,
-                                                  ).textTheme.labelMedium,
-                                                ),
-                                                Text(
-                                                  '${order.totalAmount}',
-                                                  style: Theme.of(
-                                                    context,
-                                                  ).textTheme.titleMedium,
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ],
+                                      label: const Text('View Details'),
+                                      style: TextButton.styleFrom(
+                                        foregroundColor: IAMColors.primary,
                                       ),
                                     ),
                                   ],
