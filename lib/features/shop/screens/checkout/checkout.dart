@@ -213,7 +213,15 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     final selectedAddress = _selectedAddress;
     if (selectedAddress == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a shipping address.')),
+        SnackBar(
+          content: const Text(
+            'Please select a shipping address.',
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.red[300],
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        ),
       );
       return;
     }
@@ -236,7 +244,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               memberRes.message.isNotEmpty
                   ? memberRes.message
                   : 'Unable to load your profile. Proceeding with address info.',
+              style: const TextStyle(color: Colors.white),
             ),
+            backgroundColor: Colors.red[300],
+            behavior: SnackBarBehavior.floating,
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           ),
         );
       } else {
@@ -267,7 +279,14 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     );
     if (!res.success) {
       final msg = res.message.isNotEmpty ? res.message : 'Checkout failed.';
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(msg, style: const TextStyle(color: Colors.white)),
+          backgroundColor: Colors.red[300],
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        ),
+      );
       return;
     }
 
@@ -280,7 +299,15 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     final providerCode = _checkoutController.selectedPaymentProviderCode.value;
     if (providerCode.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a payment provider.')),
+        SnackBar(
+          content: const Text(
+            'Please select a payment provider.',
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.red[300],
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        ),
       );
       return;
     }
@@ -300,7 +327,14 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       final msg = paymentRes.message.isNotEmpty
           ? paymentRes.message
           : 'Unable to create payment.';
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(msg, style: const TextStyle(color: Colors.white)),
+          backgroundColor: Colors.red[300],
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        ),
+      );
       return;
     }
 
@@ -322,7 +356,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           orderRef.isNotEmpty
               ? 'Order $orderRef placed successfully.'
               : 'Checkout completed successfully.',
+          style: const TextStyle(color: Colors.white),
         ),
+        backgroundColor: Colors.green[300],
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       ),
     );
 
@@ -473,18 +511,39 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     onPressed: () {
                       if (!hasItems) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Your cart is empty.')),
+                          SnackBar(
+                            content: const Text(
+                              'Your cart is empty.',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                            backgroundColor: Colors.red[300],
+                            behavior: SnackBarBehavior.floating,
+                            margin: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
+                          ),
                         );
                         return;
                       }
                       if (!paymentMethodSelected) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Please select a payment method.'),
+                          SnackBar(
+                            content: const Text(
+                              'Please select a payment method.',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                            backgroundColor: Colors.red[300],
+                            behavior: SnackBarBehavior.floating,
+                            margin: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
                           ),
                         );
                         return;
                       }
+
                       _placeOrder(model);
                     },
                     style: ElevatedButton.styleFrom(
@@ -726,7 +785,18 @@ class _CheckoutWebViewSheetState extends State<_CheckoutWebViewSheet> {
                         );
                         if (!context.mounted) return;
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Checkout URL copied.')),
+                          SnackBar(
+                            content: const Text(
+                              'Checkout URL copied.',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                            backgroundColor: Colors.green[300],
+                            behavior: SnackBarBehavior.floating,
+                            margin: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
+                          ),
                         );
                       },
                       icon: const Icon(Icons.copy_rounded, size: 18),

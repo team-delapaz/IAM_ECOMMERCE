@@ -56,9 +56,17 @@ class ProductDetailScreen extends StatelessWidget {
       final msg = res.message.isNotEmpty
           ? res.message
           : 'Unable to add item to cart.';
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Checkout failed: $msg')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Checkout failed: $msg',
+            style: const TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.red[300],
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        ),
+      );
       return;
     }
     Get.to(() => const CartScreen());

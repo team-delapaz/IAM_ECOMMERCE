@@ -61,7 +61,13 @@ class _IAMSignupFormState extends State<IAMSignupForm> {
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(res.message ?? "Account created successfully"),
+            content: Text(
+              res.message ?? "Account created successfully",
+              style: const TextStyle(color: Colors.white),
+            ),
+            backgroundColor: Colors.green[300],
+            behavior: SnackBarBehavior.floating,
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             duration: const Duration(seconds: 3),
           ),
         );
@@ -71,7 +77,13 @@ class _IAMSignupFormState extends State<IAMSignupForm> {
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(res.message ?? "Unable to create account"),
+            content: Text(
+              res.message ?? "Unable to create account",
+              style: const TextStyle(color: Colors.white),
+            ),
+            backgroundColor: Colors.red[300],
+            behavior: SnackBarBehavior.floating,
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             duration: const Duration(seconds: 3),
           ),
         );
@@ -86,9 +98,15 @@ class _IAMSignupFormState extends State<IAMSignupForm> {
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Server error. Please try again later."),
-          duration: Duration(seconds: 3),
+        SnackBar(
+          content: const Text(
+            "Server error. Please try again later.",
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.red[300],
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          duration: const Duration(seconds: 3),
         ),
       );
     }

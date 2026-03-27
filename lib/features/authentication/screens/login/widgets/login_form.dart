@@ -95,7 +95,11 @@ class _IAMLoginFormState extends State<IAMLoginForm> {
             res.message.isNotEmpty
                 ? res.message
                 : 'Unable to load addresses right now.',
+            style: const TextStyle(color: Colors.white),
           ),
+          backgroundColor: Colors.red[300],
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         ),
       );
       return;
@@ -173,9 +177,17 @@ class _IAMLoginFormState extends State<IAMLoginForm> {
           ? res.message
           : 'You are now signed in.';
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(successMsg)));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              successMsg,
+              style: const TextStyle(color: Colors.white),
+            ),
+            backgroundColor: Colors.green[300],
+            behavior: SnackBarBehavior.floating,
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          ),
+        );
       }
 
       // Set NavigationController to Home tab (index 0) with delay to override any other initialization
@@ -213,9 +225,15 @@ class _IAMLoginFormState extends State<IAMLoginForm> {
     final successMsg = res.message.isNotEmpty
         ? res.message
         : 'You are now signed in.';
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(successMsg)));
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(successMsg, style: const TextStyle(color: Colors.white)),
+        backgroundColor: Colors.green[300],
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      ),
+    );
 
     // Small delay to ensure all reactive updates complete
     await Future.delayed(const Duration(milliseconds: 100));

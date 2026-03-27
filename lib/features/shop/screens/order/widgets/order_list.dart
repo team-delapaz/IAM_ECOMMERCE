@@ -105,7 +105,7 @@ class _IAMOrderListItemsState extends State<IAMOrderListItems> {
                             );
                           },
                           child: IAMRoundedContainer(
-                            padding: const EdgeInsets.all(IAMSizes.md),
+                            padding: EdgeInsets.all(IAMSizes.md),
                             backgroundColor: dark
                                 ? IAMColors.dark
                                 : IAMColors.light,
@@ -133,9 +133,18 @@ class _IAMOrderListItemsState extends State<IAMOrderListItems> {
                                         ScaffoldMessenger.of(
                                           context,
                                         ).showSnackBar(
-                                          const SnackBar(
-                                            content: Text(
+                                          SnackBar(
+                                            content: const Text(
                                               'Order number copied!',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                            backgroundColor: Colors.green[300],
+                                            behavior: SnackBarBehavior.floating,
+                                            margin: const EdgeInsets.symmetric(
+                                              horizontal: 16,
+                                              vertical: 8,
                                             ),
                                           ),
                                         );
