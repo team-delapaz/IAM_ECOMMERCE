@@ -205,7 +205,16 @@ class _CartScreenState extends State<CartScreen> {
                       // Wishlist action
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text('${item.name} added to wishlist'),
+                          content: Text(
+                            '${item.name} added to wishlist',
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                          backgroundColor: Colors.green[300],
+                          behavior: SnackBarBehavior.floating,
+                          margin: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
                         ),
                       );
                       return false;
@@ -217,7 +226,16 @@ class _CartScreenState extends State<CartScreen> {
                       _removeItem(item);
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text('${item.name} removed from cart'),
+                          content: Text(
+                            '${item.name} removed from cart',
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                          backgroundColor: Colors.green[300],
+                          behavior: SnackBarBehavior.floating,
+                          margin: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
                         ),
                       );
                     }

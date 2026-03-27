@@ -161,7 +161,15 @@ class _AddNewAddressScreenState extends State<AddNewAddressScreen> {
         _selectedCity == null ||
         _selectedBarangay == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please complete the location fields.')),
+        SnackBar(
+          content: const Text(
+            'Please complete the location fields.',
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.red[300],
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        ),
       );
       return;
     }
@@ -187,7 +195,8 @@ class _AddNewAddressScreenState extends State<AddNewAddressScreen> {
       var isDefaultToSend = _setAsDefault;
       if (widget.initialAddress == null && !_setAsDefault) {
         final existingRes = await ApiMiddleware.address.getAddresses();
-        final existing = existingRes.data?.whereType<AddressItem>().toList() ?? [];
+        final existing =
+            existingRes.data?.whereType<AddressItem>().toList() ?? [];
         if (existing.isEmpty) isDefaultToSend = true;
       }
 
@@ -209,8 +218,14 @@ class _AddNewAddressScreenState extends State<AddNewAddressScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
-                res.message.isNotEmpty ? res.message : 'Unable to save address.',
+                res.message.isNotEmpty
+                    ? res.message
+                    : 'Unable to save address.',
+                style: const TextStyle(color: Colors.white),
               ),
+              backgroundColor: Colors.red[300],
+              behavior: SnackBarBehavior.floating,
+              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             ),
           );
           return;
@@ -233,8 +248,14 @@ class _AddNewAddressScreenState extends State<AddNewAddressScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
-                res.message.isNotEmpty ? res.message : 'Unable to save address.',
+                res.message.isNotEmpty
+                    ? res.message
+                    : 'Unable to save address.',
+                style: const TextStyle(color: Colors.white),
               ),
+              backgroundColor: Colors.red[300],
+              behavior: SnackBarBehavior.floating,
+              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             ),
           );
           return;
@@ -242,7 +263,15 @@ class _AddNewAddressScreenState extends State<AddNewAddressScreen> {
       }
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Address saved successfully!')),
+        SnackBar(
+          content: const Text(
+            'Address saved successfully!',
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.green[300],
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        ),
       );
       Navigator.of(context).pop(true);
     } finally {
@@ -366,7 +395,8 @@ class _AddNewAddressScreenState extends State<AddNewAddressScreen> {
                     labelText: 'Name',
                   ),
                   validator: (value) {
-                    if ((value ?? '').trim().isEmpty) return 'Name is required.';
+                    if ((value ?? '').trim().isEmpty)
+                      return 'Name is required.';
                     return null;
                   },
                 ),
@@ -563,7 +593,11 @@ class _AddNewAddressScreenState extends State<AddNewAddressScreen> {
                               ),
                             ),
                           )
-                        : Text(widget.initialAddress == null ? 'Save Address' : 'Update Address'),
+                        : Text(
+                            widget.initialAddress == null
+                                ? 'Save Address'
+                                : 'Update Address',
+                          ),
                   ),
                 ),
               ],

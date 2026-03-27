@@ -102,7 +102,11 @@ class _IAMLoginFormState extends State<IAMLoginForm> {
             res.message.isNotEmpty
                 ? res.message
                 : 'Unable to load addresses right now.',
+            style: const TextStyle(color: Colors.white),
           ),
+          backgroundColor: Colors.red[300],
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         ),
       );
       return;
@@ -182,9 +186,17 @@ class _IAMLoginFormState extends State<IAMLoginForm> {
           ? res.message
           : 'You are now signed in.';
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(successMsg)));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              successMsg,
+              style: const TextStyle(color: Colors.white),
+            ),
+            backgroundColor: Colors.green[300],
+            behavior: SnackBarBehavior.floating,
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          ),
+        );
       }
 
       final navController = Get.isRegistered<NavigationController>()
@@ -223,9 +235,15 @@ class _IAMLoginFormState extends State<IAMLoginForm> {
     final successMsg = res.message.isNotEmpty
         ? res.message
         : 'You are now signed in.';
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(successMsg)));
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(successMsg, style: const TextStyle(color: Colors.white)),
+        backgroundColor: Colors.green[300],
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      ),
+    );
 
     print('DEBUG: About to call Get.offAll(NavigationMenu)');
     Get.offAll(const NavigationMenu());

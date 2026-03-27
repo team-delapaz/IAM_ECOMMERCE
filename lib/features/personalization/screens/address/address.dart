@@ -38,9 +38,15 @@ class _UserAddressScreenState extends State<UserAddressScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(res.message.isNotEmpty
-              ? res.message
-              : 'Unable to set default address.'),
+          content: Text(
+            res.message.isNotEmpty
+                ? res.message
+                : 'Unable to set default address.',
+            style: const TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.red[300],
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         ),
       );
       return;
@@ -74,9 +80,13 @@ class _UserAddressScreenState extends State<UserAddressScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(res.message.isNotEmpty
-              ? res.message
-              : 'Unable to delete address.'),
+          content: Text(
+            res.message.isNotEmpty ? res.message : 'Unable to delete address.',
+            style: const TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.red[300],
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         ),
       );
       return;
@@ -132,8 +142,10 @@ class _UserAddressScreenState extends State<UserAddressScreen> {
                       address: address,
                       selectedAddress: address.isDefault,
                       optionsButton: PopupMenuButton<String>(
-                        icon: const Icon(Icons.more_vert,
-                            size: IAMSizes.iconSm),
+                        icon: const Icon(
+                          Icons.more_vert,
+                          size: IAMSizes.iconSm,
+                        ),
                         itemBuilder: (context) {
                           final items = <PopupMenuEntry<String>>[];
 
@@ -167,8 +179,11 @@ class _UserAddressScreenState extends State<UserAddressScreen> {
                               await _setDefault(address);
                               break;
                             case 'edit':
-                              await Get.to(() => AddNewAddressScreen(
-                                  initialAddress: address));
+                              await Get.to(
+                                () => AddNewAddressScreen(
+                                  initialAddress: address,
+                                ),
+                              );
                               await _reload();
                               break;
                             case 'delete':

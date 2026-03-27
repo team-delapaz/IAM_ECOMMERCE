@@ -189,7 +189,15 @@ class IAMProductCardVertical extends StatelessWidget {
       await storage.saveData('guest_cart', cart);
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Item added to cart (guest).')),
+        SnackBar(
+          content: const Text(
+            'Item added to cart (guest).',
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.green[300],
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        ),
       );
       return;
     }
@@ -202,7 +210,15 @@ class IAMProductCardVertical extends StatelessWidget {
         : (res.message.isNotEmpty
               ? res.message
               : 'Unable to add item to cart.');
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(msg, style: const TextStyle(color: Colors.white)),
+        backgroundColor: res.success ? Colors.green[300] : Colors.red[300],
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      ),
+    );
   }
 
   static String _formatPrice(num value) {

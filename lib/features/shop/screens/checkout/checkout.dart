@@ -16,9 +16,13 @@ import 'package:iam_ecomm/utils/api/responses/response_prep.dart';
 import 'package:iam_ecomm/utils/constants/colors.dart';
 import 'package:iam_ecomm/utils/constants/image_strings.dart';
 import 'package:iam_ecomm/utils/constants/sizes.dart';
+import 'package:iam_ecomm/utils/device/device_utility.dart';
 import 'package:iam_ecomm/utils/formatters/formatter.dart';
 import 'package:iam_ecomm/utils/helpers/helper_functions.dart';
 import 'package:iam_ecomm/utils/local_storage/storage_utility.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 class CheckoutScreen extends StatefulWidget {
   const CheckoutScreen({super.key});
@@ -33,6 +37,93 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   AddressItem? _selectedAddress;
   bool _hasSavedAddress = false;
   late final CheckoutController _checkoutController;
+
+  Future<void> _showOpeningCheckoutSpinner() async {
+    if (!mounted) return;
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) {
+        final dark = IAMHelperFunctions.isDarkMode(context);
+        final surface = dark ? IAMColors.black : IAMColors.white;
+        final onSurface = dark ? IAMColors.white : IAMColors.black;
+        return PopScope(
+          canPop: false,
+          child: Dialog(
+            backgroundColor: surface,
+            elevation: 24,
+            insetPadding: const EdgeInsets.symmetric(horizontal: 24),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Row(
+                children: [
+                  const SizedBox(
+                    height: 22,
+                    width: 22,
+                    child: CircularProgressIndicator(strokeWidth: 2.5),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Opening checkout page…',
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(
+                                color: onSurface,
+                                fontWeight: FontWeight.w700,
+                              ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Please wait while we prepare your payment.',
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
+                                color: onSurface.withOpacity(0.72),
+                                height: 1.2,
+                              ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+    await Future.delayed(const Duration(milliseconds: 650));
+    if (!mounted) return;
+    Navigator.of(context, rootNavigator: true).pop();
+  }
+
+  Future<void> _showCheckoutUrlSheet({
+    required String checkoutUrl,
+    required String orderRef,
+    required num totalAmount,
+  }) async {
+    if (!mounted) return;
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) {
+        return _CheckoutWebViewSheet(
+          checkoutUrl: checkoutUrl,
+          orderRef: orderRef,
+          totalAmount: totalAmount,
+        );
+      },
+    );
+  }
 
   @override
   void initState() {
@@ -122,7 +213,15 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     final selectedAddress = _selectedAddress;
     if (selectedAddress == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a shipping address.')),
+        SnackBar(
+          content: const Text(
+            'Please select a shipping address.',
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.red[300],
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        ),
       );
       return;
     }
@@ -145,7 +244,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               memberRes.message.isNotEmpty
                   ? memberRes.message
                   : 'Unable to load your profile. Proceeding with address info.',
+              style: const TextStyle(color: Colors.white),
             ),
+            backgroundColor: Colors.red[300],
+            behavior: SnackBarBehavior.floating,
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           ),
         );
       } else {
@@ -176,7 +279,14 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     );
     if (!res.success) {
       final msg = res.message.isNotEmpty ? res.message : 'Checkout failed.';
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(msg, style: const TextStyle(color: Colors.white)),
+          backgroundColor: Colors.red[300],
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        ),
+      );
       return;
     }
 
@@ -189,7 +299,15 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     final providerCode = _checkoutController.selectedPaymentProviderCode.value;
     if (providerCode.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a payment provider.')),
+        SnackBar(
+          content: const Text(
+            'Please select a payment provider.',
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.red[300],
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        ),
       );
       return;
     }
@@ -209,13 +327,28 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       final msg = paymentRes.message.isNotEmpty
           ? paymentRes.message
           : 'Unable to create payment.';
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(msg, style: const TextStyle(color: Colors.white)),
+          backgroundColor: Colors.red[300],
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        ),
+      );
       return;
     }
 
-    // Log raw payment response for inspection during integration.
-    // ignore: avoid_print
-    print('createPayment response: ${paymentRes.data}');
+    final checkoutUrl = paymentRes.data?.checkoutUrl ?? '';
+    if (checkoutUrl.isNotEmpty) {
+      await _showOpeningCheckoutSpinner();
+      if (!mounted) return;
+      await _showCheckoutUrlSheet(
+        checkoutUrl: checkoutUrl,
+        orderRef: orderRef,
+        totalAmount: totalAmount,
+      );
+      return;
+    }
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -223,7 +356,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           orderRef.isNotEmpty
               ? 'Order $orderRef placed successfully.'
               : 'Checkout completed successfully.',
+          style: const TextStyle(color: Colors.white),
         ),
+        backgroundColor: Colors.green[300],
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       ),
     );
 
@@ -374,18 +511,39 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         : () {
                       if (!hasItems) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Your cart is empty.')),
+                          SnackBar(
+                            content: const Text(
+                              'Your cart is empty.',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                            backgroundColor: Colors.red[300],
+                            behavior: SnackBarBehavior.floating,
+                            margin: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
+                          ),
                         );
                         return;
                       }
                       if (!paymentProviderSelected) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Please select a payment provider.'),
+                          SnackBar(
+                            content: const Text(
+                              'Please select a payment method.',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                            backgroundColor: Colors.red[300],
+                            behavior: SnackBarBehavior.floating,
+                            margin: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
                           ),
                         );
                         return;
                       }
+
                       _placeOrder(model);
                     },
                     style: ElevatedButton.styleFrom(
@@ -451,4 +609,315 @@ class _CartViewModel {
     required this.subtotal,
     this.error,
   });
+}
+
+class _CheckoutWebViewSheet extends StatefulWidget {
+  final String checkoutUrl;
+  final String orderRef;
+  final num totalAmount;
+
+  const _CheckoutWebViewSheet({
+    required this.checkoutUrl,
+    required this.orderRef,
+    required this.totalAmount,
+  });
+
+  @override
+  State<_CheckoutWebViewSheet> createState() => _CheckoutWebViewSheetState();
+}
+
+class _CheckoutWebViewSheetState extends State<_CheckoutWebViewSheet> {
+  WebViewController? _controller;
+  int _progress = 0;
+  late final bool _canEmbedWebView;
+
+  @override
+  void initState() {
+    super.initState();
+    _canEmbedWebView =
+        !kIsWeb &&
+        (defaultTargetPlatform == TargetPlatform.android ||
+            defaultTargetPlatform == TargetPlatform.iOS ||
+            defaultTargetPlatform == TargetPlatform.macOS);
+
+    if (_canEmbedWebView) {
+      _controller = WebViewController()
+        ..setJavaScriptMode(JavaScriptMode.unrestricted)
+        ..setNavigationDelegate(
+          NavigationDelegate(
+            onProgress: (p) {
+              if (!mounted) return;
+              setState(() => _progress = p.clamp(0, 100));
+            },
+          ),
+        )
+        ..loadRequest(Uri.parse(widget.checkoutUrl));
+    } else {
+      _progress = 100;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final dark = IAMHelperFunctions.isDarkMode(context);
+    final surface = dark ? const Color(0xFF0F1115) : IAMColors.white;
+    final onSurface = dark ? IAMColors.white : IAMColors.black;
+
+    return DraggableScrollableSheet(
+      initialChildSize: 0.92,
+      minChildSize: 0.55,
+      maxChildSize: 0.98,
+      builder: (context, scrollController) {
+        return Container(
+          decoration: BoxDecoration(
+            color: surface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(dark ? 0.55 : 0.25),
+                blurRadius: 24,
+                offset: const Offset(0, -8),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.max,
+            children: [
+              const SizedBox(height: 10),
+              Container(
+                width: 44,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: onSurface.withOpacity(dark ? 0.22 : 0.16),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: IAMSizes.defaultSpace,
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      height: 44,
+                      width: 44,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: dark
+                              ? [
+                                  IAMColors.primary.withOpacity(0.95),
+                                  IAMColors.primary.withOpacity(0.65),
+                                ]
+                              : [
+                                  IAMColors.primary,
+                                  IAMColors.primary.withOpacity(0.7),
+                                ],
+                        ),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: const Icon(
+                        Icons.payments_outlined,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Secure checkout',
+                            style: Theme.of(context).textTheme.titleLarge
+                                ?.copyWith(
+                                  color: onSurface,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            widget.orderRef.isNotEmpty
+                                ? 'Order ${widget.orderRef} · ₱${widget.totalAmount.toStringAsFixed(2)}'
+                                : 'Complete your payment to confirm the order.',
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(
+                                  color: onSurface.withOpacity(0.72),
+                                  height: 1.25,
+                                ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      tooltip: 'Close',
+                      onPressed: () => Navigator.of(context).pop(),
+                      icon: Icon(
+                        Icons.close_rounded,
+                        color: onSurface.withOpacity(0.8),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (_progress < 100)
+                Padding(
+                  padding: const EdgeInsets.only(top: 10),
+                  child: LinearProgressIndicator(
+                    value: _progress / 100.0,
+                    minHeight: 2.5,
+                    backgroundColor: onSurface.withOpacity(dark ? 0.12 : 0.08),
+                    color: IAMColors.primary,
+                  ),
+                )
+              else
+                const SizedBox(height: 12),
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: IAMSizes.defaultSpace,
+                ),
+                child: Row(
+                  children: [
+                    OutlinedButton.icon(
+                      onPressed: () async {
+                        await Clipboard.setData(
+                          ClipboardData(text: widget.checkoutUrl),
+                        );
+                        if (!context.mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: const Text(
+                              'Checkout URL copied.',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                            backgroundColor: Colors.green[300],
+                            behavior: SnackBarBehavior.floating,
+                            margin: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.copy_rounded, size: 18),
+                      label: const Text('Copy'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: onSurface,
+                        side: BorderSide(
+                          color: onSurface.withOpacity(dark ? 0.22 : 0.18),
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 12,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    OutlinedButton.icon(
+                      onPressed: () =>
+                          IAMDeviceUtils.launchUrl(widget.checkoutUrl),
+                      icon: const Icon(Icons.open_in_new_rounded, size: 18),
+                      label: const Text('Browser'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: onSurface,
+                        side: BorderSide(
+                          color: onSurface.withOpacity(dark ? 0.22 : 0.18),
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 12,
+                        ),
+                      ),
+                    ),
+                    const Spacer(),
+                    IconButton(
+                      tooltip: 'Refresh',
+                      onPressed: _canEmbedWebView
+                          ? () => _controller?.reload()
+                          : null,
+                      icon: Icon(
+                        Icons.refresh_rounded,
+                        color: onSurface.withOpacity(0.8),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 10),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    IAMSizes.defaultSpace,
+                    0,
+                    IAMSizes.defaultSpace,
+                    16,
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(18),
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: onSurface.withOpacity(dark ? 0.05 : 0.03),
+                        border: Border.all(
+                          color: onSurface.withOpacity(dark ? 0.14 : 0.10),
+                        ),
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                      child: _canEmbedWebView
+                          ? WebViewWidget(controller: _controller!)
+                          : Padding(
+                              padding: const EdgeInsets.all(14),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'In-app checkout isn’t available on Windows.',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleMedium
+                                        ?.copyWith(
+                                          color: onSurface,
+                                          fontWeight: FontWeight.w800,
+                                        ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    'Tap “Browser” to open the secure checkout page.',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.copyWith(
+                                          color: onSurface.withOpacity(0.72),
+                                          height: 1.25,
+                                        ),
+                                  ),
+                                  const SizedBox(height: 14),
+                                  SelectableText(
+                                    widget.checkoutUrl,
+                                    style: Theme.of(context).textTheme.bodySmall
+                                        ?.copyWith(
+                                          color: onSurface,
+                                          height: 1.25,
+                                        ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 }
