@@ -34,7 +34,7 @@ class IAMBillingAmountSection extends StatelessWidget {
           children: [
             Text('Shipping Fee',
                 style: Theme.of(context).textTheme.bodyMedium),
-            Text(IAMFormatter.formatCurrency(shipping.toDouble()),
+            Text(IAMFormatter.formatAccountingAmount(shipping.toDouble()),
                 style: Theme.of(context).textTheme.labelLarge),
           ],
         ),
@@ -43,7 +43,7 @@ class IAMBillingAmountSection extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text('Tax', style: Theme.of(context).textTheme.bodyMedium),
-            Text(IAMFormatter.formatCurrency(tax.toDouble()),
+            Text(IAMFormatter.formatAccountingAmount(tax.toDouble()),
                 style: Theme.of(context).textTheme.labelLarge),
           ],
         ),

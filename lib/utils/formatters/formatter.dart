@@ -19,6 +19,11 @@ class IAMFormatter {
     return format.format(amount);
   }
 
+  /// Plain amount for accounting-style rows (grouping + decimals, no currency symbol).
+  static String formatAccountingAmount(double amount) {
+    return NumberFormat('#,##0.00', 'en_PH').format(amount);
+  }
+
   /// Formats a Philippine mobile phone number into a standard format.
   ///
   /// Supports the following patterns:

@@ -312,10 +312,9 @@ class OrderDetailScreen extends StatelessWidget {
                   children: [
                     const Text('Shipping:'),
                     Text(
-                      NumberFormat.currency(
-                        locale: 'en_PH',
-                        symbol: '₱',
-                      ).format(order.shippingAmount),
+                      IAMFormatter.formatAccountingAmount(
+                        order.shippingAmount.toDouble(),
+                      ),
                     ),
                   ],
                 ),
