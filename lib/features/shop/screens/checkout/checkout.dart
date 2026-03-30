@@ -663,11 +663,24 @@ class _CheckoutWebViewSheetState extends State<_CheckoutWebViewSheet> {
     final surface = dark ? const Color(0xFF0F1115) : IAMColors.white;
     final onSurface = dark ? IAMColors.white : IAMColors.black;
 
-    return DraggableScrollableSheet(
-      initialChildSize: 0.92,
-      minChildSize: 0.55,
-      maxChildSize: 0.98,
-      builder: (context, scrollController) {
+    return NotificationListener<DraggableScrollableNotification>(
+      onNotification: (notification) {
+        // When sheet is dragged down to minimum size, navigate to home
+        if (notification.extent <= notification.minExtent + 0.1) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              Navigator.of(context).popUntil((route) => route.isFirst);
+              Get.offAll(() => const NavigationMenu());
+            }
+          });
+        }
+        return false;
+      },
+      child: DraggableScrollableSheet(
+        initialChildSize: 0.92,
+        minChildSize: 0.55,
+        maxChildSize: 1.0, // Increased from 0.98 to 1.0 for full screen scrolling
+        builder: (context, scrollController) {
         return Container(
           decoration: BoxDecoration(
             color: surface,
@@ -753,7 +766,11 @@ class _CheckoutWebViewSheetState extends State<_CheckoutWebViewSheet> {
                     ),
                     IconButton(
                       tooltip: 'Close',
-                      onPressed: () => Navigator.of(context).pop(),
+                      onPressed: () {
+                        // Navigate to home instead of just popping
+                        Navigator.of(context).popUntil((route) => route.isFirst);
+                        Get.offAll(() => const NavigationMenu());
+                      },
                       icon: Icon(
                         Icons.close_rounded,
                         color: onSurface.withOpacity(0.8),
@@ -918,6 +935,7 @@ class _CheckoutWebViewSheetState extends State<_CheckoutWebViewSheet> {
           ),
         );
       },
+      ),
     );
   }
 }

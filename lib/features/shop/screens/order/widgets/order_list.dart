@@ -83,17 +83,22 @@ class _IAMOrderListItemsState extends State<IAMOrderListItems> {
 
                     final List<OrderItem?> orders = snapshot.data!.data ?? [];
 
-                    if (orders.isEmpty) {
+                    // Filter out unpaid orders
+                    final List<OrderItem?> paidOrders = orders.where((order) {
+                      return order != null && order.paymentStatusName != 'Not Paid';
+                    }).toList();
+
+                    if (paidOrders.isEmpty) {
                       return const Center(child: Text('No orders found'));
                     }
 
                     return ListView.separated(
                       shrinkWrap: true,
-                      itemCount: orders.length,
+                      itemCount: paidOrders.length,
                       separatorBuilder: (_, __) =>
                           const SizedBox(height: IAMSizes.spaceBtwItems),
                       itemBuilder: (_, index) {
-                        final order = orders[index];
+                        final order = paidOrders[index];
                         if (order == null) return const SizedBox.shrink();
 
                         return GestureDetector(
