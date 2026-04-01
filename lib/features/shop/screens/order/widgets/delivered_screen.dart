@@ -5,6 +5,8 @@ import 'package:iam_ecomm/utils/constants/colors.dart';
 import 'package:iam_ecomm/utils/constants/sizes.dart';
 import 'package:iam_ecomm/common/widgets/container/rounded_container.dart';
 import 'package:intl/intl.dart';
+import 'package:iam_ecomm/utils/api/api.dart';
+import 'package:iam_ecomm/utils/api/responses/response_prep.dart';
 
 class DeliveredTab extends StatelessWidget {
   const DeliveredTab({super.key});
@@ -12,24 +14,53 @@ class DeliveredTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dark = IAMHelperFunctions.isDarkMode(context);
-    return Scaffold(
-      backgroundColor: IAMColors.white,
-      body: ListView.separated(
-        padding: const EdgeInsets.all(IAMSizes.md),
-        itemCount: 2, // sample count
-        separatorBuilder: (_, __) =>
-            const SizedBox(height: IAMSizes.spaceBtwItems),
-        itemBuilder: (_, index) {
-          return _orderCard(context);
-        },
-      ),
+
+    return FutureBuilder(
+      future: ApiMiddleware.orders.getOrders(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (!snapshot.hasData ||
+            snapshot.data == null ||
+            !snapshot.data!.success) {
+          return const Center(child: Text('No orders found'));
+        }
+
+        final orders = snapshot.data!.data ?? [];
+
+        if (orders.isEmpty) {
+          return const Center(child: Text('No orders found'));
+        }
+
+        return ListView.separated(
+          padding: const EdgeInsets.all(IAMSizes.md),
+          itemCount: orders.length,
+          separatorBuilder: (_, __) =>
+              const SizedBox(height: IAMSizes.spaceBtwItems),
+          itemBuilder: (_, index) {
+            final order = orders[index];
+            if (order == null) return const SizedBox.shrink();
+
+            DateTime orderDate;
+            try {
+              orderDate = DateFormat(
+                'yyyy-MM-dd HH:mm:ss',
+              ).parse(order.orderDate!);
+            } catch (_) {
+              orderDate = DateTime.now();
+            }
+
+            return _orderCard(context, order, orderDate);
+          },
+        );
+      },
     );
   }
 
   /// ---------------- ORDER CARD ----------------
-  Widget _orderCard(BuildContext context) {
-    final orderDate =
-        DateTime.now(); //sample date habang wala pang delivered :D
+  Widget _orderCard(BuildContext context, OrderItem order, DateTime orderDate) {
     return GestureDetector(
       onTap: () {
         print('Tapped on order card');
@@ -68,8 +99,11 @@ class DeliveredTab extends StatelessWidget {
                         fontWeightDelta: 1,
                       ),
                     ),
+
                     Text(
-                      DateFormat('dd-MMM-yyyy, h:mma').format(orderDate),
+                      DateFormat(
+                        'dd-MMM-yyyy, hh:mma',
+                      ).format(DateTime.parse(order.orderDate)),
                       style: Theme.of(context).textTheme.labelMedium,
                     ),
                   ],
@@ -94,9 +128,17 @@ class DeliveredTab extends StatelessWidget {
                     color: Colors.grey,
                   ),
                 ),
-                const SizedBox(width: 8),
+                // const SizedBox(width: 8),
+                // Text(
+                //   'Order 123456789',
+                //   style: Theme.of(
+                //     context,
+                //   ).textTheme.bodySmall!.copyWith(color: Colors.grey[600]),
+                // ),
+                const SizedBox(width: 4),
+
                 Text(
-                  'Order 123456789',
+                  'Order ${order.orderRefno}',
                   style: Theme.of(
                     context,
                   ).textTheme.bodySmall!.copyWith(color: Colors.grey[600]),
