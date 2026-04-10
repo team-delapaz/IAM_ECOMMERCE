@@ -46,7 +46,7 @@ class ApiEndpoints {
   static String orderByRefNo(String refNo) => '/Orders/$refNo';
 
   // Product Review APIs
-  static const String productReview = '/ProductReview';
+  static const String productReviewCreate = '/ProductReview/Create';
   static String productReviewsByCode(String productCode) => '/ProductReview/$productCode';
 
   // Wishlist APIs
