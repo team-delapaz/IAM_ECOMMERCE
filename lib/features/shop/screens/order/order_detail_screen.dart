@@ -9,6 +9,7 @@ import 'package:iam_ecomm/utils/constants/colors.dart';
 import 'package:iam_ecomm/utils/constants/sizes.dart';
 import 'package:iam_ecomm/utils/helpers/helper_functions.dart';
 import 'package:intl/intl.dart';
+import 'package:iam_ecomm/utils/formatters/formatter.dart';
 
 class OrderDetailScreen extends StatelessWidget {
   final String refNo;
@@ -322,10 +323,9 @@ class OrderDetailScreen extends StatelessWidget {
                   children: [
                     const Text('Shipping:'),
                     Text(
-                      NumberFormat.currency(
-                        locale: 'en_PH',
-                        symbol: '₱',
-                      ).format(order.shippingAmount),
+                      IAMFormatter.formatAccountingAmount(
+                        order.shippingAmount.toDouble(),
+                      ),
                     ),
                   ],
                 ),
@@ -344,7 +344,9 @@ class OrderDetailScreen extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text('Discount:'),
-                      Text('-₱${order.discountAmount.toStringAsFixed(2)}'),
+                      Text(
+                        '-${IAMFormatter.formatCurrency(order.discountAmount.toDouble())}',
+                      ),
                     ],
                   ),
                 const SizedBox(height: 8),

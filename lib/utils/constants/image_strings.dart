@@ -28,22 +28,16 @@ class IAMImages {
 
   // Category Icons
   static const String amazingBarley = "assets/images/categories/bio.png";
-  static const String amazingBarley1 = "assets/images/categories/barley.png";
-  static const String amazingSkinCare =
-      "assets/images/categories/glowing-skin (1).png";
-  static const String deliciousJuiceDrinks =
-      "assets/images/categories/orange-juice.png";
-  static const String deliciousJuiceDrinks1 =
-      "assets/images/categories/juice.png";
+  static const String amazingBarley1 = "assets/images/categories/cat-barley.png";
+  static const String amazingSkinCare = "assets/images/categories/glowing-skin (1).png";
+  static const String deliciousJuiceDrinks = "assets/images/categories/orange-juice.png";
+  static const String deliciousJuiceDrinks1 = "assets/images/categories/cat-juice.png";
   static const String foodSupplements = "assets/images/categories/vitamins.png";
-  static const String foodSupplements1 =
-      "assets/images/categories/supplement.png";
+  static const String foodSupplements1 = "assets/images/categories/cat-supplements.png";
   static const String healthyCoffee = "assets/images/categories/coffee-cup.png";
-  static const String healthyCoffee1 = "assets/images/categories/coffee.png";
-  static const String protectiveAccessories =
-      "assets/images/categories/sunglasses.png";
-  static const String sjkProducts =
-      "assets/images/categories/organic-product.png";
+  static const String healthyCoffee1 = "assets/images/categories/cat-coffee.png";
+  static const String protectiveAccessories = "assets/images/categories/sunglasses.png";
+  static const String sjkProducts = "assets/images/categories/organic-product.png";
   static const String prod1 = "assets/images/categories/organic-product.png";
   static const String prod2 = "assets/images/categories/organic-product.png";
 

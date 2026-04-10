@@ -8,15 +8,17 @@ class ProductReviewApi {
 
   final ApiClient _client;
 
-  /// Add a product review
+  /// Add a product review (POST /ProductReview/Create)
   Future<ApiResponse<dynamic>> addReview({
+    required String orderRefNo,
     required String productCode,
     required int rating,
     required String reviewComment,
   }) {
     return _client.post<dynamic>(
-      ApiEndpoints.productReview,
+      ApiEndpoints.productReviewCreate,
       body: {
+        'orderRefNo': orderRefNo,
         'productCode': productCode,
         'rating': rating,
         'reviewComment': reviewComment,

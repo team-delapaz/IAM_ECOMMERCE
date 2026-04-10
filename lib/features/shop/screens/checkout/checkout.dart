@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iam_ecomm/common/widgets/appbar/appbar.dart';
 import 'package:iam_ecomm/common/widgets/container/rounded_container.dart';
+import 'package:iam_ecomm/common/widgets/images/iam_rounded_images.dart';
 import 'package:iam_ecomm/common/widgets/products.cart/coupon_widget.dart';
 import 'package:iam_ecomm/common/widgets/success_screen/success_screen.dart';
 import 'package:iam_ecomm/features/authentication/controllers/auth_controller.dart';
@@ -9,7 +10,6 @@ import 'package:iam_ecomm/features/shop/controllers/products/checkout_controller
 import 'package:iam_ecomm/features/shop/screens/checkout/widget/billing_address_section.dart';
 import 'package:iam_ecomm/features/shop/screens/checkout/widget/billing_amount_section.dart';
 import 'package:iam_ecomm/features/shop/screens/checkout/widget/billing_payment_provider_section.dart';
-import 'package:iam_ecomm/features/shop/screens/checkout/widget/billing_payment_section.dart';
 import 'package:iam_ecomm/navigation_menu.dart';
 import 'package:iam_ecomm/utils/api/api.dart';
 import 'package:iam_ecomm/utils/api/core/api_response.dart';
@@ -18,10 +18,12 @@ import 'package:iam_ecomm/utils/constants/colors.dart';
 import 'package:iam_ecomm/utils/constants/image_strings.dart';
 import 'package:iam_ecomm/utils/constants/sizes.dart';
 import 'package:iam_ecomm/utils/device/device_utility.dart';
+import 'package:iam_ecomm/utils/formatters/formatter.dart';
 import 'package:iam_ecomm/utils/helpers/helper_functions.dart';
 import 'package:iam_ecomm/utils/local_storage/storage_utility.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
+import 'dart:math' as math;
 import 'package:webview_flutter/webview_flutter.dart';
 
 class CheckoutScreen extends StatefulWidget {
@@ -115,6 +117,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       isScrollControlled: true,
       useSafeArea: true,
       backgroundColor: Colors.transparent,
+      isDismissible: false,
+      enableDrag: false,
       builder: (_) {
         return _CheckoutWebViewSheet(
           checkoutUrl: checkoutUrl,
@@ -160,6 +164,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               qty: i.qty,
               price: i.sellingPrice,
               lineTotal: i.lineTotal,
+              imageUrl: i.imageUrl,
             ),
           )
           .toList();
@@ -201,6 +206,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           qty: qty,
           price: price,
           lineTotal: lineTotal,
+          imageUrl: product?.imageUrl ?? '',
         ),
       );
     }
@@ -237,7 +243,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       final memberRes = await ApiMiddleware.member.getMember();
       if (!memberRes.success || memberRes.data == null) {
         // Fallback: use idNo from selected address if available
-        memberIdno = selectedAddress.idNo ?? '';
+        memberIdno = selectedAddress.idNo;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -258,7 +264,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       }
     } else {
       // Not logged in: fallback to address idNo if available
-      memberIdno = selectedAddress.idNo ?? '';
+      memberIdno = selectedAddress.idNo;
     }
 
     final notesInput = _notesController.text.trim();
@@ -369,7 +375,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         image: IAMImages.successfulPaymentIcon,
         title: 'Payment Successful!',
         subTitle: orderRef.isNotEmpty
-            ? 'Order $orderRef · Total ₱${totalAmount.toStringAsFixed(2)}'
+            ? 'Order $orderRef · Total ${IAMFormatter.formatCurrency(totalAmount.toDouble())}'
             : 'Your items will be shipped soon!',
         onPressed: () => Get.offAll(() => const NavigationMenu()),
       ),
@@ -419,14 +425,51 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     itemBuilder: (context, index) {
                       final item = model.items[index];
                       return ListTile(
+                        leading: item.imageUrl.isNotEmpty
+                            ? IAMRoundedImage(
+                                width: 48,
+                                height: 48,
+                                imageUrl: item.imageUrl,
+                                isNetworkImage: true,
+                                fit: BoxFit.cover,
+                                backgroundColor:
+                                    dark ? IAMColors.black : IAMColors.white,
+                              )
+                            : Container(
+                                width: 48,
+                                height: 48,
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(
+                                  color: dark
+                                      ? IAMColors.darkGrey
+                                      : IAMColors.light,
+                                  borderRadius:
+                                      BorderRadius.circular(IAMSizes.md),
+                                ),
+                                child: const Icon(
+                                  Icons.image_not_supported_outlined,
+                                  size: 20,
+                                ),
+                              ),
                         title: Text(
                           item.name,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        subtitle: Text('x${item.qty}  ·  ${item.productCode}'),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text('x${item.qty}  ·  ${item.productCode}'),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Price: ${IAMFormatter.formatCurrency(item.price.toDouble())}',
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                          ],
+                        ),
                         trailing: Text(
-                          '₱${item.lineTotal.toStringAsFixed(2)}',
+                          IAMFormatter.formatCurrency(item.lineTotal.toDouble()),
                           style: Theme.of(context).textTheme.bodyLarge
                               ?.copyWith(fontWeight: FontWeight.w600),
                         ),
@@ -456,8 +499,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         const Divider(),
                         const SizedBox(height: IAMSizes.spaceBtwItems),
                         IAMBillingPaymentProviderSection(),
-                        const SizedBox(height: IAMSizes.spaceBtwItems),
-                        IAMBillingPaymentSection(),
                         const SizedBox(height: IAMSizes.spaceBtwItems),
                         IAMBillingAddressSection(
                           onAddressAvailabilityChanged: (hasAddress) {
@@ -493,28 +534,31 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           final hasItems = model != null && model.items.isNotEmpty;
           final subtotal = model?.subtotal ?? 0;
           return Obx(() {
-            final paymentMethodSelected =
-                _checkoutController.selectedPaymentMethod.value.name.isNotEmpty;
+            final paymentProviderSelected =
+                _checkoutController.selectedPaymentProviderCode.isNotEmpty;
             String? warningMessage;
             if (!hasItems) {
               warningMessage = 'Your cart is empty.';
-            } else if (!paymentMethodSelected) {
-              warningMessage = 'Please select a payment method.';
+            } else if (!paymentProviderSelected) {
+              warningMessage = 'Please select a payment provider.';
             }
-            return Padding(
-              padding: const EdgeInsets.all(IAMSizes.defaultSpace),
+            return SafeArea(
+              top: false,
+              minimum: const EdgeInsets.all(IAMSizes.defaultSpace),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   ElevatedButton(
-                    onPressed: () {
+                    onPressed: (!hasItems || !paymentProviderSelected)
+                        ? null
+                        : () {
                       if (!hasItems) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: const Text(
                               'Your cart is empty.',
-                              style: TextStyle(color: Colors.white),
+                              style: TextStyle(color: Color.fromARGB(255, 35, 35, 35)),
                             ),
                             backgroundColor: Colors.red[300],
                             behavior: SnackBarBehavior.floating,
@@ -526,12 +570,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         );
                         return;
                       }
-                      if (!paymentMethodSelected) {
+                      if (!paymentProviderSelected) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: const Text(
                               'Please select a payment method.',
-                              style: TextStyle(color: Colors.white),
+                              style: TextStyle(color: Color.fromARGB(255, 35, 35, 35)),
                             ),
                             backgroundColor: Colors.red[300],
                             behavior: SnackBarBehavior.floating,
@@ -549,6 +593,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: IAMColors.primary,
                       foregroundColor: IAMColors.white,
+                      disabledBackgroundColor: IAMColors.grey,
+                      disabledForegroundColor: IAMColors.white,
                       padding: const EdgeInsets.symmetric(
                         vertical: IAMSizes.md,
                       ),
@@ -558,19 +604,15 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         ),
                       ),
                     ),
-                    child: Text('Checkout ₱${subtotal.toStringAsFixed(2)}'),
-                  ),
-                  if (warningMessage != null) ...[
-                    const SizedBox(height: 8),
-                    Text(
-                      warningMessage,
-                      style: const TextStyle(
-                        color: Colors.red,
-                        fontWeight: FontWeight.w600,
-                      ),
+                    child: Text(
+                      ((!hasItems || !paymentProviderSelected) &&
+                                  warningMessage !=
+                                      null)
+                              ? warningMessage
+                              : 'Checkout ${IAMFormatter.formatCurrency(subtotal.toDouble())}',
                       textAlign: TextAlign.center,
                     ),
-                  ],
+                  ),
                 ],
               ),
             );
@@ -584,6 +626,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 class _CheckoutItemView {
   final String productCode;
   final String name;
+  final String imageUrl;
   final int qty;
   final num price;
   final num lineTotal;
@@ -591,6 +634,7 @@ class _CheckoutItemView {
   _CheckoutItemView({
     required this.productCode,
     required this.name,
+    required this.imageUrl,
     required this.qty,
     required this.price,
     required this.lineTotal,
@@ -628,6 +672,18 @@ class _CheckoutWebViewSheetState extends State<_CheckoutWebViewSheet> {
   WebViewController? _controller;
   int _progress = 0;
   late final bool _canEmbedWebView;
+  double _dragOffsetY = 0;
+  bool _isExiting = false;
+
+  void _redirectToHomeWithBottomNav() {
+    if (_isExiting) return;
+    _isExiting = true;
+
+    if (mounted) {
+      Navigator.of(context).pop();
+    }
+    Get.offAll(() => const NavigationMenu());
+  }
 
   @override
   void initState() {
@@ -661,33 +717,63 @@ class _CheckoutWebViewSheetState extends State<_CheckoutWebViewSheet> {
     final surface = dark ? const Color(0xFF0F1115) : IAMColors.white;
     final onSurface = dark ? IAMColors.white : IAMColors.black;
 
-    return DraggableScrollableSheet(
-      initialChildSize: 0.92,
-      minChildSize: 0.55,
-      maxChildSize: 0.98,
-      builder: (context, scrollController) {
-        return Container(
-          decoration: BoxDecoration(
-            color: surface,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(dark ? 0.55 : 0.25),
-                blurRadius: 24,
-                offset: const Offset(0, -8),
-              ),
-            ],
-          ),
+    return FractionallySizedBox(
+      heightFactor: 0.92,
+      alignment: Alignment.bottomCenter,
+      child: Container(
+        decoration: BoxDecoration(
+          color: surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(dark ? 0.55 : 0.25),
+              blurRadius: 24,
+              offset: const Offset(0, -8),
+            ),
+          ],
+        ),
+        child: Transform.translate(
+          offset: Offset(0, _dragOffsetY),
           child: Column(
             mainAxisSize: MainAxisSize.max,
             children: [
               const SizedBox(height: 10),
-              Container(
-                width: 44,
-                height: 5,
-                decoration: BoxDecoration(
-                  color: onSurface.withOpacity(dark ? 0.22 : 0.16),
-                  borderRadius: BorderRadius.circular(999),
+              GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onVerticalDragUpdate: (details) {
+                  if (_isExiting) return;
+                  // Only react when the user drags downward.
+                  if (details.delta.dy <= 0) return;
+
+                  setState(() {
+                    _dragOffsetY = math.min(
+                      _dragOffsetY + details.delta.dy,
+                      220,
+                    );
+                  });
+                },
+                onVerticalDragEnd: (_) {
+                  if (_isExiting) return;
+
+                  const closeThreshold = 120.0;
+                  if (_dragOffsetY >= closeThreshold) {
+                    _redirectToHomeWithBottomNav();
+                  } else {
+                    setState(() => _dragOffsetY = 0);
+                  }
+                },
+                child: SizedBox(
+                  height: 28,
+                  child: Center(
+                    child: Container(
+                      width: 44,
+                      height: 5,
+                      decoration: BoxDecoration(
+                        color: onSurface.withOpacity(dark ? 0.22 : 0.16),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(height: 12),
@@ -751,7 +837,9 @@ class _CheckoutWebViewSheetState extends State<_CheckoutWebViewSheet> {
                     ),
                     IconButton(
                       tooltip: 'Close',
-                      onPressed: () => Navigator.of(context).pop(),
+                      onPressed: () {
+                        _redirectToHomeWithBottomNav();
+                      },
                       icon: Icon(
                         Icons.close_rounded,
                         color: onSurface.withOpacity(0.8),
@@ -914,8 +1002,8 @@ class _CheckoutWebViewSheetState extends State<_CheckoutWebViewSheet> {
               ),
             ],
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 }

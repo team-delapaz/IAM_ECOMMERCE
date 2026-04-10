@@ -13,58 +13,32 @@ class IAMTermsAndConditions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dark = IAMHelperFunctions.isDarkMode(context);
-    return Row(
+    final bodySmall = Theme.of(context).textTheme.bodySmall;
+    final linkStyle = Theme.of(context).textTheme.bodyMedium!.apply(
+      color: dark ? IAMColors.white : IAMColors.primary,
+      decoration: TextDecoration.underline,
+    );
+
+    return Wrap(
+      crossAxisAlignment: WrapCrossAlignment.center,
+      runSpacing: 4,
       children: [
-        SizedBox(
-          width: 24,
-          height: 24,
-          child: Checkbox(value: true, onChanged: (value) {}),
+        Checkbox(
+          value: true,
+          onChanged: (value) {},
+          visualDensity: const VisualDensity(horizontal: -2, vertical: -2),
+          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
         ),
-        const SizedBox(height: IAMSizes.spaceBtwItems),
-        Text.rich(
-          TextSpan(
-            children: [
-              TextSpan(
-                text: ' ${IAMTexts.iAgreeTo} ',
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-
-              WidgetSpan(
-                child: GestureDetector(
-                  onTap: () {
-                    Get.to(() => const PrivacyPolicyScreen());
-                  },
-                  child: Text(
-                    IAMTexts.privacyPolicy,
-                    style: Theme.of(context).textTheme.bodyMedium!.apply(
-                      color: dark ? IAMColors.white : IAMColors.primary,
-                      decoration: TextDecoration.underline,
-                    ),
-                  ),
-                ),
-              ),
-
-              TextSpan(
-                text: ' ${IAMTexts.and} ',
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-
-              WidgetSpan(
-                child: GestureDetector(
-                  onTap: () {
-                    Get.to(() => const TermsConditionsScreen());
-                  },
-                  child: Text(
-                    IAMTexts.termsOfUse,
-                    style: Theme.of(context).textTheme.bodyMedium!.apply(
-                      color: dark ? IAMColors.white : IAMColors.primary,
-                      decoration: TextDecoration.underline,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
+        SizedBox(width: IAMSizes.spaceBtwItems),
+        Text(' ${IAMTexts.iAgreeTo}', style: bodySmall),
+        GestureDetector(
+          onTap: () => Get.to(() => const PrivacyPolicyScreen()),
+          child: Text(IAMTexts.privacyPolicy, style: linkStyle),
+        ),
+        Text(' ${IAMTexts.and}', style: bodySmall),
+        GestureDetector(
+          onTap: () => Get.to(() => const TermsConditionsScreen()),
+          child: Text(IAMTexts.termsOfUse, style: linkStyle),
         ),
       ],
     );

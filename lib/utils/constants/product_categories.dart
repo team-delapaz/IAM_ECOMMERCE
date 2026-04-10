@@ -5,7 +5,7 @@ class ProductCategories {
 
   //static const int iamPackages = 1;
   static const int amazingBarley = 2;
-  static const int awesomeBeautyProducts = 3;
+  //static const int awesomeBeautyProducts = 3;
   static const int deliciousJuiceDrinks = 4;
   static const int foodSupplements = 5;
   static const int healthyCoffee = 6;
@@ -14,7 +14,7 @@ class ProductCategories {
   static const List<int> ids = [
     //iamPackages,
     amazingBarley,
-    awesomeBeautyProducts,
+    //awesomeBeautyProducts,
     deliciousJuiceDrinks,
     foodSupplements,
     healthyCoffee,
@@ -23,7 +23,7 @@ class ProductCategories {
   static const List<String> names = [
     //'IAM Packages',
     'Amazing Barley',
-    'Awesome Beauty',
+    //'Awesome Beauty',
     'Delicious Juice Drinks',
     'Food Supplements',
     'Healthy Coffee',
