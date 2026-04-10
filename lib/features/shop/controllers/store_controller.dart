@@ -14,8 +14,9 @@ class StoreController extends GetxController {
   /// Error message per category.
   final errorByCategory = <int, String>{}.obs;
 
-  /// Featured products (from category 1 by default)
-  List<ProductItem> get featuredProducts => productsFor(1).take(2).toList();
+  final featuredProducts = <ProductItem>[].obs;
+  final featuredLoading = false.obs;
+  final featuredError = ''.obs;
 
   Future<void> fetchProductsByCategory(int categoryId) async {
     print('Fetching products for category $categoryId');
@@ -49,9 +50,21 @@ class StoreController extends GetxController {
     }
   }
 
-  /// Fetch featured products (first 2 products from category 1)
+  /// Fetch featured products from /Products with isFeatured = true.
   Future<void> fetchFeaturedProducts() async {
-    await fetchProductsByCategory(1);
+    featuredLoading.value = true;
+    featuredError.value = '';
+    final res = await ApiMiddleware.products.getProducts();
+    featuredLoading.value = false;
+    if (!res.success) {
+      featuredError.value = res.message;
+      featuredProducts.clear();
+      return;
+    }
+    final list = res.data ?? [];
+    featuredProducts.assignAll(
+      list.whereType<ProductItem>().where((p) => p.isFeatured),
+    );
   }
 
   bool isLoading(int categoryId) => loadingByCategory[categoryId] ?? false;

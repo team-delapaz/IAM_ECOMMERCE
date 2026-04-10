@@ -48,7 +48,15 @@ class _IAMBottomAddToCartState extends State<IAMBottomAddToCart> {
       await storage.saveData('guest_cart', cart);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Item added to cart (guest).')),
+        SnackBar(
+          content: const Text(
+            'Item added to cart (guest).',
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.green[300],
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        ),
       );
       return;
     }
@@ -58,14 +66,29 @@ class _IAMBottomAddToCartState extends State<IAMBottomAddToCart> {
 
     if (res.success) {
       final msg = res.message.isNotEmpty ? res.message : 'Item added to cart.';
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(msg, style: const TextStyle(color: Colors.white)),
+          backgroundColor: Colors.green[300],
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        ),
+      );
     } else {
       final msg = res.message.isNotEmpty
           ? res.message
           : 'Unable to add item to cart.';
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Add to cart failed: $msg')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Add to cart failed: $msg',
+            style: const TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.red[300],
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        ),
+      );
     }
   }
 

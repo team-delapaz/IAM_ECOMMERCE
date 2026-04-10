@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:iam_ecomm/common/widgets/container/rounded_container.dart';
 import 'package:iam_ecomm/common/widgets/icons/circular_icon.dart';
 import 'package:iam_ecomm/common/widgets/images/iam_rounded_images.dart';
@@ -16,6 +17,7 @@ import 'package:iam_ecomm/utils/constants/image_strings.dart';
 import 'package:iam_ecomm/utils/constants/sizes.dart';
 import 'package:iam_ecomm/utils/helpers/helper_functions.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:iam_ecomm/features/shop/controllers/wishlist_controller.dart';
 
 class IAMProductCardHorizontal extends StatelessWidget {
   const IAMProductCardHorizontal({super.key, this.product});
@@ -44,7 +46,15 @@ class IAMProductCardHorizontal extends StatelessWidget {
       await storage.saveData('guest_cart', cart);
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Item added to cart (guest).')),
+        SnackBar(
+          content: const Text(
+            'Item added to cart (guest).',
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.green[300],
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        ),
       );
       return;
     }
@@ -57,22 +67,36 @@ class IAMProductCardHorizontal extends StatelessWidget {
         : (res.message.isNotEmpty
               ? res.message
               : 'Unable to add item to cart.');
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(msg, style: const TextStyle(color: Colors.white)),
+        backgroundColor: res.success ? Colors.green : Colors.red[300],
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      ),
+    );
   }
 
   static String _formatPrice(num value) {
-    if (value == value.roundToDouble()) {
-      return value.toInt().toString();
-    }
-    return value.toStringAsFixed(2);
+    return NumberFormat('#,##0.00', 'en_PH').format(value);
   }
 
   @override
   Widget build(BuildContext context) {
     final auth = AuthController.instance;
+    final wishlistController = Get.put(WishlistController());
 
     return Obx(() {
       final dark = IAMHelperFunctions.isDarkMode(context);
+      final productCode = product?.productCode;
+      final wishlisted = productCode == null
+          ? false
+          : (wishlistController.wishlistedByCode[productCode] ?? false);
+      final toggling = productCode == null
+          ? false
+          : (wishlistController.togglingByCode[productCode] ?? false);
+
       final imageUrl = product?.imageUrl ?? IAMImages.pibarcap;
       final isNetwork = product != null;
       final title = product?.productName ?? 'Amazing Pure Organic Barley Drink';
@@ -142,12 +166,47 @@ class IAMProductCardHorizontal extends StatelessWidget {
                           ),
                         ),
                       ),
-                    const Positioned(
+                    Positioned(
                       top: 0,
                       right: 0,
                       child: IAMCircularIcon(
-                        icon: Iconsax.heart5,
-                        color: Colors.red,
+                        icon: wishlisted ? Iconsax.heart : Iconsax.heart5,
+                        color: wishlisted
+                            ? Colors.red
+                            : (dark
+                                ? IAMColors.lightGrey
+                                : IAMColors.darkGrey),
+                        onPressed: productCode == null || toggling
+                            ? null
+                            : () {
+                                wishlistController
+                                    .toggleWishlist(productCode)
+                                    .then((result) {
+                                  if (!context.mounted) return;
+                                  if (result.message.isEmpty) return;
+
+                                  final backgroundColor = result.wishlisted
+                                      ? Colors.green[300]
+                                      : Colors.red[300];
+
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        result.message,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                      backgroundColor: backgroundColor,
+                                      behavior: SnackBarBehavior.floating,
+                                      margin: const EdgeInsets.symmetric(
+                                        horizontal: 16,
+                                        vertical: 8,
+                                      ),
+                                    ),
+                                  );
+                                });
+                              },
                       ),
                     ),
                   ],

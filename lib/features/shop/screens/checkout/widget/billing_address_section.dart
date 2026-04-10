@@ -80,16 +80,21 @@ class _IAMBillingAddressSectionState extends State<IAMBillingAddressSection> {
     setState(() => _selectedAddress = address);
     widget.onAddressSelected?.call(address);
 
-    final res =
-        await ApiMiddleware.address.setDefaultAddress(address.autoId);
+    final res = await ApiMiddleware.address.setDefaultAddress(address.autoId);
     if (!mounted) return;
 
     if (!res.success) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(res.message.isNotEmpty
-              ? res.message
-              : 'Unable to set default address.'),
+          content: Text(
+            res.message.isNotEmpty
+                ? res.message
+                : 'Unable to set default address.',
+            style: const TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.red[300],
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         ),
       );
       return;

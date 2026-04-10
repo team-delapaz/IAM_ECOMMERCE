@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:iam_ecomm/navigation_menu.dart';
+import 'package:iam_ecomm/utils/local_storage/storage_utility.dart';
 
 class OnboardingController extends GetxController {
   static OnboardingController get instance => Get.find();
@@ -21,8 +22,7 @@ class OnboardingController extends GetxController {
   //Update Current index and jump to next page
   void nextPage() {
     if (currentPageIndex.value == 2) {
-      // Login is optional - proceed to main app (Home)
-      Get.offAll(() => const NavigationMenu());
+      _completeOnboarding();
     } else {
       int page = currentPageIndex.value + 1;
       pageController.jumpToPage(page);
@@ -31,7 +31,15 @@ class OnboardingController extends GetxController {
 
   //Update Current Index and jump to the last page
   void skipPage() {
-    // Skip onboarding and proceed to main app (Home)
+    _completeOnboarding();
+  }
+
+  Future<void> _completeOnboarding() async {
+    // Mark onboarding as seen so it won't show again on next app launch.
+    final storage = IAMLocalStorage();
+    await storage.saveData('has_seen_onboarding', true);
+
+    // Skip onboarding and proceed to main app (Home with bottom navigation).
     Get.offAll(() => const NavigationMenu());
   }
 }
