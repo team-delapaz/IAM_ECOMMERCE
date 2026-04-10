@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:iam_ecomm/common/widgets/container/rounded_container.dart';
+import 'package:iam_ecomm/features/shop/screens/order/widgets/track_order_screen.dart';
+import 'package:iam_ecomm/features/shop/screens/order/widgets/tracking_screen.dart';
 import 'package:iam_ecomm/utils/api/api.dart';
 import 'package:iam_ecomm/utils/api/responses/response_prep.dart';
 import 'package:iam_ecomm/utils/api/core/api_response.dart';
@@ -58,7 +60,16 @@ class OrderDetailScreen extends StatelessWidget {
                                 Material(
                                   color: Colors.transparent,
                                   child: InkWell(
-                                    onTap: () {},
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              const TrackingOrderScreen(),
+                                        ),
+                                      );
+                                    },
+
                                     child: Container(
                                       width: double.infinity,
                                       padding: const EdgeInsets.symmetric(
@@ -85,7 +96,7 @@ class OrderDetailScreen extends StatelessWidget {
                                               ),
                                               const SizedBox(height: 4),
                                               Text(
-                                                'JnT Courier • Order #${order.orderRefno}',
+                                                'Sample Courier • Order #${order.orderRefno}',
                                                 style: Theme.of(context)
                                                     .textTheme
                                                     .bodySmall!

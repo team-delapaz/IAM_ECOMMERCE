@@ -52,7 +52,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         AuthController.instance.isLoggedIn.value;
 
     if (!isLoggedIn) {
-      ////TEmporary section while waiting for guest session api
       final storage = IAMLocalStorage();
       final existing = storage.readData<List>('guest_cart') ?? [];
       final cart = existing
@@ -198,9 +197,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   IAMProductMetaData(product: product),
                   const SizedBox(height: IAMSizes.spaceBtwItems / 1.5),
 
-                  // -- ATTRIBUTES
-                  /*IAMProductAttributes(),
-                  const SizedBox(height: IAMSizes.spaceBtwSections),*/
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
@@ -209,11 +205,13 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     ),
                   ),
                   const SizedBox(height: IAMSizes.spaceBtwSections),
+
                   const IAMSectionHeading(
                     title: 'Description',
                     showActionButton: false,
                   ),
                   const SizedBox(height: IAMSizes.spaceBtwItems),
+
                   ReadMoreText(
                     product.longDesc.isNotEmpty
                         ? product.longDesc
@@ -231,14 +229,36 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       fontWeight: FontWeight.w800,
                     ),
                   ),
+
                   const Divider(),
                   const SizedBox(height: IAMSizes.spaceBtwItems),
+
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const IAMSectionHeading(
-                        title: 'Review(19)',
-                        showActionButton: false,
+                      FutureBuilder(
+                        future: product?.productCode != null
+                            ? ApiMiddleware.productReview.getReviews(
+                                product!.productCode,
+                              )
+                            : null,
+                        builder: (context, snapshot) {
+                          int reviewCount = 0;
+
+                          if (snapshot.hasData &&
+                              snapshot.data != null &&
+                              snapshot.data!.success) {
+                            final reviews = snapshot.data!.data ?? [];
+                            reviewCount = reviews
+                                .where((r) => r != null)
+                                .length;
+                          }
+
+                          return IAMSectionHeading(
+                            title: 'Review($reviewCount)',
+                            showActionButton: false,
+                          );
+                        },
                       ),
                       IconButton(
                         onPressed: () {},
@@ -246,6 +266,68 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       ),
                     ],
                   ),
+
+                  const SizedBox(height: IAMSizes.spaceBtwItems),
+
+                  FutureBuilder(
+                    future: product?.productCode != null
+                        ? ApiMiddleware.productReview.getReviews(
+                            product!.productCode,
+                          )
+                        : null,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+
+                      if (!snapshot.hasData ||
+                          snapshot.data == null ||
+                          !snapshot.data!.success) {
+                        return const Text('No reviews found');
+                      }
+
+                      final reviews = snapshot.data!.data ?? [];
+
+                      if (reviews.isEmpty) {
+                        return const Text('No reviews yet');
+                      }
+
+                      return Column(
+                        children: reviews.map((review) {
+                          if (review == null) return const SizedBox();
+
+                          return Container(
+                            width: double.infinity,
+                            margin: const EdgeInsets.only(
+                              bottom: IAMSizes.spaceBtwItems,
+                            ),
+                            padding: const EdgeInsets.all(IAMSizes.md),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[100],
+                              borderRadius: BorderRadius.circular(IAMSizes.sm),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  review.reviewComment ?? 'No comment',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Rating: ${review.rating ?? 0}',
+                                  style: const TextStyle(color: Colors.grey),
+                                ),
+                              ],
+                            ),
+                          );
+                        }).toList(),
+                      );
+                    },
+                  ),
+
                   const SizedBox(height: IAMSizes.spaceBtwSections),
                 ],
               ),
