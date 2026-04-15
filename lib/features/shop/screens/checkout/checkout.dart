@@ -594,7 +594,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       backgroundColor: IAMColors.primary,
                       foregroundColor: IAMColors.white,
                       disabledBackgroundColor: IAMColors.grey,
-                      disabledForegroundColor: IAMColors.white,
+                      disabledForegroundColor: const Color.fromARGB(255, 146, 0, 0),
                       padding: const EdgeInsets.symmetric(
                         vertical: IAMSizes.md,
                       ),

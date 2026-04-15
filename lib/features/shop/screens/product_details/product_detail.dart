@@ -18,6 +18,8 @@ import 'package:iam_ecomm/utils/local_storage/storage_utility.dart';
 import 'package:iam_ecomm/common/widgets/loaders/skeleton.dart';
 import 'package:readmore/readmore.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:iam_ecomm/utils/constants/colors.dart';
+import 'package:iam_ecomm/utils/helpers/helper_functions.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   const ProductDetailScreen({super.key, this.product});
@@ -143,7 +145,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
             return IAMCircularIcon(
               icon: wishlisted ? Iconsax.heart : Iconsax.heart5,
-              color: !isLoggedIn ? Colors.grey : (wishlisted ? Colors.red : null),
+              color: !isLoggedIn ? IAMColors.darkGrey : (wishlisted ? Colors.red : (IAMHelperFunctions.isDarkMode(context)
+                                ? IAMColors.lightGrey
+                                : IAMColors.darkGrey)),
               onPressed: (!isLoggedIn || productCode.isEmpty || toggling)
                   ? null
                   : () {
