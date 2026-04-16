@@ -165,6 +165,53 @@ class WishlistCheckItem {
   }
 }
 
+class WalletBalanceData {
+  final String accountId;
+  final num balance;
+
+  WalletBalanceData({
+    required this.accountId,
+    required this.balance,
+  });
+
+  static WalletBalanceData? fromJson(dynamic json) {
+    final m = asMap(json);
+    if (m == null) return null;
+    return WalletBalanceData(
+      accountId: m['accountId'] as String? ?? '',
+      balance: (m['balance'] as num?) ?? 0,
+    );
+  }
+}
+
+class WalletOrderPaymentData {
+  final String accountId;
+  final String orderRefNo;
+  final String paymentRefNo;
+  final num amount;
+  final num remainingBalance;
+
+  WalletOrderPaymentData({
+    required this.accountId,
+    required this.orderRefNo,
+    required this.paymentRefNo,
+    required this.amount,
+    required this.remainingBalance,
+  });
+
+  static WalletOrderPaymentData? fromJson(dynamic json) {
+    final m = asMap(json);
+    if (m == null) return null;
+    return WalletOrderPaymentData(
+      accountId: m['accountId'] as String? ?? '',
+      orderRefNo: m['orderRefNo'] as String? ?? '',
+      paymentRefNo: m['paymentRefNo'] as String? ?? '',
+      amount: (m['amount'] as num?) ?? 0,
+      remainingBalance: (m['remainingBalance'] as num?) ?? 0,
+    );
+  }
+}
+
 class UserInfo {
   final String idno;
   final String codedIdno;

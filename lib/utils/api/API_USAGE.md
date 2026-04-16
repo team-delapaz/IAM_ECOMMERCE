@@ -101,6 +101,13 @@ await ApiMiddleware.init();
 - `ApiMiddleware.wishlist.removeWishlist(productCode)` → `ApiResponse<dynamic>`
 - `ApiMiddleware.wishlist.checkWishlist(productCode)` → `ApiResponse<WishlistCheckItem?>`
 
+## Wallet (JWT required)
+
+- `ApiMiddleware.wallet.getBalance()` → `ApiResponse<WalletBalanceData?>` (GET `/Wallet/Balance`)
+- `ApiMiddleware.wallet.validateOrder(amount: ..., orderRefNo: ..., remarks: ...)` → `ApiResponse<WalletOrderPaymentData?>` (POST `/Wallet/ValidateOrder`)
+- `ApiMiddleware.wallet.payOrder(amount: ..., orderRefNo: ..., remarks: ...)` → `ApiResponse<WalletOrderPaymentData?>` (POST `/Wallet/PayOrder`)
+- `ApiMiddleware.wallet.getTransaction(tranno)` → `ApiResponse<dynamic>` (GET `/Wallet/Transaction/{tranno}`)
+
 ## Response handling
 
 ```dart

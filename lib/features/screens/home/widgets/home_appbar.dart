@@ -3,7 +3,9 @@ import 'package:get/get.dart';
 import 'package:iam_ecomm/common/widgets/appbar/appbar.dart';
 import 'package:iam_ecomm/common/widgets/products.cart/cart_menu_icon.dart';
 import 'package:iam_ecomm/features/authentication/controllers/auth_controller.dart';
+import 'package:iam_ecomm/features/screens/home/widgets/iam_wallet_balance_sheet.dart';
 import 'package:iam_ecomm/utils/constants/colors.dart';
+import 'package:iam_ecomm/utils/constants/image_strings.dart';
 import 'package:iam_ecomm/utils/constants/text_strings.dart';
 
 class IAMHomeAppBar extends StatelessWidget {
@@ -38,6 +40,26 @@ class IAMHomeAppBar extends StatelessWidget {
         ],
       ),
       actions: [
+        IconButton(
+          tooltip: 'IAM Wallet balance',
+          onPressed: () => showIamWalletBalanceQuickSheet(context),
+          style: IconButton.styleFrom(
+            minimumSize: const Size(48, 48),
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
+          icon: Image.asset(
+            IAMImages.walletIconW,
+            width: 26,
+            height: 26,
+            fit: BoxFit.contain,
+            semanticLabel: 'IAM Wallet',
+            errorBuilder: (_, __, ___) => Icon(
+              Icons.account_balance_wallet_outlined,
+              color: IAMColors.white.withOpacity(0.95),
+              size: 26,
+            ),
+          ),
+        ),
         IAMCartCounterIcon(onPressed: () {}, iconColor: IAMColors.white),
       ],
     );

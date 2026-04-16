@@ -452,6 +452,7 @@ void _showViewReviewModal(BuildContext context, ProductReviewItem review) {
 
 /// ---------------- RATING SHEET ----------------
 class _RatingSheet extends StatefulWidget {
+  final String orderRefNo;
   final String productCode;
   final String orderRefNo;
 
@@ -564,7 +565,9 @@ class _RatingSheetState extends State<_RatingSheet> {
                   }
 
                   try {
-                    final response = await ApiMiddleware.productReview.addReview(
+                    final response = await ApiMiddleware.productReview
+                        .addReview(
+                          orderRefNo: widget.orderRefNo,
                           productCode: widget.productCode,
                           orderRefNo: widget.orderRefNo,
                           rating: _rating,
@@ -589,7 +592,9 @@ class _RatingSheetState extends State<_RatingSheet> {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text(
-                            response.message ?? 'Failed to submit review',
+                            response.message.isNotEmpty
+                                ? response.message
+                                : 'Failed to submit review',
                           ),
                           backgroundColor: Colors.red[300],
                           behavior: SnackBarBehavior.floating,

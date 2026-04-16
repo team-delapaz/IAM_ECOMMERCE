@@ -95,6 +95,8 @@ class IAMImages {
   static const String maya = "assets/images/payments/maya.png";
   static const String gcash = "assets/images/payments/gcash.png";
   static const String iamwallet = "assets/images/payments/iamwallet.png";
+  static const String walletIcon = "assets/images/payments/wallet-icon.png";
+  static const String walletIconW = "assets/images/payments/wallet-icon-w.png";
   static const String cod = "assets/images/payments/cod.png";
   static const String successfulPaymentIcon =
       "assets/images/payments/successpayment.png";

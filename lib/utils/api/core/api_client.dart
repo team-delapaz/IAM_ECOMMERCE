@@ -19,6 +19,7 @@ class ApiClient {
   }
 
   void setAuthToken(String? token) => _interceptor.setToken(token);
+  bool get hasAuthToken => (_interceptor.token ?? '').isNotEmpty;
 
   Future<ApiResponse<T>> get<T>(
     String path, {

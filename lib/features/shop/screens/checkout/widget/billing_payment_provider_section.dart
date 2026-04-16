@@ -11,10 +11,12 @@ import 'package:iam_ecomm/utils/constants/image_strings.dart';
 import 'package:iam_ecomm/utils/constants/sizes.dart';
 import 'package:iam_ecomm/utils/helpers/helper_functions.dart';
 
+const String _iamWalletProviderCode = 'IAMWALLET';
+
 String _iconForProviderCode(String providerCode) {
   switch (providerCode.toUpperCase()) {
-    case 'IAMWALLET':
-      return IAMImages.iamwallet;
+    case _iamWalletProviderCode:
+      return IAMImages.walletIcon;
     case 'PAYMAYA':
       return IAMImages.maya;
     case 'GCASH':
@@ -63,6 +65,21 @@ class _IAMBillingPaymentProviderSectionState
             .where((p) => p.isActive)
             .toList()
           ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+    final hasIamWallet = providerList.any(
+      (p) => p.providerCode.toUpperCase() == _iamWalletProviderCode,
+    );
+    if (!hasIamWallet) {
+      providerList.insert(
+        0,
+        PaymentProviderItem(
+          autoId: 0,
+          providerCode: _iamWalletProviderCode,
+          providerName: 'IAM Wallet',
+          isActive: true,
+          sortOrder: -1,
+        ),
+      );
+    }
 
     if (mounted) {
       setState(() {
@@ -124,14 +141,9 @@ class _IAMBillingPaymentProviderSectionState
               padding: const EdgeInsets.all(IAMSizes.sm),
               child: Center(
                 child: hasSelection && iconPath != null
-                    ? Image.asset(
-                        iconPath,
-                        fit: BoxFit.contain,
-                        errorBuilder: (_, __, ___) => Text(
-                          _current!.provider.providerCode,
-                          style: Theme.of(context).textTheme.labelSmall,
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                    ? _PaymentProviderIcon(
+                        iconPath: iconPath,
+                        fallbackText: _current!.provider.providerCode,
                       )
                     : const SizedBox.shrink(),
               ),
@@ -164,6 +176,21 @@ class _IAMBillingPaymentProviderSectionState
             .where((p) => p.isActive)
             .toList()
           ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+    final hasIamWallet = providerList.any(
+      (p) => p.providerCode.toUpperCase() == _iamWalletProviderCode,
+    );
+    if (!hasIamWallet) {
+      providerList.insert(
+        0,
+        PaymentProviderItem(
+          autoId: 0,
+          providerCode: _iamWalletProviderCode,
+          providerName: 'IAM Wallet',
+          isActive: true,
+          sortOrder: -1,
+        ),
+      );
+    }
     if (providerList.isEmpty) return;
 
     final selected = await showModalBottomSheet<PaymentProviderItem>(
@@ -183,10 +210,9 @@ class _IAMBillingPaymentProviderSectionState
               leading: SizedBox(
                 width: 48,
                 height: 28,
-                child: Image.asset(
-                  iconPath,
-                  fit: BoxFit.contain,
-                  errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                child: _PaymentProviderIcon(
+                  iconPath: iconPath,
+                  fallbackText: p.providerCode,
                 ),
               ),
               title: Text(p.providerName),
@@ -218,4 +244,27 @@ class _PaymentViewModel {
   final PaymentProviderItem provider;
 
   _PaymentViewModel({required this.provider});
+}
+
+class _PaymentProviderIcon extends StatelessWidget {
+  const _PaymentProviderIcon({
+    required this.iconPath,
+    required this.fallbackText,
+  });
+
+  final String iconPath;
+  final String fallbackText;
+
+  @override
+  Widget build(BuildContext context) {
+    return Image.asset(
+      iconPath,
+      fit: BoxFit.contain,
+      errorBuilder: (_, __, ___) => Text(
+        fallbackText,
+        style: Theme.of(context).textTheme.labelSmall,
+        overflow: TextOverflow.ellipsis,
+      ),
+    );
+  }
 }
