@@ -452,7 +452,6 @@ void _showViewReviewModal(BuildContext context, ProductReviewItem review) {
 
 /// ---------------- RATING SHEET ----------------
 class _RatingSheet extends StatefulWidget {
-  final String orderRefNo;
   final String productCode;
   final String orderRefNo;
 
@@ -567,7 +566,6 @@ class _RatingSheetState extends State<_RatingSheet> {
                   try {
                     final response = await ApiMiddleware.productReview
                         .addReview(
-                          orderRefNo: widget.orderRefNo,
                           productCode: widget.productCode,
                           orderRefNo: widget.orderRefNo,
                           rating: _rating,

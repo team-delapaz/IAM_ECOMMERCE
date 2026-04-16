@@ -270,10 +270,28 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     final notesInput = _notesController.text.trim();
     final notesToSend = notesInput.isEmpty ? 'checkout' : notesInput;
 
+    // Ensure a payment provider is selected before performing checkout.
+    final providerCode = _checkoutController.selectedPaymentProviderCode.value;
+    if (providerCode.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+            'Please select a payment provider.',
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.red[300],
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        ),
+      );
+      return;
+    }
+
     final res = await ApiMiddleware.checkout.checkout(
       fullName: selectedAddress.recipientName,
       mobileNo: selectedAddress.mobileNo,
       emailAddress: emailAddress,
+      paymentProviderCode: providerCode,
       country: selectedAddress.country,
       province: selectedAddress.province,
       city: selectedAddress.city,
@@ -302,22 +320,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
     // After a successful checkout, create a payment record using the selected
     // payment provider/method and the order reference from the checkout API.
-    final providerCode = _checkoutController.selectedPaymentProviderCode.value;
-    if (providerCode.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text(
-            'Please select a payment provider.',
-            style: TextStyle(color: Colors.white),
-          ),
-          backgroundColor: Colors.red[300],
-          behavior: SnackBarBehavior.floating,
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        ),
-      );
-      return;
-    }
-
     if (providerCode.toUpperCase() == 'IAMWALLET') {
       final paid = await _showIamWalletSheet(
         orderRef: orderRef,
