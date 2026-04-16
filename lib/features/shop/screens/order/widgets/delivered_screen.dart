@@ -362,8 +362,8 @@ void _showRatingModal(
           bottom: MediaQuery.of(context).viewInsets.bottom + IAMSizes.md,
         ),
         child: _RatingSheet(
-          orderRefNo: orderRefNo,
           productCode: productCode,
+          orderRefNo: orderRefNo,
         ),
       );
     },
@@ -454,11 +454,9 @@ void _showViewReviewModal(BuildContext context, ProductReviewItem review) {
 class _RatingSheet extends StatefulWidget {
   final String orderRefNo;
   final String productCode;
+  final String orderRefNo;
 
-  const _RatingSheet({
-    required this.orderRefNo,
-    required this.productCode,
-  });
+  const _RatingSheet({required this.productCode, required this.orderRefNo});
 
   @override
   State<_RatingSheet> createState() => _RatingSheetState();
@@ -571,6 +569,7 @@ class _RatingSheetState extends State<_RatingSheet> {
                         .addReview(
                           orderRefNo: widget.orderRefNo,
                           productCode: widget.productCode,
+                          orderRefNo: widget.orderRefNo,
                           rating: _rating,
                           reviewComment: _commentController.text,
                         );
