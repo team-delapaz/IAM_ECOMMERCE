@@ -9,6 +9,7 @@ import 'package:iam_ecomm/utils/api/responses/response_prep.dart';
 import 'package:iam_ecomm/utils/constants/colors.dart';
 import 'package:iam_ecomm/utils/constants/enums.dart';
 import 'package:iam_ecomm/utils/constants/sizes.dart';
+import 'package:iam_ecomm/utils/formatters/formatter.dart';
 
 class IAMProductMetaData extends StatelessWidget {
   const IAMProductMetaData({super.key, this.product});
@@ -16,10 +17,7 @@ class IAMProductMetaData extends StatelessWidget {
   final ProductItem? product;
 
   static String _formatPrice(num value) {
-    if (value == value.roundToDouble()) {
-      return value.toInt().toString();
-    }
-    return value.toStringAsFixed(2);
+    return IAMFormatter.formatCurrency(value.toDouble()).replaceFirst('₱', '');
   }
 
   @override

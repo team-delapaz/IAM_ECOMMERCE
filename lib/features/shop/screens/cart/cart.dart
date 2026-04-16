@@ -10,6 +10,7 @@ import 'package:iam_ecomm/utils/api/core/api_response.dart';
 import 'package:iam_ecomm/utils/api/responses/response_prep.dart';
 import 'package:iam_ecomm/utils/constants/colors.dart';
 import 'package:iam_ecomm/utils/constants/sizes.dart';
+import 'package:iam_ecomm/utils/formatters/formatter.dart';
 import 'package:iam_ecomm/utils/local_storage/storage_utility.dart';
 
 class CartScreen extends StatefulWidget {
@@ -35,7 +36,6 @@ class _CartScreenState extends State<CartScreen> {
     final showMemberPrice = isLoggedIn && AuthController.instance.isMember;
 
     if (isLoggedIn) {
-      ///////Integrated Logged-in Cart
       final ApiResponse<CartPayload?> res = await ApiMiddleware.cart.getCart();
       if (!res.success || res.data == null) {
         return _CartViewModel(items: const [], subtotal: 0, error: res.message);
@@ -56,7 +56,6 @@ class _CartScreenState extends State<CartScreen> {
       return _CartViewModel(items: items, subtotal: cart.subtotal);
     }
 
-    ////TEmporary section while waiting for guest session api
     final storage = IAMLocalStorage();
     final raw = storage.readData<List>('guest_cart') ?? [];
     if (raw.isEmpty) {
@@ -165,122 +164,180 @@ class _CartScreenState extends State<CartScreen> {
                   const SizedBox(height: IAMSizes.spaceBtwSections),
               itemBuilder: (context, index) {
                 final item = model.items[index];
-                return Container(
-                  padding: const EdgeInsets.all(IAMSizes.md),
-                  decoration: BoxDecoration(
-                    color: IAMColors.white,
-                    borderRadius: BorderRadius.circular(IAMSizes.cardRadiusLg),
-                    boxShadow: kElevationToShadow[1],
+
+                return Dismissible(
+                  key: Key(item.productCode),
+                  background: Container(
+                    alignment: Alignment.centerLeft,
+                    padding: const EdgeInsets.only(left: 16),
+                    color: Colors.green,
+                    child: const Icon(Icons.favorite, color: Colors.white),
                   ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      if (item.imageUrl.isNotEmpty)
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(IAMSizes.sm),
-                          child: Image.network(
-                            item.imageUrl,
-                            width: 56,
-                            height: 56,
-                            fit: BoxFit.cover,
+                  secondaryBackground: Container(
+                    alignment: Alignment.centerRight,
+                    padding: const EdgeInsets.only(right: 16),
+                    color: Colors.red,
+                    child: const Icon(Icons.delete, color: Colors.white),
+                  ),
+                  confirmDismiss: (direction) async {
+                    if (direction == DismissDirection.endToStart) {
+                      final confirm = await showDialog<bool>(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text('Remove item?'),
+                          content: const Text(
+                            'Do you want to remove this item from your cart?',
                           ),
-                        )
-                      else
-                        const SizedBox(width: 56, height: 56),
-                      const SizedBox(width: IAMSizes.spaceBtwItems),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              item.name,
-                              style: Theme.of(context).textTheme.bodyLarge,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(false),
+                              child: const Text('Cancel'),
                             ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'x${item.qty}  ·  ${item.productCode}',
-                              style: Theme.of(context).textTheme.bodySmall,
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(true),
+                              child: const Text('Remove'),
                             ),
                           ],
                         ),
-                      ),
-                      const SizedBox(width: IAMSizes.spaceBtwItems),
-                      Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Text(
-                            '₱${item.lineTotal.toStringAsFixed(2)}',
-                            style: Theme.of(context).textTheme.bodyLarge
-                                ?.copyWith(fontWeight: FontWeight.w600),
+                      );
+                      return confirm ?? false;
+                    } else if (direction == DismissDirection.startToEnd) {
+                      // Wishlist action
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            '${item.name} added to wishlist',
+                            style: const TextStyle(color: Colors.white),
                           ),
-                          const SizedBox(height: 8),
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
+                          backgroundColor: Colors.green[300],
+                          behavior: SnackBarBehavior.floating,
+                          margin: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                        ),
+                      );
+                      return false;
+                    }
+                    return false;
+                  },
+                  onDismissed: (direction) {
+                    if (direction == DismissDirection.endToStart) {
+                      _removeItem(item);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            '${item.name} removed from cart',
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                          backgroundColor: Colors.green[300],
+                          behavior: SnackBarBehavior.floating,
+                          margin: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                        ),
+                      );
+                    }
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(IAMSizes.md),
+                    decoration: BoxDecoration(
+                      color: IAMColors.white,
+                      borderRadius: BorderRadius.circular(
+                        IAMSizes.cardRadiusLg,
+                      ),
+                      boxShadow: kElevationToShadow[1],
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        if (item.imageUrl.isNotEmpty)
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(IAMSizes.sm),
+                            child: Image.network(
+                              item.imageUrl,
+                              width: 56,
+                              height: 56,
+                              fit: BoxFit.cover,
+                            ),
+                          )
+                        else
+                          const SizedBox(width: 56, height: 56),
+                        const SizedBox(width: IAMSizes.spaceBtwItems),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 6,
-                                  vertical: 2,
-                                ),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(
-                                    IAMSizes.cardRadiusSm,
-                                  ),
-                                  border: Border.all(
-                                    color: Theme.of(
-                                      context,
-                                    ).dividerColor.withOpacity(0.6),
-                                  ),
-                                  color: Theme.of(context).colorScheme.surface,
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    GestureDetector(
-                                      onTap: item.qty > 1
-                                          ? () => _updateQuantity(
-                                              item,
-                                              item.qty - 1,
-                                            )
-                                          : () => _removeItem(item),
-                                      child: const Icon(Icons.remove, size: 16),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 8,
-                                      ),
-                                      child: Text(
-                                        '${item.qty}',
-                                        style: Theme.of(
-                                          context,
-                                        ).textTheme.bodyMedium,
-                                      ),
-                                    ),
-                                    GestureDetector(
-                                      onTap: () =>
-                                          _updateQuantity(item, item.qty + 1),
-                                      child: const Icon(Icons.add, size: 16),
-                                    ),
-                                  ],
-                                ),
+                              Text(
+                                item.name,
+                                style: Theme.of(context).textTheme.bodyLarge,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
                               ),
-                              const SizedBox(width: 8),
-                              IconButton(
-                                iconSize: 18,
-                                padding: EdgeInsets.zero,
-                                visualDensity: VisualDensity.compact,
-                                constraints: const BoxConstraints(),
-                                onPressed: () => _removeItem(item),
-                                icon: const Icon(Icons.delete_outline),
+                              const SizedBox(height: 4),
+                              Text(
+                                'x${item.qty}  ·  ${item.productCode}',
+                                style: Theme.of(context).textTheme.bodySmall,
                               ),
                             ],
                           ),
-                        ],
-                      ),
-                    ],
+                        ),
+                        const SizedBox(width: IAMSizes.spaceBtwItems),
+                        // Quantity Selector
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            GestureDetector(
+                              onTap: item.qty > 1
+                                  ? () => _updateQuantity(item, item.qty - 1)
+                                  : () => _removeItem(item),
+                              child: Container(
+                                width: 32,
+                                height: 32,
+                                decoration: BoxDecoration(
+                                  color: IAMColors.primary,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.remove,
+                                  color: Colors.white,
+                                  size: 18,
+                                ),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                              ),
+                              child: Text(
+                                '${item.qty}',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: () => _updateQuantity(item, item.qty + 1),
+                              child: Container(
+                                width: 32,
+                                height: 32,
+                                decoration: BoxDecoration(
+                                  color: IAMColors.primary,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.add,
+                                  color: Colors.white,
+                                  size: 18,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 );
               },
@@ -288,75 +345,117 @@ class _CartScreenState extends State<CartScreen> {
           },
         ),
       ),
-      bottomNavigationBar: FutureBuilder<_CartViewModel>(
-        future: _cartFuture,
-        builder: (context, snapshot) {
-          final model = snapshot.data;
-          final hasItems = model != null && model.items.isNotEmpty;
-          final subtotal = (model?.subtotal ?? 0).toDouble();
-          return Padding(
+      bottomNavigationBar: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Cart summary + checkout row
+          Padding(
             padding: const EdgeInsets.all(IAMSizes.defaultSpace),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                ElevatedButton(
-                  onPressed: !hasItems
-                      ? null
-                      : () async {
-                          final isLoggedIn =
-                              Get.isRegistered<AuthController>() &&
-                                  AuthController.instance.isLoggedIn.value;
+            child: FutureBuilder<_CartViewModel>(
+              future: _cartFuture,
+              builder: (context, snapshot) {
+                final model = snapshot.data;
+                final hasItems = model != null && model.items.isNotEmpty;
+                final subtotal = (model?.subtotal ?? 0).toDouble();
+                final shippingFee = 50.0; // replace with your calculation if needed
 
-                          if (!isLoggedIn) {
-                            await showDialog<bool>(
-                              context: context,
-                              builder: (context) => AlertDialog(
-                                title: const Text('Have an account?'),
-                                content: const Text(
-                                  'Have an account? Login now.\nNew to IAM? Signup here.',
-                                ),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () {
-                                      Navigator.of(context).pop(true);
-                                      Get.to(() => const LoginScreen());
-                                    },
-                                    child: const Text('Login now'),
-                                  ),
-                                  TextButton(
-                                    onPressed: () {
-                                      Navigator.of(context).pop(true);
-                                      Get.to(() => const SignupScreen());
-                                    },
-                                    child: const Text('Signup here'),
-                                  ),
-                                ],
-                              ),
-                            );
-                            return;
-                          }
-
-                          await Get.to(() => const CheckoutScreen());
-                        },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: IAMColors.warning,
-                    foregroundColor: IAMColors.white,
-                    padding: const EdgeInsets.symmetric(vertical: IAMSizes.md),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(
-                        IAMSizes.cardRadiusLg,
+                return Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: IAMSizes.defaultSpace,
+                    vertical: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    color: IAMColors.white,
+                    borderRadius: BorderRadius.circular(IAMSizes.cardRadiusLg),
+                    boxShadow: kElevationToShadow[1],
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // Subtotal + Shipping
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Subtotal: ${IAMFormatter.formatCurrency(subtotal)}',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Shipping: ${IAMFormatter.formatCurrency(shippingFee)}',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
+
+                      // Checkout button
+                      ElevatedButton(
+                        onPressed: !hasItems
+                            ? null
+                            : () async {
+                                final isLoggedIn =
+                                    Get.isRegistered<AuthController>() &&
+                                    AuthController.instance.isLoggedIn.value;
+
+                                if (!isLoggedIn) {
+                                  await showDialog<bool>(
+                                    context: context,
+                                    builder: (context) => AlertDialog(
+                                      title: const Text('Have an account?'),
+                                      content: const Text(
+                                        'Have an account? Login now.\nNew to IAM? Sign-up here.',
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () {
+                                            Navigator.of(context).pop(true);
+                                            Get.to(() => const LoginScreen());
+                                          },
+                                          child: const Text('Login now'),
+                                        ),
+                                        TextButton(
+                                          onPressed: () {
+                                            Navigator.of(context).pop(true);
+                                            Get.to(() => const SignupScreen());
+                                          },
+                                          child: const Text('Signup here'),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                  return;
+                                }
+
+                                await Get.to(() => const CheckoutScreen());
+                              },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: IAMColors.primary,
+                          foregroundColor: IAMColors.white,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 12,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                              IAMSizes.cardRadiusLg,
+                            ),
+                          ),
+                        ),
+                        child: const Text('Checkout'),
+                      ),
+                    ],
                   ),
-                  child: Text(
-                    hasItems ? 'Checkout ₱${subtotal.toStringAsFixed(2)}' : 'Checkout',
-                  ),
-                ),
-              ],
+                );
+              },
             ),
-          );
-        },
+          ),
+        ],
       ),
     );
   }

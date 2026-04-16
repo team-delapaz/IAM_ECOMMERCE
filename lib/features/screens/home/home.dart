@@ -4,6 +4,7 @@ import 'package:iam_ecomm/common/texts/section_heading.dart';
 import 'package:iam_ecomm/common/widgets/custom_shapes/containers/primary_header_container.dart';
 import 'package:iam_ecomm/common/widgets/custom_shapes/containers/search_bar.dart';
 import 'package:iam_ecomm/common/widgets/layouts/grid_layout.dart';
+import 'package:iam_ecomm/common/widgets/loaders/skeleton.dart';
 import 'package:iam_ecomm/common/widgets/products/product_cards/product_card_vertical.dart';
 import 'package:iam_ecomm/features/screens/home/widgets/home_appbar.dart';
 import 'package:iam_ecomm/features/screens/home/widgets/home_categories.dart';
@@ -81,10 +82,7 @@ class HomeScreen extends StatelessWidget {
                   Obx(() {
                     final controller = Get.find<HomeController>();
                     if (controller.productsLoading.value) {
-                      return const Padding(
-                        padding: EdgeInsets.all(IAMSizes.defaultSpace),
-                        child: Center(child: CircularProgressIndicator()),
-                      );
+                      return const IAMProductGridSkeleton(itemCount: 4);
                     }
                     if (controller.productsError.value.isNotEmpty) {
                       return Padding(
@@ -95,7 +93,16 @@ class HomeScreen extends StatelessWidget {
                         ),
                       );
                     }
-                    final list = controller.products;
+                    final list = controller.popularProducts;
+                    if (list.isEmpty) {
+                      return Padding(
+                        padding: const EdgeInsets.all(IAMSizes.defaultSpace),
+                        child: Text(
+                          'No popular products available',
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                      );
+                    }
                     return IAMGridLayout(
                       itemCount: list.length,
                       itemBuilder: (_, index) =>

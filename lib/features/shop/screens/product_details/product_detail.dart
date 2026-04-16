@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iam_ecomm/common/texts/section_heading.dart';
+import 'package:iam_ecomm/common/widgets/appbar/appbar.dart';
+import 'package:iam_ecomm/common/widgets/icons/circular_icon.dart';
 import 'package:iam_ecomm/features/authentication/controllers/auth_controller.dart';
+import 'package:iam_ecomm/features/shop/controllers/wishlist_controller.dart';
 import 'package:iam_ecomm/features/shop/screens/cart/cart.dart';
 import 'package:iam_ecomm/features/shop/screens/checkout/checkout.dart';
 import 'package:iam_ecomm/features/shop/screens/product_details/widgets/bottom_add_to_cart_widget.dart';
-import 'package:iam_ecomm/features/shop/screens/product_details/widgets/product_attributes.dart';
 import 'package:iam_ecomm/features/shop/screens/product_details/widgets/product_detail_image_slider.dart';
 import 'package:iam_ecomm/features/shop/screens/product_details/widgets/product_meta_data.dart';
 import 'package:iam_ecomm/features/shop/screens/product_details/widgets/rating_share_widget.dart';
@@ -13,28 +15,48 @@ import 'package:iam_ecomm/utils/api/api.dart';
 import 'package:iam_ecomm/utils/api/responses/response_prep.dart';
 import 'package:iam_ecomm/utils/constants/sizes.dart';
 import 'package:iam_ecomm/utils/local_storage/storage_utility.dart';
+import 'package:iam_ecomm/common/widgets/loaders/skeleton.dart';
 import 'package:readmore/readmore.dart';
 import 'package:iconsax/iconsax.dart';
 
-class ProductDetailScreen extends StatelessWidget {
+class ProductDetailScreen extends StatefulWidget {
   const ProductDetailScreen({super.key, this.product});
 
   final ProductItem? product;
 
+  @override
+  State<ProductDetailScreen> createState() => _ProductDetailScreenState();
+}
+
+class _ProductDetailScreenState extends State<ProductDetailScreen> {
+  final AuthController _auth = AuthController.instance;
+  final WishlistController _wishlistController = Get.put(WishlistController());
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Keep cache warm so the icon reflects server state when possible.
+    if (_auth.isLoggedIn.value) {
+      _wishlistController.loadWishlistItems();
+    }
+  }
+
   Future<void> _checkoutProduct(BuildContext context) async {
-    final code = product?.productCode;
+    final code = widget.product?.productCode;
     if (code == null || code.isEmpty) return;
 
     const qty = 1;
     final isLoggedIn =
-        Get.isRegistered<AuthController>() && AuthController.instance.isLoggedIn.value;
+        Get.isRegistered<AuthController>() &&
+        AuthController.instance.isLoggedIn.value;
 
     if (!isLoggedIn) {
-      ////TEmporary section while waiting for guest session api
       final storage = IAMLocalStorage();
       final existing = storage.readData<List>('guest_cart') ?? [];
-      final cart =
-          existing.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+      final cart = existing
+          .map((e) => Map<String, dynamic>.from(e as Map))
+          .toList();
       final index = cart.indexWhere((e) => e['productCode'] == code);
       if (index >= 0) {
         final current = cart[index]['qty'] as int? ?? 0;
@@ -55,7 +77,15 @@ class ProductDetailScreen extends StatelessWidget {
           ? res.message
           : 'Unable to add item to cart.';
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Checkout failed: $msg')),
+        SnackBar(
+          content: Text(
+            'Checkout failed: $msg',
+            style: const TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.red[300],
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        ),
       );
       return;
     }
@@ -64,7 +94,92 @@ class ProductDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final product = widget.product;
+
+    if (product == null) {
+      return Scaffold(
+        body: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(IAMSizes.defaultSpace),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: const [
+                IAMSkeleton(height: 280, radius: IAMSizes.cardRadiusLg),
+                SizedBox(height: IAMSizes.spaceBtwSections),
+                IAMSkeleton(height: 18, width: 180),
+                SizedBox(height: IAMSizes.spaceBtwItems),
+                IAMSkeleton(height: 14, width: 120),
+                SizedBox(height: IAMSizes.spaceBtwSections),
+                IAMSkeleton(height: 46, radius: IAMSizes.cardRadiusMd),
+                SizedBox(height: IAMSizes.spaceBtwSections),
+                IAMSkeleton(height: 16, width: 130),
+                SizedBox(height: IAMSizes.spaceBtwItems),
+                IAMSkeleton(height: 80, radius: IAMSizes.cardRadiusMd),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
+      extendBodyBehindAppBar: true,
+      appBar: IAMAppBar(
+        showBackArrow: true,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        surfaceTintColor: Colors.transparent,
+        actions: [
+          Obx(() {
+            final productCode = product.productCode;
+            final isLoggedIn = _auth.isLoggedIn.value;
+            final wishlisted = (!isLoggedIn || productCode.isEmpty)
+                ? false
+                : (_wishlistController.wishlistedByCode[productCode] ?? false);
+            final toggling = (!isLoggedIn || productCode.isEmpty)
+                ? false
+                : (_wishlistController.togglingByCode[productCode] ?? false);
+
+            return IAMCircularIcon(
+              icon: wishlisted ? Iconsax.heart : Iconsax.heart5,
+              color: !isLoggedIn ? Colors.grey : (wishlisted ? Colors.red : null),
+              onPressed: (!isLoggedIn || productCode.isEmpty || toggling)
+                  ? null
+                  : () {
+                      _wishlistController
+                          .toggleWishlist(productCode)
+                          .then((result) {
+                        if (!context.mounted) return;
+                        if (result.message.isEmpty) return;
+
+                        final backgroundColor = result.wishlisted
+                            ? Colors.green[300]
+                            : Colors.red[300];
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              result.message,
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                            backgroundColor: backgroundColor,
+                            behavior: SnackBarBehavior.floating,
+                            margin: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
+                          ),
+                        );
+                      });
+                    },
+            );
+          }),
+          IAMCircularIcon(
+            icon: Iconsax.shopping_bag,
+            onPressed: () => Get.to(() => const CartScreen())),
+        ],
+      ),
       bottomNavigationBar: IAMBottomAddToCart(product: product),
       body: SingleChildScrollView(
         child: Column(
@@ -82,27 +197,24 @@ class ProductDetailScreen extends StatelessWidget {
                   IAMProductMetaData(product: product),
                   const SizedBox(height: IAMSizes.spaceBtwItems / 1.5),
 
-                  // -- ATTRIBUTES
-                  /*IAMProductAttributes(),
-                  const SizedBox(height: IAMSizes.spaceBtwSections),*/
-
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed:
-                          product != null ? () => _checkoutProduct(context) : null,
+                      onPressed: () => _checkoutProduct(context),
                       child: const Text('Checkout'),
                     ),
                   ),
                   const SizedBox(height: IAMSizes.spaceBtwSections),
+
                   const IAMSectionHeading(
                     title: 'Description',
                     showActionButton: false,
                   ),
                   const SizedBox(height: IAMSizes.spaceBtwItems),
+
                   ReadMoreText(
-                    product?.longDesc.isNotEmpty == true
-                        ? product!.longDesc
+                    product.longDesc.isNotEmpty
+                        ? product.longDesc
                         : 'No description available.',
                     trimLines: 2,
                     trimMode: TrimMode.Line,
@@ -117,14 +229,36 @@ class ProductDetailScreen extends StatelessWidget {
                       fontWeight: FontWeight.w800,
                     ),
                   ),
+
                   const Divider(),
                   const SizedBox(height: IAMSizes.spaceBtwItems),
+
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const IAMSectionHeading(
-                        title: 'Review(19)',
-                        showActionButton: false,
+                      FutureBuilder(
+                        future: product?.productCode != null
+                            ? ApiMiddleware.productReview.getReviews(
+                                product!.productCode,
+                              )
+                            : null,
+                        builder: (context, snapshot) {
+                          int reviewCount = 0;
+
+                          if (snapshot.hasData &&
+                              snapshot.data != null &&
+                              snapshot.data!.success) {
+                            final reviews = snapshot.data!.data ?? [];
+                            reviewCount = reviews
+                                .where((r) => r != null)
+                                .length;
+                          }
+
+                          return IAMSectionHeading(
+                            title: 'Review($reviewCount)',
+                            showActionButton: false,
+                          );
+                        },
                       ),
                       IconButton(
                         onPressed: () {},
@@ -132,6 +266,68 @@ class ProductDetailScreen extends StatelessWidget {
                       ),
                     ],
                   ),
+
+                  const SizedBox(height: IAMSizes.spaceBtwItems),
+
+                  FutureBuilder(
+                    future: product?.productCode != null
+                        ? ApiMiddleware.productReview.getReviews(
+                            product!.productCode,
+                          )
+                        : null,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+
+                      if (!snapshot.hasData ||
+                          snapshot.data == null ||
+                          !snapshot.data!.success) {
+                        return const Text('No reviews found');
+                      }
+
+                      final reviews = snapshot.data!.data ?? [];
+
+                      if (reviews.isEmpty) {
+                        return const Text('No reviews yet');
+                      }
+
+                      return Column(
+                        children: reviews.map((review) {
+                          if (review == null) return const SizedBox();
+
+                          return Container(
+                            width: double.infinity,
+                            margin: const EdgeInsets.only(
+                              bottom: IAMSizes.spaceBtwItems,
+                            ),
+                            padding: const EdgeInsets.all(IAMSizes.md),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[100],
+                              borderRadius: BorderRadius.circular(IAMSizes.sm),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  review.reviewComment ?? 'No comment',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Rating: ${review.rating ?? 0}',
+                                  style: const TextStyle(color: Colors.grey),
+                                ),
+                              ],
+                            ),
+                          );
+                        }).toList(),
+                      );
+                    },
+                  ),
+
                   const SizedBox(height: IAMSizes.spaceBtwSections),
                 ],
               ),

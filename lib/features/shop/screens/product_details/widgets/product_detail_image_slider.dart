@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:iam_ecomm/common/widgets/appbar/appbar.dart';
 import 'package:iam_ecomm/common/widgets/custom_shapes/curved_edges/curved_edges_widget.dart';
-import 'package:iam_ecomm/common/widgets/icons/circular_icon.dart';
 import 'package:iam_ecomm/common/widgets/images/iam_rounded_images.dart';
 import 'package:iam_ecomm/utils/api/responses/response_prep.dart';
 import 'package:iam_ecomm/utils/constants/colors.dart';
 import 'package:iam_ecomm/utils/constants/image_strings.dart';
 import 'package:iam_ecomm/utils/constants/sizes.dart';
 import 'package:iam_ecomm/utils/helpers/helper_functions.dart';
-import 'package:iconsax/iconsax.dart';
 
 class IAMProductImageSlider extends StatelessWidget {
   const IAMProductImageSlider({super.key, this.product});
@@ -64,12 +61,6 @@ class IAMProductImageSlider extends StatelessWidget {
                   ),
                 ),
               ),
-            ),
-            const IAMAppBar(
-              showBackArrow: true,
-              actions: [
-                IAMCircularIcon(icon: Iconsax.heart5, color: Colors.red),
-              ],
             ),
           ],
         ),

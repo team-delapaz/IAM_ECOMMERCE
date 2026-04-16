@@ -9,6 +9,8 @@ class HomeController extends GetxController {
   final products = <ProductItem>[].obs;
   final productsLoading = false.obs;
   final productsError = ''.obs;
+  List<ProductItem> get popularProducts =>
+      products.where((p) => p.isPopular).toList();
 
   @override
   void onInit() {

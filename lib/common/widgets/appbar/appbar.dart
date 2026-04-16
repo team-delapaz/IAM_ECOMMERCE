@@ -13,6 +13,10 @@ class IAMAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.actions,
     this.leadingOnPressed,
     this.showBackArrow = false,
+    this.backgroundColor,
+    this.elevation,
+    this.scrolledUnderElevation,
+    this.surfaceTintColor,
   });
 
   final Widget? title;
@@ -20,6 +24,10 @@ class IAMAppBar extends StatelessWidget implements PreferredSizeWidget {
   final IconData? leadingIcon;
   final List<Widget>? actions;
   final VoidCallback? leadingOnPressed;
+  final Color? backgroundColor;
+  final double? elevation;
+  final double? scrolledUnderElevation;
+  final Color? surfaceTintColor;
 
   @override
   Widget build(BuildContext context) {
@@ -27,6 +35,10 @@ class IAMAppBar extends StatelessWidget implements PreferredSizeWidget {
       padding: const EdgeInsets.symmetric(horizontal: IAMSizes.md),
       child: AppBar(
         automaticallyImplyLeading: false,
+        backgroundColor: backgroundColor,
+        elevation: elevation,
+        scrolledUnderElevation: scrolledUnderElevation,
+        surfaceTintColor: surfaceTintColor,
         leading: showBackArrow
             ? IconButton(
                 onPressed: () => Get.back(),

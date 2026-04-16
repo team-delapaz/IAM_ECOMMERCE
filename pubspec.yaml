@@ -25,6 +25,7 @@ dependencies:
   carousel_slider: ^5.1.1
   flutter_slidable: ^4.0.3
   lottie: ^3.1.0
+  google_maps_flutter: ^2.3.0
 
   # Icons
   cupertino_icons: ^1.0.8
@@ -88,21 +89,19 @@ flutter:
         - asset: assets/fonts/Poppins-Black.ttf
           weight: 900
 
-  
-
 # ------------------- SPLASH CONFIG ---------------------
 flutter_native_splash:
   color: "#FFFFFF"
   color_dark: "#272727"
   image: assets/images/ecom_app_icon_xs.png
   image_dark: assets/images/ecom_app_icon_xs.png
-  
+
   # App icon properties for better corner rounding
   android: true
   ios: true
   android_gravity: center
   ios_content_mode: center
-  
+
   # Size and padding adjustments
   android_12:
     color: "#FFFFFF"

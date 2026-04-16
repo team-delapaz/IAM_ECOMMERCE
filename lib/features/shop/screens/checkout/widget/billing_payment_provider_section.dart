@@ -143,10 +143,8 @@ class _IAMBillingPaymentProviderSectionState
                     ? _current!.provider.providerName
                     : 'Select Payment Provider',
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: hasSelection
-                          ? null
-                          : Theme.of(context).hintColor,
-                    ),
+                  color: hasSelection ? null : Theme.of(context).hintColor,
+                ),
                 overflow: TextOverflow.ellipsis,
               ),
             ),
@@ -194,7 +192,7 @@ class _IAMBillingPaymentProviderSectionState
               title: Text(p.providerName),
               subtitle: Text(p.providerCode),
               trailing: isSelected
-                  ? const Icon(Icons.check_circle, color: IAMColors.warning)
+                  ? const Icon(Icons.check_circle, color: IAMColors.primary)
                   : const Icon(Icons.radio_button_unchecked),
               onTap: () => Navigator.of(context).pop(p),
             );

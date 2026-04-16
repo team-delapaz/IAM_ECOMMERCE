@@ -16,7 +16,7 @@ class IAMTexts {
       "From Our Doorstep to Yours - Swift, Secure, and Contactless Delivery!";
 
   // -- Home
-  static const String homeAppbarTitle = "Good day for shopping";
+  static const String homeAppbarTitle = "Discover your path to wellness today";
   static const String homeAppbarSubTitleLoggedOut = "IAM Shopper";
   static const String homeAppbarSubTitleLoggedIn = "IAM User";
 
@@ -40,7 +40,7 @@ class IAMTexts {
   static const String privacyPolicy = "Privacy Policy";
   static const String termsOfUse = "Terms of Use";
   static const String verificationCode = "VerificationCode";
-  static const String resendEmail = "Resend Email";
+  static const String resendEmail = "Resend Verification Code";
   static const String resendEmailIn = "Resend email in";
 
   // -- Authentication Headings Text
