@@ -65,7 +65,7 @@ class OrderDetailScreen extends StatelessWidget {
                                         context,
                                         MaterialPageRoute(
                                           builder: (context) =>
-                                              const TrackingOrderScreen(),
+                                              TrackingOrderScreen(order: order),
                                         ),
                                       );
                                     },
@@ -268,8 +268,6 @@ class OrderDetailScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 10),
-
-                const SizedBox(height: 16),
                 const SizedBox(height: 16),
                 const SizedBox(height: 8),
                 // Text('Date: ${order.orderDate}'),
