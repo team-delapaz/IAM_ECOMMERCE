@@ -9,13 +9,13 @@ import 'package:iam_ecomm/utils/device/device_utility.dart';
 import 'package:iam_ecomm/utils/helpers/helper_functions.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
-Future<void> showCheckoutWebViewSheet({
+Future<bool> showCheckoutWebViewSheet({
   required BuildContext context,
   required String checkoutUrl,
   required String orderRef,
   required num totalAmount,
 }) {
-  return showModalBottomSheet<void>(
+  return showModalBottomSheet<bool>(
     context: context,
     isScrollControlled: true,
     useSafeArea: true,
@@ -29,7 +29,7 @@ Future<void> showCheckoutWebViewSheet({
         totalAmount: totalAmount,
       );
     },
-  );
+  ).then((v) => v ?? false);
 }
 
 class CheckoutWebViewSheet extends StatefulWidget {
@@ -59,7 +59,7 @@ class _CheckoutWebViewSheetState extends State<CheckoutWebViewSheet> {
     if (_isExiting) return;
     _isExiting = true;
     if (mounted) {
-      Navigator.of(context).pop();
+      Navigator.of(context).pop(false);
     }
   }
 
