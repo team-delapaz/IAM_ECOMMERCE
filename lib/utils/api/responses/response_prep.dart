@@ -212,6 +212,59 @@ class WalletOrderPaymentData {
   }
 }
 
+class CheckoutData {
+  final String orderRefNo;
+  final String cartRefNo;
+  final num subtotalAmount;
+  final num shippingAmount;
+  final num processingFeeAmount;
+  final num voucherDiscountAmount;
+  final num discountAmount;
+  final num totalAmount;
+  final int orderStatusId;
+  final int paymentStatusId;
+  final String notes;
+  final List<OrderProductItem?> items;
+
+  CheckoutData({
+    required this.orderRefNo,
+    required this.cartRefNo,
+    required this.subtotalAmount,
+    required this.shippingAmount,
+    required this.processingFeeAmount,
+    required this.voucherDiscountAmount,
+    required this.discountAmount,
+    required this.totalAmount,
+    required this.orderStatusId,
+    required this.paymentStatusId,
+    required this.notes,
+    required this.items,
+  });
+
+  static CheckoutData? fromJson(dynamic json) {
+    final m = asMap(json);
+    if (m == null) return null;
+    final itemsList = (m['items'] is List ? (m['items'] as List) : const [])
+        .map((e) => OrderProductItem.fromJson(e))
+        .whereType<OrderProductItem>()
+        .toList();
+    return CheckoutData(
+      orderRefNo: (m['orderRefNo'] as String?) ?? (m['orderRefno'] as String? ?? ''),
+      cartRefNo: (m['cartRefNo'] as String?) ?? (m['cartRefno'] as String? ?? ''),
+      subtotalAmount: (m['subtotalAmount'] as num?) ?? 0,
+      shippingAmount: (m['shippingAmount'] as num?) ?? 0,
+      processingFeeAmount: (m['processingFeeAmount'] as num?) ?? 0,
+      voucherDiscountAmount: (m['voucherDiscountAmount'] as num?) ?? 0,
+      discountAmount: (m['discountAmount'] as num?) ?? 0,
+      totalAmount: (m['totalAmount'] as num?) ?? 0,
+      orderStatusId: (m['orderStatusId'] as int?) ?? 0,
+      paymentStatusId: (m['paymentStatusId'] as int?) ?? 0,
+      notes: m['notes'] as String? ?? '',
+      items: itemsList,
+    );
+  }
+}
+
 class UserInfo {
   final String idno;
   final String codedIdno;

@@ -1,13 +1,14 @@
 import '../core/api_client.dart';
 import '../core/api_response.dart';
 import '../endpoints/api_endpoints.dart';
+import '../responses/response_prep.dart';
 
 class CheckoutApi {
   CheckoutApi(this._client);
 
   final ApiClient _client;
 
-  Future<ApiResponse<dynamic>> checkout({
+  Future<ApiResponse<CheckoutData?>> checkout({
     required String fullName,
     required String mobileNo,
     required String emailAddress,
@@ -21,7 +22,7 @@ class CheckoutApi {
     required String completeAddress,
     required String notes,
   }) {
-    return _client.post<dynamic>(
+    return _client.post<CheckoutData?>(
       ApiEndpoints.checkout,
       body: {
         'fullName': fullName,
@@ -37,6 +38,7 @@ class CheckoutApi {
         'completeAddress': completeAddress,
         'notes': notes,
       },
+      fromJsonData: CheckoutData.fromJson,
     );
   }
 }
