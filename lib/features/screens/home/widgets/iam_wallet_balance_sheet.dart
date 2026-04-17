@@ -11,7 +11,8 @@ import 'package:iam_ecomm/utils/formatters/formatter.dart';
 import 'package:iam_ecomm/utils/helpers/helper_functions.dart';
 
 void showIamWalletBalanceQuickSheet(BuildContext context) {
-  final loggedIn = Get.isRegistered<AuthController>() &&
+  final loggedIn =
+      Get.isRegistered<AuthController>() &&
       AuthController.instance.isLoggedIn.value;
   if (!loggedIn) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -44,7 +45,8 @@ class _IamWalletBalanceQuickSheet extends StatefulWidget {
       _IamWalletBalanceQuickSheetState();
 }
 
-class _IamWalletBalanceQuickSheetState extends State<_IamWalletBalanceQuickSheet> {
+class _IamWalletBalanceQuickSheetState
+    extends State<_IamWalletBalanceQuickSheet> {
   WalletBalanceData? _data;
   bool _loading = true;
   String? _error;
@@ -120,7 +122,9 @@ class _IamWalletBalanceQuickSheetState extends State<_IamWalletBalanceQuickSheet
                       height: 48,
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: IAMColors.primary.withOpacity(dark ? 0.22 : 0.16),
+                        color: IAMColors.primary.withOpacity(
+                          dark ? 0.22 : 0.16,
+                        ),
                         borderRadius: BorderRadius.circular(14),
                         border: Border.all(
                           color: IAMColors.primary.withOpacity(0.35),
@@ -139,17 +143,18 @@ class _IamWalletBalanceQuickSheetState extends State<_IamWalletBalanceQuickSheet
                         children: [
                           Text(
                             'IAM Wallet',
-                            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            style: Theme.of(context).textTheme.titleLarge
+                                ?.copyWith(
                                   color: onSurface,
                                   fontWeight: FontWeight.w800,
                                   letterSpacing: -0.2,
                                 ),
                           ),
                           Text(
-                            'Available balance',
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: muted,
-                                ),
+                            'Available Balance:',
+                            style: Theme.of(
+                              context,
+                            ).textTheme.bodySmall?.copyWith(color: muted),
                           ),
                         ],
                       ),
@@ -178,77 +183,73 @@ class _IamWalletBalanceQuickSheetState extends State<_IamWalletBalanceQuickSheet
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
                       : _error != null
-                          ? Center(
-                              child: Text(
-                                _error!,
-                                textAlign: TextAlign.center,
-                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                      color: IAMColors.error,
-                                      height: 1.3,
+                      ? Center(
+                          child: Text(
+                            _error!,
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(color: IAMColors.error, height: 1.3),
+                          ),
+                        )
+                      : Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            IAMRoundedContainer(
+                              showBorder: true,
+                              padding: const EdgeInsets.all(IAMSizes.lg),
+                              backgroundColor: dark
+                                  ? IAMColors.black
+                                  : IAMColors.lightGrey,
+                              borderColor: onSurface.withOpacity(0.1),
+                              child: Column(
+                                children: [
+                                  Text(
+                                    IAMFormatter.formatCurrency(
+                                      (_data?.balance ?? 0).toDouble(),
                                     ),
-                              ),
-                            )
-                          : Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                IAMRoundedContainer(
-                                  showBorder: true,
-                                  padding: const EdgeInsets.all(IAMSizes.lg),
-                                  backgroundColor: dark
-                                      ? IAMColors.black
-                                      : IAMColors.lightGrey,
-                                  borderColor: onSurface.withOpacity(0.1),
-                                  child: Column(
-                                    children: [
-                                      Text(
-                                        IAMFormatter.formatCurrency(
-                                          (_data?.balance ?? 0).toDouble(),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .headlineSmall
+                                        ?.copyWith(
+                                          color: IAMColors.primary,
+                                          fontWeight: FontWeight.w800,
                                         ),
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .headlineSmall
-                                            ?.copyWith(
-                                              color: IAMColors.primary,
-                                              fontWeight: FontWeight.w800,
-                                            ),
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Text(
-                                        'Account ${_data?.accountId ?? '—'}',
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodySmall
-                                            ?.copyWith(color: muted),
-                                      ),
-                                    ],
                                   ),
-                                ),
-                                const Spacer(),
-                                SizedBox(
-                                  width: double.infinity,
-                                  child: OutlinedButton(
-                                    onPressed: () {
-                                      setState(() {
-                                        _loading = true;
-                                        _error = null;
-                                      });
-                                      _load();
-                                    },
-                                    style: OutlinedButton.styleFrom(
-                                      foregroundColor: onSurface,
-                                      side: BorderSide(
-                                        color: onSurface.withOpacity(0.2),
-                                      ),
-                                      minimumSize: const Size.fromHeight(48),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(14),
-                                      ),
-                                    ),
-                                    child: const Text('Refresh'),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Account ${_data?.accountId ?? '—'}',
+                                    style: Theme.of(context).textTheme.bodySmall
+                                        ?.copyWith(color: muted),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
+                            const Spacer(),
+                            SizedBox(
+                              width: double.infinity,
+                              child: OutlinedButton(
+                                onPressed: () {
+                                  setState(() {
+                                    _loading = true;
+                                    _error = null;
+                                  });
+                                  _load();
+                                },
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: onSurface,
+                                  side: BorderSide(
+                                    color: onSurface.withOpacity(0.2),
+                                  ),
+                                  minimumSize: const Size.fromHeight(48),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
+                                ),
+                                child: const Text('Refresh'),
+                              ),
+                            ),
+                          ],
+                        ),
                 ),
               ),
             ],

@@ -66,7 +66,7 @@ await ApiMiddleware.init();
 
 ## Checkout
 
-- `ApiMiddleware.checkout.checkout(fullName: ..., mobileNo: ..., emailAddress: ..., country: ..., province: ..., city: ..., barangay: ..., streetAddress: ..., postalCode: ..., completeAddress: ..., notes: 'optional note')` → `ApiResponse<dynamic>`
+- `ApiMiddleware.checkout.checkout(fullName: ..., mobileNo: ..., emailAddress: ..., paymentProviderCode: ..., country: ..., province: ..., city: ..., barangay: ..., streetAddress: ..., postalCode: ..., completeAddress: ..., notes: 'optional note')` → `ApiResponse<CheckoutData?>`
 
 ## Location
 

@@ -3,6 +3,8 @@ import 'package:get/get.dart';
 import 'package:iam_ecomm/common/widgets/appbar/appbar.dart';
 import 'package:iam_ecomm/common/widgets/container/rounded_container.dart';
 import 'package:iam_ecomm/common/widgets/images/iam_rounded_images.dart';
+import 'package:iam_ecomm/common/widgets/payments/checkout_webview_sheet.dart';
+import 'package:iam_ecomm/common/widgets/payments/iam_wallet_pay_sheet.dart';
 import 'package:iam_ecomm/common/widgets/products.cart/coupon_widget.dart';
 import 'package:iam_ecomm/common/widgets/success_screen/success_screen.dart';
 import 'package:iam_ecomm/features/authentication/controllers/auth_controller.dart';
@@ -105,27 +107,17 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     Navigator.of(context, rootNavigator: true).pop();
   }
 
-  Future<void> _showCheckoutUrlSheet({
+  Future<bool> _showCheckoutUrlSheet({
     required String checkoutUrl,
     required String orderRef,
     required num totalAmount,
   }) async {
-    if (!mounted) return;
-
-    await showModalBottomSheet<void>(
+    if (!mounted) return false;
+    return showCheckoutWebViewSheet(
       context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      backgroundColor: Colors.transparent,
-      isDismissible: false,
-      enableDrag: false,
-      builder: (_) {
-        return _CheckoutWebViewSheet(
-          checkoutUrl: checkoutUrl,
-          orderRef: orderRef,
-          totalAmount: totalAmount,
-        );
-      },
+      checkoutUrl: checkoutUrl,
+      orderRef: orderRef,
+      totalAmount: totalAmount,
     );
   }
 
@@ -270,10 +262,28 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     final notesInput = _notesController.text.trim();
     final notesToSend = notesInput.isEmpty ? 'checkout' : notesInput;
 
+    // Ensure a payment provider is selected before performing checkout.
+    final providerCode = _checkoutController.selectedPaymentProviderCode.value;
+    if (providerCode.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+            'Please select a payment provider.',
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.red[300],
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        ),
+      );
+      return;
+    }
+
     final res = await ApiMiddleware.checkout.checkout(
       fullName: selectedAddress.recipientName,
       mobileNo: selectedAddress.mobileNo,
       emailAddress: emailAddress,
+      paymentProviderCode: providerCode,
       country: selectedAddress.country,
       province: selectedAddress.province,
       city: selectedAddress.city,
@@ -296,34 +306,20 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       return;
     }
 
-    final data = res.data as Map<String, dynamic>? ?? {};
-    final orderRef = data['orderRefno'] as String? ?? '';
-    final totalAmount = (data['totalAmount'] as num?) ?? model.subtotal;
+    final orderRef = res.data?.orderRefNo ?? '';
+    final totalAmount = res.data?.totalAmount ?? model.subtotal;
 
     // After a successful checkout, create a payment record using the selected
     // payment provider/method and the order reference from the checkout API.
-    final providerCode = _checkoutController.selectedPaymentProviderCode.value;
-    if (providerCode.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text(
-            'Please select a payment provider.',
-            style: TextStyle(color: Colors.white),
-          ),
-          backgroundColor: Colors.red[300],
-          behavior: SnackBarBehavior.floating,
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        ),
-      );
-      return;
-    }
-
     if (providerCode.toUpperCase() == 'IAMWALLET') {
       final paid = await _showIamWalletSheet(
         orderRef: orderRef,
         totalAmount: totalAmount,
       );
-      if (!paid) return;
+      if (!paid) {
+        _redirectToStoreWithUnpaidToast();
+        return;
+      }
       _showPaymentSuccess(
         orderRef: orderRef,
         totalAmount: totalAmount,
@@ -361,11 +357,14 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     if (checkoutUrl.isNotEmpty) {
       await _showOpeningCheckoutSpinner();
       if (!mounted) return;
-      await _showCheckoutUrlSheet(
+      final paid = await _showCheckoutUrlSheet(
         checkoutUrl: checkoutUrl,
         orderRef: orderRef,
         totalAmount: totalAmount,
       );
+      if (!paid && mounted) {
+        _redirectToStoreWithUnpaidToast();
+      }
       return;
     }
 
@@ -393,17 +392,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     required String orderRef,
     required num totalAmount,
   }) async {
-    final result = await showModalBottomSheet<bool>(
+    return showIamWalletPaySheet(
       context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => _IamWalletPaymentSheet(
-        orderRef: orderRef,
-        totalAmount: totalAmount,
-      ),
+      orderRef: orderRef,
+      totalAmount: totalAmount,
     );
-    return result ?? false;
   }
 
   void _showPaymentSuccess({
@@ -420,6 +413,52 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         onPressed: () => Get.offAll(() => const NavigationMenu()),
       ),
     );
+  }
+
+  void _redirectToStoreWithUnpaidToast() {
+    if (!mounted) return;
+    final navController = Get.isRegistered<NavigationController>()
+        ? Get.find<NavigationController>()
+        : Get.put(NavigationController());
+    navController.selectedIndex.value = 1;
+    Get.offAll(() => const NavigationMenu());
+    void showOnReady([int attempts = 0]) {
+      final currentContext = Get.context;
+      if (currentContext == null) {
+        if (attempts < 10) {
+          Future.delayed(
+            const Duration(milliseconds: 120),
+            () => showOnReady(attempts + 1),
+          );
+        }
+        return;
+      }
+      final messenger = ScaffoldMessenger.maybeOf(currentContext);
+      if (messenger == null) {
+        if (attempts < 10) {
+          Future.delayed(
+            const Duration(milliseconds: 120),
+            () => showOnReady(attempts + 1),
+          );
+        }
+        return;
+      }
+      messenger.hideCurrentSnackBar();
+      messenger.showSnackBar(
+        SnackBar(
+          content: const Text(
+            'Order is currently unpaid, head to "My Orders" to continue payment.',
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.red.shade300,
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.all(12),
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) => showOnReady());
   }
 
   @override

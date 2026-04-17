@@ -1,40 +1,77 @@
 import 'package:flutter/material.dart';
 import 'package:iam_ecomm/utils/constants/sizes.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:iam_ecomm/utils/api/api.dart';
+import 'package:share_plus/share_plus.dart';
 
 class IAMRatingAndShare extends StatelessWidget {
-  const IAMRatingAndShare({super.key});
+  const IAMRatingAndShare({super.key, required this.productCode});
+
+  final String productCode;
+
+  //domain maybe kapag up nalang tsaka update to
+  String _buildDynamicLink() {
+    return 'https://yourapp.page.link/product?code=$productCode';
+  }
+
+  void _shareProduct() {
+    final link = _buildDynamicLink();
+
+    Share.share('Check out this product:\n$link');
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        // -- RATING
-        Row(
+    return FutureBuilder(
+      future: ApiMiddleware.productReview.getReviews(productCode),
+      builder: (context, snapshot) {
+        double average = 0;
+        int count = 0;
+
+        if (snapshot.hasData &&
+            snapshot.data != null &&
+            snapshot.data!.success) {
+          final reviews = snapshot.data!.data ?? [];
+          final validReviews = reviews.where((r) => r != null).toList();
+
+          count = validReviews.length;
+
+          if (count > 0) {
+            final total = validReviews.fold<int>(
+              0,
+              (sum, r) => sum + (r!.rating ?? 0),
+            );
+            average = total / count;
+          }
+        }
+
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Icon(Iconsax.star5, color: Color(0xFFDBA724), size: 24),
-            SizedBox(width: IAMSizes.spaceBtwItems / 2),
-            Text.rich(
-              TextSpan(
-                children: [
+            Row(
+              children: [
+                const Icon(Iconsax.star5, color: Color(0xFFDBA724), size: 24),
+                const SizedBox(width: IAMSizes.spaceBtwItems / 2),
+                Text.rich(
                   TextSpan(
-                    text: '5.0',
-                    style: Theme.of(context).textTheme.bodyLarge,
+                    children: [
+                      TextSpan(
+                        text: average.toStringAsFixed(1),
+                        style: Theme.of(context).textTheme.bodyLarge,
+                      ),
+                      TextSpan(text: '($count)'),
+                    ],
                   ),
-                  const TextSpan(text: '(299)'),
-                ],
-              ),
+                ),
+              ],
+            ),
+            IconButton(
+              onPressed: _shareProduct,
+              icon: const Icon(Icons.share, size: IAMSizes.iconMd),
             ),
           ],
-        ),
-
-        // -- SHARE BUTTON
-        IconButton(
-          onPressed: () {},
-          icon: const Icon(Icons.share, size: IAMSizes.iconMd),
-        ),
-      ],
+        );
+      },
     );
   }
 }

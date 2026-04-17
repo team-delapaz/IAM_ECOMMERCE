@@ -31,6 +31,7 @@ class ProductDetailScreen extends StatefulWidget {
 }
 
 class _ProductDetailScreenState extends State<ProductDetailScreen> {
+  int selectedRating = 0;
   final AuthController _auth = AuthController.instance;
   final WishlistController _wishlistController = Get.put(WishlistController());
 
@@ -145,15 +146,19 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
             return IAMCircularIcon(
               icon: wishlisted ? Iconsax.heart : Iconsax.heart5,
-              color: !isLoggedIn ? IAMColors.darkGrey : (wishlisted ? Colors.red : (IAMHelperFunctions.isDarkMode(context)
-                                ? IAMColors.lightGrey
-                                : IAMColors.darkGrey)),
+              color: !isLoggedIn
+                  ? IAMColors.darkGrey
+                  : (wishlisted
+                        ? Colors.red
+                        : (IAMHelperFunctions.isDarkMode(context)
+                              ? IAMColors.lightGrey
+                              : IAMColors.darkGrey)),
               onPressed: (!isLoggedIn || productCode.isEmpty || toggling)
                   ? null
                   : () {
-                      _wishlistController
-                          .toggleWishlist(productCode)
-                          .then((result) {
+                      _wishlistController.toggleWishlist(productCode).then((
+                        result,
+                      ) {
                         if (!context.mounted) return;
                         if (result.message.isEmpty) return;
 
@@ -181,14 +186,15 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           }),
           IAMCircularIcon(
             icon: Iconsax.shopping_bag,
-            onPressed: () => Get.to(() => const CartScreen())),
+            onPressed: () => Get.to(() => const CartScreen()),
+          ),
         ],
       ),
       bottomNavigationBar: IAMBottomAddToCart(product: product),
       body: SingleChildScrollView(
         child: Column(
           children: [
-            IAMProductImageSlider(product: product),
+            IAMProductImageSlider(product: widget.product),
             Padding(
               padding: EdgeInsets.only(
                 right: IAMSizes.defaultSpace,
@@ -197,14 +203,17 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               ),
               child: Column(
                 children: [
-                  IAMRatingAndShare(),
-                  IAMProductMetaData(product: product),
+                  if (widget.product?.productCode != null)
+                    IAMRatingAndShare(productCode: widget.product!.productCode),
+                  IAMProductMetaData(product: widget.product),
                   const SizedBox(height: IAMSizes.spaceBtwItems / 1.5),
 
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: () => _checkoutProduct(context),
+                      onPressed: widget.product != null
+                          ? () => _checkoutProduct(context)
+                          : null,
                       child: const Text('Checkout'),
                     ),
                   ),
@@ -217,8 +226,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   const SizedBox(height: IAMSizes.spaceBtwItems),
 
                   ReadMoreText(
-                    product.longDesc.isNotEmpty
-                        ? product.longDesc
+                    widget.product?.longDesc.isNotEmpty == true
+                        ? widget.product!.longDesc
                         : 'No description available.',
                     trimLines: 2,
                     trimMode: TrimMode.Line,
@@ -241,9 +250,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       FutureBuilder(
-                        future: product?.productCode != null
+                        future: widget.product?.productCode != null
                             ? ApiMiddleware.productReview.getReviews(
-                                product!.productCode,
+                                widget.product!.productCode,
                               )
                             : null,
                         builder: (context, snapshot) {
@@ -253,7 +262,14 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               snapshot.data != null &&
                               snapshot.data!.success) {
                             final reviews = snapshot.data!.data ?? [];
-                            reviewCount = reviews
+
+                            final filtered = selectedRating == 0
+                                ? reviews
+                                : reviews
+                                      .where((r) => r?.rating == selectedRating)
+                                      .toList();
+
+                            reviewCount = filtered
                                 .where((r) => r != null)
                                 .length;
                           }
@@ -264,9 +280,22 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           );
                         },
                       ),
-                      IconButton(
-                        onPressed: () {},
-                        icon: const Icon(Iconsax.arrow_right_3, size: 18),
+                      DropdownButton<int>(
+                        value: selectedRating,
+                        underline: const SizedBox(),
+                        items: const [
+                          DropdownMenuItem(value: 0, child: Text('All')),
+                          DropdownMenuItem(value: 5, child: Text('5 ⭐')),
+                          DropdownMenuItem(value: 4, child: Text('4 ⭐')),
+                          DropdownMenuItem(value: 3, child: Text('3 ⭐')),
+                          DropdownMenuItem(value: 2, child: Text('2 ⭐')),
+                          DropdownMenuItem(value: 1, child: Text('1 ⭐')),
+                        ],
+                        onChanged: (value) {
+                          setState(() {
+                            selectedRating = value ?? 0;
+                          });
+                        },
                       ),
                     ],
                   ),
@@ -274,9 +303,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   const SizedBox(height: IAMSizes.spaceBtwItems),
 
                   FutureBuilder(
-                    future: product?.productCode != null
+                    future: widget.product?.productCode != null
                         ? ApiMiddleware.productReview.getReviews(
-                            product!.productCode,
+                            widget.product!.productCode,
                           )
                         : null,
                     builder: (context, snapshot) {
@@ -292,12 +321,18 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
                       final reviews = snapshot.data!.data ?? [];
 
-                      if (reviews.isEmpty) {
+                      final filteredReviews = selectedRating == 0
+                          ? reviews
+                          : reviews
+                                .where((r) => r?.rating == selectedRating)
+                                .toList();
+
+                      if (filteredReviews.isEmpty) {
                         return const Text('No reviews yet');
                       }
 
                       return Column(
-                        children: reviews.map((review) {
+                        children: filteredReviews.map((review) {
                           if (review == null) return const SizedBox();
 
                           return Container(
@@ -313,16 +348,21 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
+                                Row(
+                                  children: List.generate(5, (index) {
+                                    return Icon(
+                                      index < (review.rating ?? 0)
+                                          ? Icons.star
+                                          : Icons.star_border,
+                                      color: Colors.amber,
+                                      size: 18,
+                                    );
+                                  }),
+                                ),
+                                const SizedBox(height: 8),
                                 Text(
                                   review.reviewComment ?? 'No comment',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'Rating: ${review.rating ?? 0}',
-                                  style: const TextStyle(color: Colors.grey),
+                                  style: const TextStyle(fontSize: 14),
                                 ),
                               ],
                             ),
