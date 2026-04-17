@@ -139,7 +139,7 @@ class OrderDetailScreen extends StatelessWidget {
                                         children: [
                                           Text(
                                             "Order Status Name",
-                                            // order.orderStatusName,
+                                            // order.orderStatusName, ayaw gumana hehe
                                             style: Theme.of(context)
                                                 .textTheme
                                                 .bodyMedium!
