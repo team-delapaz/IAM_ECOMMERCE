@@ -89,7 +89,8 @@ class _ProcessingTabState extends State<ProcessingTab> {
     NumberFormat formatter,
     bool dark,
   ) {
-    final isUnpaid = order.paymentStatusId == 0 ||
+    final isUnpaid =
+        order.paymentStatusId == 0 ||
         order.paymentStatusName.toLowerCase() == 'not paid';
     return GestureDetector(
       onTap: () {
@@ -152,22 +153,45 @@ class _ProcessingTabState extends State<ProcessingTab> {
                     color: IAMColors.grey,
                   ),
                 ),
+
                 const SizedBox(width: IAMSizes.spaceBtwItems / 2),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      order.orderStatusName,
-                      style: Theme.of(context).textTheme.bodyMedium!.apply(
-                        color: IAMColors.primary,
-                        fontWeightDelta: 1,
+
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              order.orderStatusName,
+                              style: Theme.of(context).textTheme.bodyMedium!
+                                  .apply(
+                                    color: IAMColors.primary,
+                                    fontWeightDelta: 1,
+                                  ),
+                            ),
+                          ),
+
+                          Tooltip(
+                            message: 'Click on the card to View Details',
+                            child: const Icon(
+                              Iconsax.arrow_right_3,
+                              size: 18,
+                              color: IAMColors.darkGrey,
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                    Text(
-                      "We're processing your order now!",
-                      style: Theme.of(context).textTheme.labelMedium,
-                    ),
-                  ],
+
+                      const SizedBox(height: 2),
+
+                      Text(
+                        "We're processing your order now!",
+                        style: Theme.of(context).textTheme.labelMedium,
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -214,45 +238,55 @@ class _ProcessingTabState extends State<ProcessingTab> {
                     color: IAMColors.dark,
                   ),
                 ),
-                Row(
-                  children: [
-                    if (isUnpaid)
-                      TextButton(
-                        onPressed: () async {
-                          final didPay = await _showPayNowFlow(
-                            context,
-                            order,
-                            formatter,
-                          );
-                          if (!context.mounted) return;
-                          if (didPay) {
-                            _refresh();
-                          }
-                        },
-                        style: TextButton.styleFrom(
-                          foregroundColor: IAMColors.primary,
-                        ),
-                        child: const Text('Pay now'),
-                      ),
-                    TextButton.icon(
-                      onPressed: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) =>
-                                OrderDetailScreen(refNo: order.orderRefno),
-                          ),
-                        );
-                      },
-                      icon: const Icon(Iconsax.arrow_right_3, size: 20),
-                      label: const Text('View Details'),
-                      style: TextButton.styleFrom(
-                        foregroundColor: IAMColors.primary,
-                      ),
+
+                if (isUnpaid)
+                  TextButton(
+                    onPressed: () async {
+                      final didPay = await _showPayNowFlow(
+                        context,
+                        order,
+                        formatter,
+                      );
+                      if (!context.mounted) return;
+                      if (didPay) {
+                        _refresh();
+                      }
+                    },
+                    style: TextButton.styleFrom(
+                      foregroundColor: IAMColors.primary,
                     ),
-                  ],
-                ),
+                    child: const Text('Pay now'),
+                  ),
               ],
             ),
+
+            const SizedBox(height: 6),
+
+            /// VIEW DETAILS (moved below)
+            // /// VIEW DETAILS (full width with border)
+            // SizedBox(
+            //   width: double.infinity,
+            //   child: OutlinedButton.icon(
+            //     onPressed: () {
+            //       Navigator.of(context).push(
+            //         MaterialPageRoute(
+            //           builder: (_) =>
+            //               OrderDetailScreen(refNo: order.orderRefno),
+            //         ),
+            //       );
+            //     },
+            //     icon: const Icon(Iconsax.arrow_right_3, size: 20),
+            //     label: const Text('View Details'),
+            //     style: OutlinedButton.styleFrom(
+            //       foregroundColor: IAMColors.primary,
+            //       side: const BorderSide(color: IAMColors.primary, width: 1),
+            //       padding: const EdgeInsets.symmetric(vertical: 12),
+            //       shape: RoundedRectangleBorder(
+            //         borderRadius: BorderRadius.circular(10),
+            //       ),
+            //     ),
+            //   ),
+            // ),
           ],
         ),
       ),
@@ -408,20 +442,20 @@ class _PayProviderOption {
   });
 
   const _PayProviderOption.wallet()
-      : this._(
-          type: _PayProviderType.wallet,
-          title: 'IAM Wallet',
-          code: 'IAMWALLET',
-          iconAsset: IAMImages.walletIcon,
-        );
+    : this._(
+        type: _PayProviderType.wallet,
+        title: 'IAM Wallet',
+        code: 'IAMWALLET',
+        iconAsset: IAMImages.walletIcon,
+      );
 
   const _PayProviderOption.paymaya()
-      : this._(
-          type: _PayProviderType.paymaya,
-          title: 'PayMaya',
-          code: 'PAYMAYA',
-          iconAsset: IAMImages.maya,
-        );
+    : this._(
+        type: _PayProviderType.paymaya,
+        title: 'PayMaya',
+        code: 'PAYMAYA',
+        iconAsset: IAMImages.maya,
+      );
 }
 
 class _PayNowProviderSheet extends StatelessWidget {
@@ -475,7 +509,8 @@ class _PayNowProviderSheet extends StatelessWidget {
                         children: [
                           Text(
                             'Pay now',
-                            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            style: Theme.of(context).textTheme.titleLarge
+                                ?.copyWith(
                                   color: onSurface,
                                   fontWeight: FontWeight.w800,
                                 ),
@@ -483,9 +518,9 @@ class _PayNowProviderSheet extends StatelessWidget {
                           const SizedBox(height: 4),
                           Text(
                             'Order $orderRef · $amountText',
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: muted,
-                                ),
+                            style: Theme.of(
+                              context,
+                            ).textTheme.bodySmall?.copyWith(color: muted),
                           ),
                         ],
                       ),
@@ -493,7 +528,10 @@ class _PayNowProviderSheet extends StatelessWidget {
                     IconButton(
                       tooltip: 'Close',
                       onPressed: () => Navigator.of(context).pop(),
-                      icon: Icon(Icons.close_rounded, color: onSurface.withOpacity(0.75)),
+                      icon: Icon(
+                        Icons.close_rounded,
+                        color: onSurface.withOpacity(0.75),
+                      ),
                     ),
                   ],
                 ),
@@ -517,7 +555,9 @@ class _PayNowProviderSheet extends StatelessWidget {
                         onTap: () => Navigator.of(context).pop(opt),
                         child: IAMRoundedContainer(
                           showBorder: true,
-                          backgroundColor: dark ? IAMColors.black : IAMColors.lightGrey,
+                          backgroundColor: dark
+                              ? IAMColors.black
+                              : IAMColors.lightGrey,
                           borderColor: onSurface.withOpacity(dark ? 0.16 : 0.1),
                           padding: const EdgeInsets.all(IAMSizes.md),
                           child: Row(
@@ -527,10 +567,14 @@ class _PayNowProviderSheet extends StatelessWidget {
                                 height: 46,
                                 padding: const EdgeInsets.all(10),
                                 decoration: BoxDecoration(
-                                  color: IAMColors.primary.withOpacity(dark ? 0.18 : 0.12),
+                                  color: IAMColors.primary.withOpacity(
+                                    dark ? 0.18 : 0.12,
+                                  ),
                                   borderRadius: BorderRadius.circular(16),
                                   border: Border.all(
-                                    color: IAMColors.primary.withOpacity(dark ? 0.28 : 0.22),
+                                    color: IAMColors.primary.withOpacity(
+                                      dark ? 0.28 : 0.22,
+                                    ),
                                   ),
                                 ),
                                 child: Image.asset(
@@ -545,7 +589,10 @@ class _PayNowProviderSheet extends StatelessWidget {
                                   children: [
                                     Text(
                                       opt.title,
-                                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleMedium
+                                          ?.copyWith(
                                             fontWeight: FontWeight.w700,
                                             color: onSurface,
                                           ),
@@ -553,9 +600,10 @@ class _PayNowProviderSheet extends StatelessWidget {
                                     const SizedBox(height: 2),
                                     Text(
                                       opt.code,
-                                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                            color: muted,
-                                          ),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodySmall
+                                          ?.copyWith(color: muted),
                                     ),
                                   ],
                                 ),

@@ -142,6 +142,46 @@ class _CartScreenState extends State<CartScreen> {
       appBar: IAMAppBar(
         showBackArrow: true,
         title: Text('Cart', style: Theme.of(context).textTheme.headlineMedium),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: GestureDetector(
+              onTap: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: const Text(
+                      'Swipe right to add to wishlist, swipe left to remove from cart.',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    backgroundColor: IAMColors.primary,
+                  ),
+                );
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: dark ? IAMColors.dark : IAMColors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: IAMColors.primary.withOpacity(0.3)),
+                ),
+                child: Row(
+                  children: const [
+                    Icon(
+                      Icons.info_outline,
+                      size: 16,
+                      color: IAMColors.primary,
+                    ),
+                    SizedBox(width: 4),
+                    Text('Info', style: TextStyle(fontSize: 12)),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(IAMSizes.defaultSpace),
@@ -320,7 +360,8 @@ class _CartScreenState extends State<CartScreen> {
                               children: [
                                 GestureDetector(
                                   onTap: item.qty > 1
-                                      ? () => _updateQuantity(item, item.qty - 1)
+                                      ? () =>
+                                            _updateQuantity(item, item.qty - 1)
                                       : () => _removeItem(item),
                                   child: Container(
                                     width: 32,
@@ -349,7 +390,8 @@ class _CartScreenState extends State<CartScreen> {
                                   ),
                                 ),
                                 GestureDetector(
-                                  onTap: () => _updateQuantity(item, item.qty + 1),
+                                  onTap: () =>
+                                      _updateQuantity(item, item.qty + 1),
                                   child: Container(
                                     width: 32,
                                     height: 32,
@@ -377,6 +419,7 @@ class _CartScreenState extends State<CartScreen> {
           },
         ),
       ),
+
       bottomNavigationBar: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -389,7 +432,8 @@ class _CartScreenState extends State<CartScreen> {
                 final model = snapshot.data;
                 final hasItems = model != null && model.items.isNotEmpty;
                 final subtotal = (model?.subtotal ?? 0).toDouble();
-                final shippingFee = 50.0; // replace with your calculation if needed
+                final shippingFee =
+                    50.0; // replace with your calculation if needed
 
                 return Container(
                   padding: const EdgeInsets.symmetric(
