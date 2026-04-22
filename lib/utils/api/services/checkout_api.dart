@@ -41,5 +41,24 @@ class CheckoutApi {
       fromJsonData: CheckoutData.fromJson,
     );
   }
+
+  /// Compute shipping/processing fees before final checkout.
+  Future<ApiResponse<ComputeFeesData?>> computeFees({
+    required String paymentProviderCode,
+    required String country,
+    required String province,
+    required String city,
+  }) {
+    return _client.post<ComputeFeesData?>(
+      ApiEndpoints.checkoutComputeFees,
+      body: {
+        'paymentProviderCode': paymentProviderCode,
+        'country': country,
+        'province': province,
+        'city': city,
+      },
+      fromJsonData: ComputeFeesData.fromJson,
+    );
+  }
 }
 

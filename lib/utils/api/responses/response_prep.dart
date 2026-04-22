@@ -265,6 +265,80 @@ class CheckoutData {
   }
 }
 
+class ComputeFeesData {
+  final String cartRefno;
+  final num subtotalAmount;
+  final num shippingAmount;
+  final num processingFeeAmount;
+  final num voucherDiscountAmount;
+  final num discountAmount;
+  final num totalAmount;
+  final int totalBoxes;
+
+  ComputeFeesData({
+    required this.cartRefno,
+    required this.subtotalAmount,
+    required this.shippingAmount,
+    required this.processingFeeAmount,
+    required this.voucherDiscountAmount,
+    required this.discountAmount,
+    required this.totalAmount,
+    required this.totalBoxes,
+  });
+
+  static ComputeFeesData? fromJson(dynamic json) {
+    final m = asMap(json);
+    if (m == null) return null;
+    return ComputeFeesData(
+      cartRefno: (m['cartRefno'] as String?) ?? (m['cartRefNo'] as String? ?? ''),
+      subtotalAmount: (m['subtotalAmount'] as num?) ?? 0,
+      shippingAmount: (m['shippingAmount'] as num?) ?? 0,
+      processingFeeAmount: (m['processingFeeAmount'] as num?) ?? 0,
+      voucherDiscountAmount: (m['voucherDiscountAmount'] as num?) ?? 0,
+      discountAmount: (m['discountAmount'] as num?) ?? 0,
+      totalAmount: (m['totalAmount'] as num?) ?? 0,
+      totalBoxes: (m['totalBoxes'] as int?) ?? 0,
+    );
+  }
+}
+
+class OrderStatusHistoryItem {
+  final int autoId;
+  final String orderRefNo;
+  final int orderStatusId;
+  final String orderStatusName;
+  final String trackingNo;
+  final String remarks;
+  final String userName;
+  final String tranDate;
+
+  OrderStatusHistoryItem({
+    required this.autoId,
+    required this.orderRefNo,
+    required this.orderStatusId,
+    required this.orderStatusName,
+    required this.trackingNo,
+    required this.remarks,
+    required this.userName,
+    required this.tranDate,
+  });
+
+  static OrderStatusHistoryItem? fromJson(dynamic json) {
+    final m = asMap(json);
+    if (m == null) return null;
+    return OrderStatusHistoryItem(
+      autoId: (m['autoId'] as int?) ?? 0,
+      orderRefNo: m['orderRefNo'] as String? ?? '',
+      orderStatusId: (m['orderStatusId'] as int?) ?? 0,
+      orderStatusName: m['orderStatusName'] as String? ?? '',
+      trackingNo: m['trackingNo'] as String? ?? '',
+      remarks: m['remarks'] as String? ?? '',
+      userName: m['userName'] as String? ?? '',
+      tranDate: m['tranDate'] as String? ?? '',
+    );
+  }
+}
+
 class UserInfo {
   final String idno;
   final String codedIdno;
