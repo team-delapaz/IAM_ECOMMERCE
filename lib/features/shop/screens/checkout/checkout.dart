@@ -326,10 +326,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         totalAmount: totalAmount,
       );
       if (!paid) return;
-      _showPaymentSuccess(
-        orderRef: orderRef,
-        totalAmount: totalAmount,
-      );
+      _showPaymentSuccess(orderRef: orderRef, totalAmount: totalAmount);
       return;
     }
 
@@ -385,10 +382,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       ),
     );
 
-    _showPaymentSuccess(
-      orderRef: orderRef,
-      totalAmount: totalAmount,
-    );
+    _showPaymentSuccess(orderRef: orderRef, totalAmount: totalAmount);
   }
 
   Future<bool> _showIamWalletSheet({
@@ -400,10 +394,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       isScrollControlled: true,
       useSafeArea: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => _IamWalletPaymentSheet(
-        orderRef: orderRef,
-        totalAmount: totalAmount,
-      ),
+      builder: (_) =>
+          _IamWalletPaymentSheet(orderRef: orderRef, totalAmount: totalAmount),
     );
     return result ?? false;
   }
@@ -474,8 +466,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                 imageUrl: item.imageUrl,
                                 isNetworkImage: true,
                                 fit: BoxFit.cover,
-                                backgroundColor:
-                                    dark ? IAMColors.black : IAMColors.white,
+                                backgroundColor: dark
+                                    ? IAMColors.black
+                                    : IAMColors.white,
                               )
                             : Container(
                                 width: 48,
@@ -485,8 +478,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                   color: dark
                                       ? IAMColors.darkGrey
                                       : IAMColors.light,
-                                  borderRadius:
-                                      BorderRadius.circular(IAMSizes.md),
+                                  borderRadius: BorderRadius.circular(
+                                    IAMSizes.md,
+                                  ),
                                 ),
                                 child: const Icon(
                                   Icons.image_not_supported_outlined,
@@ -511,7 +505,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                           ],
                         ),
                         trailing: Text(
-                          IAMFormatter.formatCurrency(item.lineTotal.toDouble()),
+                          IAMFormatter.formatCurrency(
+                            item.lineTotal.toDouble(),
+                          ),
                           style: Theme.of(context).textTheme.bodyLarge
                               ?.copyWith(fontWeight: FontWeight.w600),
                         ),
@@ -575,15 +571,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           final model = snapshot.data;
           final hasItems = model != null && model.items.isNotEmpty;
           final subtotal = model?.subtotal ?? 0;
+
           return Obx(() {
             final paymentProviderSelected =
                 _checkoutController.selectedPaymentProviderCode.isNotEmpty;
-            String? warningMessage;
-            if (!hasItems) {
-              warningMessage = 'Your cart is empty.';
-            } else if (!paymentProviderSelected) {
-              warningMessage = 'Please select a payment provider.';
-            }
+
+            final canCheckout = hasItems && paymentProviderSelected;
+
             return SafeArea(
               top: false,
               minimum: const EdgeInsets.all(IAMSizes.defaultSpace),
@@ -592,51 +586,17 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   ElevatedButton(
-                    onPressed: (!hasItems || !paymentProviderSelected)
-                        ? null
-                        : () {
-                      if (!hasItems) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: const Text(
-                              'Your cart is empty.',
-                              style: TextStyle(color: Color.fromARGB(255, 35, 35, 35)),
-                            ),
-                            backgroundColor: Colors.red[300],
-                            behavior: SnackBarBehavior.floating,
-                            margin: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 8,
-                            ),
-                          ),
-                        );
-                        return;
-                      }
-                      if (!paymentProviderSelected) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: const Text(
-                              'Please select a payment method.',
-                              style: TextStyle(color: Color.fromARGB(255, 35, 35, 35)),
-                            ),
-                            backgroundColor: Colors.red[300],
-                            behavior: SnackBarBehavior.floating,
-                            margin: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 8,
-                            ),
-                          ),
-                        );
-                        return;
-                      }
+                    onPressed: canCheckout
+                        ? () {
+                            _placeOrder(model);
+                          }
+                        : null,
 
-                      _placeOrder(model);
-                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: IAMColors.primary,
                       foregroundColor: IAMColors.white,
                       disabledBackgroundColor: IAMColors.grey,
-                      disabledForegroundColor: const Color.fromARGB(255, 146, 0, 0),
+                      disabledForegroundColor: Colors.white70,
                       padding: const EdgeInsets.symmetric(
                         vertical: IAMSizes.md,
                       ),
@@ -646,12 +606,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         ),
                       ),
                     ),
+
                     child: Text(
-                      ((!hasItems || !paymentProviderSelected) &&
-                                  warningMessage !=
-                                      null)
-                              ? warningMessage
-                              : 'Checkout ${IAMFormatter.formatCurrency(subtotal.toDouble())}',
+                      canCheckout
+                          ? 'Checkout ${IAMFormatter.formatCurrency(subtotal.toDouble())}'
+                          : 'Checkout',
+
                       textAlign: TextAlign.center,
                     ),
                   ),
@@ -774,11 +734,11 @@ class _WalletModalSideAccent extends StatelessWidget {
                 'Secure',
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: (dark ? IAMColors.white : IAMColors.textPrimary)
-                          .withOpacity(0.55),
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 0.4,
-                    ),
+                  color: (dark ? IAMColors.white : IAMColors.textPrimary)
+                      .withOpacity(0.55),
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.4,
+                ),
               ),
             ],
           ),
@@ -919,7 +879,9 @@ class _IamWalletPaymentSheetState extends State<_IamWalletPaymentSheet> {
     final surface = dark ? const Color(0xFF101217) : IAMColors.white;
     final onSurface = dark ? IAMColors.white : IAMColors.black;
     final muted = onSurface.withOpacity(dark ? 0.72 : 0.66);
-    final amountText = IAMFormatter.formatCurrency(widget.totalAmount.toDouble());
+    final amountText = IAMFormatter.formatCurrency(
+      widget.totalAmount.toDouble(),
+    );
     final balance = _walletData?.balance ?? 0;
     final balanceText = IAMFormatter.formatCurrency(balance.toDouble());
     final canPay = !_loadingBalance && !_isPaying && !_isValidating;
@@ -972,7 +934,8 @@ class _IamWalletPaymentSheetState extends State<_IamWalletPaymentSheet> {
                               children: [
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         'IAM Wallet',
@@ -1039,7 +1002,9 @@ class _IamWalletPaymentSheetState extends State<_IamWalletPaymentSheet> {
                                         colors: dark
                                             ? [
                                                 IAMColors.black,
-                                                IAMColors.black.withOpacity(0.92),
+                                                IAMColors.black.withOpacity(
+                                                  0.92,
+                                                ),
                                               ]
                                             : [
                                                 IAMColors.white,
@@ -1048,7 +1013,9 @@ class _IamWalletPaymentSheetState extends State<_IamWalletPaymentSheet> {
                                       ),
                                     ),
                                     child: Padding(
-                                      padding: const EdgeInsets.all(IAMSizes.md),
+                                      padding: const EdgeInsets.all(
+                                        IAMSizes.md,
+                                      ),
                                       child: Row(
                                         children: [
                                           Expanded(
@@ -1094,17 +1061,15 @@ class _IamWalletPaymentSheetState extends State<_IamWalletPaymentSheet> {
                                       backgroundColor: dark
                                           ? IAMColors.black.withOpacity(0.45)
                                           : IAMColors.accent.withOpacity(0.35),
-                                      borderColor: IAMColors.primary.withOpacity(
-                                        dark ? 0.28 : 0.22,
-                                      ),
+                                      borderColor: IAMColors.primary
+                                          .withOpacity(dark ? 0.28 : 0.22),
                                       child: Row(
                                         children: [
                                           Icon(
                                             Icons.badge_outlined,
                                             size: 18,
-                                            color: IAMColors.primary.withOpacity(
-                                              0.9,
-                                            ),
+                                            color: IAMColors.primary
+                                                .withOpacity(0.9),
                                           ),
                                           const SizedBox(width: 8),
                                           Expanded(
@@ -1114,9 +1079,8 @@ class _IamWalletPaymentSheetState extends State<_IamWalletPaymentSheet> {
                                                   .textTheme
                                                   .labelLarge
                                                   ?.copyWith(
-                                                    color: onSurface.withOpacity(
-                                                      0.88,
-                                                    ),
+                                                    color: onSurface
+                                                        .withOpacity(0.88),
                                                     fontWeight: FontWeight.w600,
                                                   ),
                                             ),
@@ -1143,7 +1107,9 @@ class _IamWalletPaymentSheetState extends State<_IamWalletPaymentSheet> {
                                               dark ? 0.4 : 0.2,
                                             ),
                                       showBorder: true,
-                                      padding: const EdgeInsets.all(IAMSizes.md),
+                                      padding: const EdgeInsets.all(
+                                        IAMSizes.md,
+                                      ),
                                       child: Row(
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
@@ -1152,7 +1118,7 @@ class _IamWalletPaymentSheetState extends State<_IamWalletPaymentSheet> {
                                             _statusIsError
                                                 ? Icons.error_outline_rounded
                                                 : Icons
-                                                    .check_circle_outline_rounded,
+                                                      .check_circle_outline_rounded,
                                             size: 20,
                                             color: _statusIsError
                                                 ? Colors.red[300]
@@ -1178,16 +1144,15 @@ class _IamWalletPaymentSheetState extends State<_IamWalletPaymentSheet> {
                                   const SizedBox(height: 20),
                                   Text(
                                     'Step 1 — confirm funds. Step 2 — charge wallet.',
-                                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                          color: muted,
-                                          height: 1.3,
-                                        ),
+                                    style: Theme.of(context).textTheme.bodySmall
+                                        ?.copyWith(color: muted, height: 1.3),
                                   ),
                                   const SizedBox(height: 12),
                                   SizedBox(
                                     width: double.infinity,
                                     child: OutlinedButton(
-                                      onPressed: _loadingBalance ||
+                                      onPressed:
+                                          _loadingBalance ||
                                               _isValidating ||
                                               _isPaying
                                           ? null
@@ -1201,7 +1166,9 @@ class _IamWalletPaymentSheetState extends State<_IamWalletPaymentSheet> {
                                         ),
                                         minimumSize: const Size.fromHeight(46),
                                         shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(14),
+                                          borderRadius: BorderRadius.circular(
+                                            14,
+                                          ),
                                         ),
                                       ),
                                       child: _isValidating
@@ -1218,7 +1185,9 @@ class _IamWalletPaymentSheetState extends State<_IamWalletPaymentSheet> {
                                               'Validate payment',
                                               style: TextStyle(
                                                 fontWeight: FontWeight.w600,
-                                                color: onSurface.withOpacity(0.75),
+                                                color: onSurface.withOpacity(
+                                                  0.75,
+                                                ),
                                               ),
                                             ),
                                     ),
@@ -1232,13 +1201,14 @@ class _IamWalletPaymentSheetState extends State<_IamWalletPaymentSheet> {
                                         backgroundColor: IAMColors.primary,
                                         foregroundColor: IAMColors.white,
                                         elevation: dark ? 0 : 2,
-                                        shadowColor: IAMColors.primary.withOpacity(
-                                          0.45,
-                                        ),
+                                        shadowColor: IAMColors.primary
+                                            .withOpacity(0.45),
                                         minimumSize: const Size.fromHeight(54),
                                         disabledBackgroundColor: IAMColors.grey,
                                         shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(16),
+                                          borderRadius: BorderRadius.circular(
+                                            16,
+                                          ),
                                         ),
                                       ),
                                       child: _isPaying
@@ -1314,20 +1284,20 @@ class _WalletMetric extends StatelessWidget {
             Text(
               label.toUpperCase(),
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: Theme.of(context).hintColor,
-                    letterSpacing: 0.6,
-                    fontWeight: FontWeight.w600,
-                  ),
+                color: Theme.of(context).hintColor,
+                letterSpacing: 0.6,
+                fontWeight: FontWeight.w600,
+              ),
             ),
             const SizedBox(height: 6),
             Text(
               value,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w800,
-                    color: valueColor,
-                    height: 1.1,
-                    fontFeatures: const [FontFeature.tabularFigures()],
-                  ),
+                fontWeight: FontWeight.w800,
+                color: valueColor,
+                height: 1.1,
+                fontFeatures: const [FontFeature.tabularFigures()],
+              ),
             ),
           ],
         ),

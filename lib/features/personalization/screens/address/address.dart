@@ -34,6 +34,7 @@ class _UserAddressScreenState extends State<UserAddressScreen> {
 
   Future<void> _setDefault(AddressItem address) async {
     final res = await ApiMiddleware.address.setDefaultAddress(address.autoId);
+
     if (!res.success) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -51,6 +52,19 @@ class _UserAddressScreenState extends State<UserAddressScreen> {
       );
       return;
     }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Changed Default Address to "${address.recipientName}"',
+          style: const TextStyle(color: Colors.white),
+        ),
+        backgroundColor: IAMColors.primary,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      ),
+    );
+
     await _reload();
   }
 
@@ -76,6 +90,7 @@ class _UserAddressScreenState extends State<UserAddressScreen> {
     if (confirm != true) return;
 
     final res = await ApiMiddleware.address.deleteAddress(address.autoId);
+
     if (!res.success) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -99,6 +114,7 @@ class _UserAddressScreenState extends State<UserAddressScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       floatingActionButton: FloatingActionButton(
+        backgroundColor: IAMColors.primary.withOpacity(0.8),
         onPressed: () async {
           await Get.to(() => const AddNewAddressScreen());
           await _reload();
@@ -108,7 +124,7 @@ class _UserAddressScreenState extends State<UserAddressScreen> {
       appBar: IAMAppBar(
         showBackArrow: true,
         title: Text(
-          'Addresses',
+          'Delivery Addresses',
           style: Theme.of(context).textTheme.headlineSmall,
         ),
       ),
@@ -164,6 +180,7 @@ class _UserAddressScreenState extends State<UserAddressScreen> {
                               child: Text('Edit'),
                             ),
                           );
+
                           items.add(
                             const PopupMenuItem(
                               value: 'delete',
@@ -193,7 +210,6 @@ class _UserAddressScreenState extends State<UserAddressScreen> {
                         },
                       ),
                       onTap: () async {
-                        // Tap-to-set-default for convenience on this screen.
                         await _setDefault(address);
                       },
                     ),

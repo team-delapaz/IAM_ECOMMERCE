@@ -766,8 +766,8 @@ class _PaymentCardModel {
 
     if (provider.isEmpty && !paid) {
       return const _PaymentCardModel(
-        title: 'UNPAID',
-        subtitle: 'Payment not completed yet',
+        title: 'Unpaid',
+        subtitle: 'Select Payment Provider',
         accent: Color(0xFFEF5350),
         icon: Icons.error_outline_rounded,
         canPayNow: true,
@@ -779,14 +779,12 @@ class _PaymentCardModel {
           ? 'PAID'
           : (order.paymentStatusName.isNotEmpty
                 ? order.paymentStatusName
-                : 'PENDING');
+                : order.paymentStatusMessage);
       return _PaymentCardModel(
-        title: 'PAYMAYA · $statusText',
+        title: 'Maya · $statusText',
         subtitle: order.paymentStatusMessage.isNotEmpty
-            ? order.paymentStatusMessage
-            : (paid
-                  ? 'Payment successful.'
-                  : 'Complete your PayMaya checkout.'),
+            ? 'Pending Payment'
+            : (paid ? 'Payment successful.' : 'Complete your Maya checkout.'),
         accent: Colors.green.shade600,
         icon: Icons.payment_rounded,
         canPayNow: !paid,
