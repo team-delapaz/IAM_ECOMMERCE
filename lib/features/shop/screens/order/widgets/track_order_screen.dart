@@ -138,35 +138,42 @@ class TrackingOrderScreen extends StatelessWidget {
       ),
       child: Column(
         children: [
-          const Text(
-            'Order Details',
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-
-          const SizedBox(height: IAMSizes.spaceBtwItems),
-
-          _row('Customer Name:', user?.fullName ?? 'IAM User'),
-          _row(
-            'Destination:',
-            order.shippingInfo?.completeAddress != null
-                ? toTitleCase(order.shippingInfo!.completeAddress)
-                : 'No Selected Address',
-          ),
-          _row('Contact No.:', order.shippingInfo?.mobileNo ?? 'N/A'),
-          _row('Payment Method:', order.paymentMethod ?? 'N/A'),
-
-          /// STATUS BADGE
+          /// HEADER ONLY (UPDATED)
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Status:'),
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: IAMColors.primary.withOpacity(0.12),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.receipt_long_rounded,
+                      size: 18,
+                      color: IAMColors.primary,
+                    ),
+                  ),
+
+                  const SizedBox(width: 8),
+
+                  const Text(
+                    'Order Details',
+                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+                  ),
+                ],
+              ),
+
+              /// STATUS BADGE (RIGHT SIDE ONLY)
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 10,
                   vertical: 4,
                 ),
                 decoration: BoxDecoration(
-                  color: IAMColors.primary.withOpacity(0.15),
+                  color: IAMColors.primary.withOpacity(0.12),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
@@ -180,6 +187,18 @@ class TrackingOrderScreen extends StatelessWidget {
               ),
             ],
           ),
+
+          const SizedBox(height: IAMSizes.spaceBtwItems),
+
+          _row('Customer:', user?.fullName ?? 'IAM User'),
+          _row(
+            'Destination:',
+            order.shippingInfo?.completeAddress != null
+                ? toTitleCase(order.shippingInfo!.completeAddress)
+                : 'No Selected Address',
+          ),
+          _row('Contact No.:', order.shippingInfo?.mobileNo ?? 'N/A'),
+          _row('Payment Method:', order.paymentMethod ?? 'N/A'),
         ],
       ),
     );
@@ -188,18 +207,38 @@ class TrackingOrderScreen extends StatelessWidget {
   Widget _row(String title, String value) {
     return Padding(
       padding: const EdgeInsets.only(bottom: IAMSizes.sm),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(title, style: const TextStyle(color: Colors.grey)),
-          Flexible(
-            child: Text(
-              value,
-              textAlign: TextAlign.right,
-              style: const TextStyle(fontWeight: FontWeight.w500),
-            ),
-          ),
-        ],
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              /// LEFT LABEL
+              SizedBox(
+                width: constraints.maxWidth * 0.45,
+                child: Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Colors.grey,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+              ),
+              SizedBox(
+                width: constraints.maxWidth * 0.55,
+                child: Text(
+                  value,
+                  textAlign: TextAlign.right,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w500,
+                    height: 1.3,
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }

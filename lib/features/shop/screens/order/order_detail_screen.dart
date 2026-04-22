@@ -299,11 +299,23 @@ class OrderDetailScreen extends StatelessWidget {
 
                 Text('Items', style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: 8),
+
                 ...items.map((item) {
                   if (item == null) return const SizedBox.shrink();
+
                   return Card(
-                    margin: const EdgeInsets.symmetric(vertical: 6),
+                    color: IAMColors.primary.withOpacity(0.08),
+                    margin: const EdgeInsets.symmetric(vertical: 5),
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                     child: ListTile(
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+
                       leading: (item.imageUrl?.isNotEmpty ?? false)
                           ? Image.network(
                               item.imageUrl!,
@@ -312,15 +324,40 @@ class OrderDetailScreen extends StatelessWidget {
                               fit: BoxFit.cover,
                             )
                           : const Icon(Icons.inventory_2_outlined),
-                      title: Text(item.productName ?? ''),
-                      subtitle: Text('Qty: ${item.qty ?? 0}'),
+
+                      title: Text(
+                        item.productName ?? '',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+
+                      subtitle: Text(
+                        'Quantity: ${item.qty ?? 0}',
+                        style: TextStyle(
+                          color: Colors.grey.shade500,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+
                       trailing: Text(
-                        '₱${(item.lineTotal ?? 0).toStringAsFixed(2)}',
+                        NumberFormat.currency(
+                          locale: 'en_PH',
+                          symbol: '₱',
+                          decimalDigits: 2,
+                        ).format(item.lineTotal ?? 0),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ),
                   );
                 }),
+
                 const Divider(height: 32),
+
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -329,42 +366,50 @@ class OrderDetailScreen extends StatelessWidget {
                       NumberFormat.currency(
                         locale: 'en_PH',
                         symbol: '₱',
+                        decimalDigits: 2,
                       ).format(order.subtotalAmount),
                     ),
                   ],
                 ),
+
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text('Shipping:'),
                     Text(
-                      IAMFormatter.formatAccountingAmount(
-                        order.shippingAmount.toDouble(),
-                      ),
+                      NumberFormat.currency(
+                        locale: 'en_PH',
+                        symbol: '₱',
+                        decimalDigits: 2,
+                      ).format(order.shippingAmount),
                     ),
                   ],
                 ),
+
                 if (order.voucherDiscountAmount > 0)
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text('Voucher Discount:'),
                       Text(
-                        '-₱${order.voucherDiscountAmount.toStringAsFixed(2)}',
+                        '-${NumberFormat.currency(locale: 'en_PH', symbol: '₱', decimalDigits: 2).format(order.voucherDiscountAmount)}',
                       ),
                     ],
                   ),
+
                 if (order.discountAmount > 0)
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text('Discount:'),
                       Text(
-                        '-${IAMFormatter.formatCurrency(order.discountAmount.toDouble())}',
+                        '-${NumberFormat.currency(locale: 'en_PH', symbol: '₱', decimalDigits: 2).format(order.discountAmount)}',
                       ),
                     ],
                   ),
+
                 const SizedBox(height: 8),
+
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -376,6 +421,7 @@ class OrderDetailScreen extends StatelessWidget {
                       NumberFormat.currency(
                         locale: 'en_PH',
                         symbol: '₱',
+                        decimalDigits: 2,
                       ).format(order.totalAmount),
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
@@ -804,54 +850,74 @@ class _PaymentStatusCard extends StatelessWidget {
     final accentBg = accent.withOpacity(dark ? 0.16 : 0.10);
     final border = accent.withOpacity(dark ? 0.32 : 0.22);
 
-    return IAMRoundedContainer(
-      showBorder: true,
-      backgroundColor: surface,
-      borderColor: border,
-      padding: const EdgeInsets.all(IAMSizes.md),
-      child: Row(
-        children: [
-          Container(
-            width: 46,
-            height: 46,
-            decoration: BoxDecoration(
-              color: accentBg,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: border),
+    return Card(
+      elevation: 5,
+      shadowColor: Colors.black.withOpacity(0.12),
+      color: surface,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(IAMSizes.md),
+        child: Row(
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: accent.withOpacity(0.12),
+              ),
+              child: Icon(Icons.wallet, color: accent, size: 24),
             ),
-            child: Icon(model.icon, color: accent),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  model.title,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: onSurface,
-                    fontWeight: FontWeight.w800,
+
+            const SizedBox(width: 12),
+
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    model.title,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: onSurface,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    model.subtitle,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: muted,
+                      height: 1.3,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            if (onPayNow != null) ...[
+              const SizedBox(width: 10),
+              TextButton(
+                onPressed: onPayNow,
+                style: TextButton.styleFrom(
+                  foregroundColor: accent,
+                  backgroundColor: accent.withOpacity(0.08),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  model.subtitle,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodySmall?.copyWith(color: muted, height: 1.25),
+                child: const Text(
+                  'Pay now',
+                  style: TextStyle(fontWeight: FontWeight.w500, fontSize: 13),
                 ),
-              ],
-            ),
-          ),
-          if (onPayNow != null) ...[
-            const SizedBox(width: 10),
-            TextButton(
-              onPressed: onPayNow,
-              style: TextButton.styleFrom(foregroundColor: accent),
-              child: const Text('Pay now'),
-            ),
+              ),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }
