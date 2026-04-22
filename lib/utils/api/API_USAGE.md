@@ -66,7 +66,8 @@ await ApiMiddleware.init();
 
 ## Checkout
 
-- `ApiMiddleware.checkout.checkout(fullName: ..., mobileNo: ..., emailAddress: ..., paymentProviderCode: ..., country: ..., province: ..., city: ..., barangay: ..., streetAddress: ..., postalCode: ..., completeAddress: ..., notes: 'optional note')` → `ApiResponse<dynamic>`
+- `ApiMiddleware.checkout.checkout(fullName: ..., mobileNo: ..., emailAddress: ..., paymentProviderCode: ..., country: ..., province: ..., city: ..., barangay: ..., streetAddress: ..., postalCode: ..., completeAddress: ..., notes: 'optional note')` → `ApiResponse<CheckoutData?>`
+- `ApiMiddleware.checkout.computeFees(paymentProviderCode: 'IAMWALLET', country: 'PHILIPPINES', province: 'METRO-MANILA', city: 'QUEZON-CITY')` → `ApiResponse<ComputeFeesData?>` (POST `/Checkout/ComputeFees`) — preview fees from the active cart; success `data` includes `cartRefno`, amounts, `totalBoxes`. On failure (e.g. no active cart), `success` is false, `data` is null, and `message` explains the error (e.g. `"Database error while computing fees: No active cart found."`).
 
 ## Location
 
@@ -88,6 +89,7 @@ await ApiMiddleware.init();
 
 - `ApiMiddleware.orders.getOrders()` → `ApiResponse<List<OrderItem?>>`
 - `ApiMiddleware.orders.getOrderDetail(refNo)` → `ApiResponse<OrderDetailItem?>`
+- `ApiMiddleware.orders.getOrderHistory(refNo)` → `ApiResponse<List<OrderStatusHistoryItem?>>` (GET `/Orders/{orderRefNo}/History`) — status timeline (e.g. `Delivered`, `In Transit`, with `trackingNo`, `remarks`, `userName`, `tranDate`)
 
 ## Product Review
 

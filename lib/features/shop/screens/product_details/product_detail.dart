@@ -146,15 +146,19 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
             return IAMCircularIcon(
               icon: wishlisted ? Iconsax.heart : Iconsax.heart5,
-              color: !isLoggedIn ? IAMColors.darkGrey : (wishlisted ? Colors.red : (IAMHelperFunctions.isDarkMode(context)
-                                ? IAMColors.lightGrey
-                                : IAMColors.darkGrey)),
+              color: !isLoggedIn
+                  ? IAMColors.darkGrey
+                  : (wishlisted
+                        ? Colors.red
+                        : (IAMHelperFunctions.isDarkMode(context)
+                              ? IAMColors.lightGrey
+                              : IAMColors.darkGrey)),
               onPressed: (!isLoggedIn || productCode.isEmpty || toggling)
                   ? null
                   : () {
-                      _wishlistController
-                          .toggleWishlist(productCode)
-                          .then((result) {
+                      _wishlistController.toggleWishlist(productCode).then((
+                        result,
+                      ) {
                         if (!context.mounted) return;
                         if (result.message.isEmpty) return;
 
@@ -182,7 +186,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           }),
           IAMCircularIcon(
             icon: Iconsax.shopping_bag,
-            onPressed: () => Get.to(() => const CartScreen())),
+            onPressed: () => Get.to(() => const CartScreen()),
+          ),
         ],
       ),
       bottomNavigationBar: IAMBottomAddToCart(product: product),
@@ -206,7 +211,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: () => _checkoutProduct(context),
+                      onPressed: widget.product != null
+                          ? () => _checkoutProduct(context)
+                          : null,
                       child: const Text('Checkout'),
                     ),
                   ),
@@ -219,8 +226,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   const SizedBox(height: IAMSizes.spaceBtwItems),
 
                   ReadMoreText(
-                    product.longDesc.isNotEmpty
-                        ? product.longDesc
+                    widget.product?.longDesc.isNotEmpty == true
+                        ? widget.product!.longDesc
                         : 'No description available.',
                     trimLines: 2,
                     trimMode: TrimMode.Line,

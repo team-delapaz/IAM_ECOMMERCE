@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:iam_ecomm/utils/api/api.dart';
+import 'package:iam_ecomm/utils/api/responses/response_prep.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:iam_ecomm/utils/constants/colors.dart';
 import 'package:iam_ecomm/utils/constants/sizes.dart';
+import 'package:iam_ecomm/features/authentication/controllers/auth_controller.dart';
 
 class TrackingOrderScreen extends StatelessWidget {
-  const TrackingOrderScreen({super.key});
+  final OrderDetailItem order;
+  final user = AuthController.instance.user.value;
+
+  TrackingOrderScreen({super.key, required this.order});
 
   @override
   Widget build(BuildContext context) {
@@ -53,15 +59,29 @@ class TrackingOrderScreen extends StatelessWidget {
       ),
       child: Row(
         children: [
-          /// IMAGE
+          /// IMAGE (first item image)
           Container(
             width: 60,
             height: 60,
             decoration: BoxDecoration(
               color: Colors.grey[200],
               borderRadius: BorderRadius.circular(IAMSizes.md),
+              image:
+                  (order.items?.isNotEmpty == true &&
+                      order.items!.first?.imageUrl != null &&
+                      order.items!.first!.imageUrl!.isNotEmpty)
+                  ? DecorationImage(
+                      image: NetworkImage(order.items!.first!.imageUrl!),
+                      fit: BoxFit.cover,
+                    )
+                  : null,
             ),
-            child: const Icon(Iconsax.mobile, size: 28),
+            child:
+                (order.items?.isNotEmpty != true ||
+                    order.items!.first?.imageUrl == null ||
+                    order.items!.first!.imageUrl!.isEmpty)
+                ? const Icon(Iconsax.box)
+                : null,
           ),
 
           const SizedBox(width: IAMSizes.spaceBtwItems),
@@ -70,15 +90,20 @@ class TrackingOrderScreen extends StatelessWidget {
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
+              children: [
+                /// PRODUCT NAME (first item)
                 Text(
-                  'Item Name',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  order.items?.isNotEmpty == true
+                      ? (order.items!.first?.productName ?? 'Item Name')
+                      : 'Item Name',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
-                SizedBox(height: 4),
+
+                const SizedBox(height: 4),
+
                 Text(
-                  'Order ID: 123 Sample Number',
-                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                  'Order #${order.orderRefno}',
+                  style: const TextStyle(fontSize: 12, color: Colors.grey),
                 ),
               ],
             ),
@@ -89,6 +114,18 @@ class TrackingOrderScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  String toTitleCase(String text) {
+    if (text.isEmpty) return text;
+
+    return text
+        .split(' ')
+        .map((word) {
+          if (word.isEmpty) return word;
+          return word[0].toUpperCase() + word.substring(1).toLowerCase();
+        })
+        .join(' ');
   }
 
   /// ---------------- ORDER DETAILS ----------------
@@ -108,11 +145,15 @@ class TrackingOrderScreen extends StatelessWidget {
 
           const SizedBox(height: IAMSizes.spaceBtwItems),
 
-          _row('Customer Name:', 'Sample'),
-
-          _row('Destination:', 'Sample Address'),
-          _row('Quantity:', '1'),
-          _row('Payment:', 'Success'),
+          _row('Customer Name:', user?.fullName ?? 'IAM User'),
+          _row(
+            'Destination:',
+            order.shippingInfo?.completeAddress != null
+                ? toTitleCase(order.shippingInfo!.completeAddress)
+                : 'No Selected Address',
+          ),
+          _row('Contact No.:', order.shippingInfo?.mobileNo ?? 'N/A'),
+          _row('Payment Method:', order.paymentMethod ?? 'N/A'),
 
           /// STATUS BADGE
           Row(
@@ -128,9 +169,9 @@ class TrackingOrderScreen extends StatelessWidget {
                   color: IAMColors.primary.withOpacity(0.15),
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: const Text(
-                  'In Transit',
-                  style: TextStyle(
+                child: Text(
+                  order.paymentStatusMessage,
+                  style: const TextStyle(
                     color: IAMColors.primary,
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
@@ -163,8 +204,7 @@ class TrackingOrderScreen extends StatelessWidget {
     );
   }
 
-  /// ---------------- TIMELINE ----------------
-  /// ---------------- TIMELINE ----------------
+  /// ---------------- TIMELINE ---------------- kpaag complete na yung status
   Widget _timeline() {
     return Column(
       children: [
@@ -174,7 +214,7 @@ class TrackingOrderScreen extends StatelessWidget {
           'Courier Warehouse 2',
           isDone: true,
           isCurrent: true,
-        ), // recent status
+        ),
         _step('Out of Delivery', 'On the way', isDone: false),
         _step('Delivered', 'Sample Address', isDone: false, isLast: true),
       ],

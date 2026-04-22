@@ -251,6 +251,7 @@ class _IamWalletPaySheetState extends State<_IamWalletPaySheet> {
     final balance = _walletData?.balance ?? 0;
     final balanceText = IAMFormatter.formatCurrency(balance.toDouble());
     final canPay = !_loadingBalance && !_isPaying && !_isValidating;
+    final hasSufficientBalance = !_loadingBalance && balance >= widget.totalAmount;
 
     return FractionallySizedBox(
       heightFactor: 0.86,
@@ -514,6 +515,16 @@ class _IamWalletPaySheetState extends State<_IamWalletPaySheet> {
                                           height: 1.3,
                                         ),
                                   ),
+                                  if (!hasSufficientBalance) ...[
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      'Insufficient balance. Reload your IAM Wallet.',
+                                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                            color: Colors.red.shade400,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                    ),
+                                  ],
                                   const SizedBox(height: 12),
                                   SizedBox(
                                     width: double.infinity,
@@ -558,7 +569,7 @@ class _IamWalletPaySheetState extends State<_IamWalletPaySheet> {
                                   SizedBox(
                                     width: double.infinity,
                                     child: ElevatedButton(
-                                      onPressed: canPay ? _payOrder : null,
+                                      onPressed: (canPay && hasSufficientBalance) ? _payOrder : null,
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor: IAMColors.primary,
                                         foregroundColor: IAMColors.white,

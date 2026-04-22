@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:iam_ecomm/common/widgets/container/rounded_container.dart';
 import 'package:iam_ecomm/common/widgets/payments/checkout_webview_sheet.dart';
 import 'package:iam_ecomm/common/widgets/payments/iam_wallet_pay_sheet.dart';
@@ -9,6 +10,7 @@ import 'package:iam_ecomm/utils/api/responses/response_prep.dart';
 import 'package:iam_ecomm/utils/constants/colors.dart';
 import 'package:iam_ecomm/utils/constants/sizes.dart';
 import 'package:iam_ecomm/utils/helpers/helper_functions.dart';
+import 'package:iam_ecomm/navigation_menu.dart';
 import 'package:intl/intl.dart';
 import 'package:iam_ecomm/utils/formatters/formatter.dart';
 
@@ -67,7 +69,7 @@ class OrderDetailScreen extends StatelessWidget {
                                         context,
                                         MaterialPageRoute(
                                           builder: (context) =>
-                                              const TrackingOrderScreen(),
+                                              TrackingOrderScreen(order: order),
                                         ),
                                       );
                                     },
@@ -141,7 +143,7 @@ class OrderDetailScreen extends StatelessWidget {
                                         children: [
                                           Text(
                                             "Order Status Name",
-                                            // order.orderStatusName,
+                                            // order.orderStatusName, ayaw gumana hehe
                                             style: Theme.of(context)
                                                 .textTheme
                                                 .bodyMedium!
@@ -270,8 +272,6 @@ class OrderDetailScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 10),
-
-                const SizedBox(height: 16),
                 const SizedBox(height: 16),
                 const SizedBox(height: 8),
                 // Text('Date: ${order.orderDate}'),
@@ -419,20 +419,21 @@ Future<bool> _handlePayNow(
           context: context,
           useSafeArea: true,
           backgroundColor: Colors.transparent,
-          builder: (_) => _PayChoiceSheet(
-            orderRef: orderRef,
-            amount: amount,
-          ),
+          builder: (_) => _PayChoiceSheet(orderRef: orderRef, amount: amount),
         );
 
   if (choice == null) return false;
 
   if (choice == _PayProviderChoice.wallet) {
-    return showIamWalletPaySheet(
+    final paid = await showIamWalletPaySheet(
       context: context,
       orderRef: orderRef,
       totalAmount: amount,
     );
+    if (!paid) {
+      _redirectToStoreWithUnpaidToast();
+    }
+    return paid;
   }
 
   final memberRes = await ApiMiddleware.member.getMember();
@@ -500,23 +501,67 @@ Future<bool> _handlePayNow(
     return false;
   }
 
-  await showCheckoutWebViewSheet(
+  final paid = await showCheckoutWebViewSheet(
     context: context,
     checkoutUrl: checkoutUrl,
     orderRef: orderRef,
     totalAmount: amount,
   );
+  if (!paid && context.mounted) {
+    _redirectToStoreWithUnpaidToast();
+  }
+  return paid;
+}
 
-  return true;
+void _redirectToStoreWithUnpaidToast() {
+  final navController = Get.isRegistered<NavigationController>()
+      ? Get.find<NavigationController>()
+      : Get.put(NavigationController());
+  navController.selectedIndex.value = 1;
+  Get.offAll(() => const NavigationMenu());
+  void showOnReady([int attempts = 0]) {
+    final currentContext = Get.context;
+    if (currentContext == null) {
+      if (attempts < 10) {
+        Future.delayed(
+          const Duration(milliseconds: 120),
+          () => showOnReady(attempts + 1),
+        );
+      }
+      return;
+    }
+    final messenger = ScaffoldMessenger.maybeOf(currentContext);
+    if (messenger == null) {
+      if (attempts < 10) {
+        Future.delayed(
+          const Duration(milliseconds: 120),
+          () => showOnReady(attempts + 1),
+        );
+      }
+      return;
+    }
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(
+      SnackBar(
+        content: const Text(
+          'Order is currently unpaid, head to "My Orders" to continue payment.',
+          style: TextStyle(color: Colors.white),
+        ),
+        backgroundColor: Colors.red.shade300,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(12),
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
+  WidgetsBinding.instance.addPostFrameCallback((_) => showOnReady());
 }
 
 enum _PayProviderChoice { wallet, paymaya }
 
 class _PayChoiceSheet extends StatelessWidget {
-  const _PayChoiceSheet({
-    required this.orderRef,
-    required this.amount,
-  });
+  const _PayChoiceSheet({required this.orderRef, required this.amount});
 
   final String orderRef;
   final num amount;
@@ -529,7 +574,7 @@ class _PayChoiceSheet extends StatelessWidget {
     final muted = onSurface.withOpacity(dark ? 0.72 : 0.62);
 
     return FractionallySizedBox(
-      heightFactor: 0.46,
+      heightFactor: 0.58,
       alignment: Alignment.bottomCenter,
       child: ClipRRect(
         borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
@@ -561,7 +606,8 @@ class _PayChoiceSheet extends StatelessWidget {
                         children: [
                           Text(
                             'Choose payment',
-                            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            style: Theme.of(context).textTheme.titleLarge
+                                ?.copyWith(
                                   color: onSurface,
                                   fontWeight: FontWeight.w800,
                                 ),
@@ -569,9 +615,9 @@ class _PayChoiceSheet extends StatelessWidget {
                           const SizedBox(height: 4),
                           Text(
                             'Order $orderRef · ₱${amount.toStringAsFixed(2)}',
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: muted,
-                                ),
+                            style: Theme.of(
+                              context,
+                            ).textTheme.bodySmall?.copyWith(color: muted),
                           ),
                         ],
                       ),
@@ -579,7 +625,10 @@ class _PayChoiceSheet extends StatelessWidget {
                     IconButton(
                       tooltip: 'Close',
                       onPressed: () => Navigator.of(context).pop(),
-                      icon: Icon(Icons.close_rounded, color: onSurface.withOpacity(0.75)),
+                      icon: Icon(
+                        Icons.close_rounded,
+                        color: onSurface.withOpacity(0.75),
+                      ),
                     ),
                   ],
                 ),
@@ -598,7 +647,8 @@ class _PayChoiceSheet extends StatelessWidget {
                       subtitle: 'Pay instantly from wallet balance',
                       color: IAMColors.primary,
                       icon: Icons.account_balance_wallet_rounded,
-                      onTap: () => Navigator.of(context).pop(_PayProviderChoice.wallet),
+                      onTap: () =>
+                          Navigator.of(context).pop(_PayProviderChoice.wallet),
                     ),
                     const SizedBox(height: 10),
                     _PayChoiceTile(
@@ -606,7 +656,8 @@ class _PayChoiceSheet extends StatelessWidget {
                       subtitle: 'Pay via PayMaya checkout',
                       color: Colors.green.shade600,
                       icon: Icons.payment_rounded,
-                      onTap: () => Navigator.of(context).pop(_PayProviderChoice.paymaya),
+                      onTap: () =>
+                          Navigator.of(context).pop(_PayProviderChoice.paymaya),
                     ),
                   ],
                 ),
@@ -671,16 +722,16 @@ class _PayChoiceTile extends StatelessWidget {
                     Text(
                       title,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w700,
-                            color: onSurface,
-                          ),
+                        fontWeight: FontWeight.w700,
+                        color: onSurface,
+                      ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       subtitle,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: muted,
-                          ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.copyWith(color: muted),
                     ),
                   ],
                 ),
@@ -716,7 +767,9 @@ class _PaymentCardModel {
   static _PaymentCardModel from(OrderDetailItem order) {
     final providerRaw = order.paymentProvider.trim();
     final provider = providerRaw.toUpperCase();
-    final paid = order.paymentStatusName.toUpperCase() == 'PAID' || order.paymentStatusId != 0;
+    final paid =
+        order.paymentStatusName.toUpperCase() == 'PAID' ||
+        order.paymentStatusId != 0;
 
     if (provider.isEmpty && !paid) {
       return const _PaymentCardModel(
@@ -729,10 +782,18 @@ class _PaymentCardModel {
     }
 
     if (provider == 'PAYMAYA') {
-      final statusText = paid ? 'PAID' : (order.paymentStatusName.isNotEmpty ? order.paymentStatusName : 'PENDING');
+      final statusText = paid
+          ? 'PAID'
+          : (order.paymentStatusName.isNotEmpty
+                ? order.paymentStatusName
+                : 'PENDING');
       return _PaymentCardModel(
         title: 'PAYMAYA · $statusText',
-        subtitle: order.paymentStatusMessage.isNotEmpty ? order.paymentStatusMessage : (paid ? 'Payment successful.' : 'Complete your PayMaya checkout.'),
+        subtitle: order.paymentStatusMessage.isNotEmpty
+            ? order.paymentStatusMessage
+            : (paid
+                  ? 'Payment successful.'
+                  : 'Complete your PayMaya checkout.'),
         accent: Colors.green.shade600,
         icon: Icons.payment_rounded,
         canPayNow: !paid,
@@ -740,20 +801,34 @@ class _PaymentCardModel {
     }
 
     if (provider.contains('WALLET')) {
-      final statusText = paid ? 'PAID' : (order.paymentStatusName.isNotEmpty ? order.paymentStatusName : 'PENDING');
+      final statusText = paid
+          ? 'PAID'
+          : (order.paymentStatusName.isNotEmpty
+                ? order.paymentStatusName
+                : 'PENDING');
       return _PaymentCardModel(
         title: 'IAM WALLET · $statusText',
-        subtitle: order.paymentStatusMessage.isNotEmpty ? order.paymentStatusMessage : (paid ? 'Wallet payment successful.' : 'Complete your wallet payment.'),
+        subtitle: order.paymentStatusMessage.isNotEmpty
+            ? order.paymentStatusMessage
+            : (paid
+                  ? 'Wallet payment successful.'
+                  : 'Complete your wallet payment.'),
         accent: IAMColors.primary,
         icon: Icons.account_balance_wallet_rounded,
         canPayNow: !paid,
       );
     }
 
-    final statusText = paid ? 'PAID' : (order.paymentStatusName.isNotEmpty ? order.paymentStatusName : 'PENDING');
+    final statusText = paid
+        ? 'PAID'
+        : (order.paymentStatusName.isNotEmpty
+              ? order.paymentStatusName
+              : 'PENDING');
     return _PaymentCardModel(
       title: '${providerRaw.isEmpty ? 'PAYMENT' : providerRaw} · $statusText',
-      subtitle: order.paymentStatusMessage.isNotEmpty ? order.paymentStatusMessage : 'Payment status: $statusText',
+      subtitle: order.paymentStatusMessage.isNotEmpty
+          ? order.paymentStatusMessage
+          : 'Payment status: $statusText',
       accent: IAMColors.primary,
       icon: Icons.payments_outlined,
       canPayNow: !paid,
@@ -807,17 +882,16 @@ class _PaymentStatusCard extends StatelessWidget {
                 Text(
                   model.title,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: onSurface,
-                        fontWeight: FontWeight.w800,
-                      ),
+                    color: onSurface,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   model.subtitle,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: muted,
-                        height: 1.25,
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(color: muted, height: 1.25),
                 ),
               ],
             ),
@@ -826,9 +900,7 @@ class _PaymentStatusCard extends StatelessWidget {
             const SizedBox(width: 10),
             TextButton(
               onPressed: onPayNow,
-              style: TextButton.styleFrom(
-                foregroundColor: accent,
-              ),
+              style: TextButton.styleFrom(foregroundColor: accent),
               child: const Text('Pay now'),
             ),
           ],
@@ -837,4 +909,3 @@ class _PaymentStatusCard extends StatelessWidget {
     );
   }
 }
-
