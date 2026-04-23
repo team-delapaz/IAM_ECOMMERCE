@@ -79,18 +79,24 @@ class VerifyResponse {
 class ProductReviewItem {
   final int autoId;
   final String productCode;
+  final String idno;
+  final String orderRefNo;
   final int rating;
   final String reviewComment;
   final String createdAt;
+  final String reviewerName;
   final String? firstName;
   final String? lastName;
 
   ProductReviewItem({
     required this.autoId,
     required this.productCode,
+    required this.idno,
+    required this.orderRefNo,
     required this.rating,
     required this.reviewComment,
     required this.createdAt,
+    required this.reviewerName,
     this.firstName,
     this.lastName,
   });
@@ -99,11 +105,14 @@ class ProductReviewItem {
     final m = asMap(json);
     if (m == null) return null;
     return ProductReviewItem(
-      autoId: (m['autoId'] as int?) ?? 0,
+      autoId: (m['autoId'] as int?) ?? (m['reviewId'] as int? ?? 0),
       productCode: m['productCode'] as String? ?? '',
+      idno: m['idno'] as String? ?? '',
+      orderRefNo: m['orderRefNo'] as String? ?? '',
       rating: (m['rating'] as int?) ?? 0,
       reviewComment: m['reviewComment'] as String? ?? '',
       createdAt: m['createdAt'] as String? ?? '',
+      reviewerName: m['reviewerName'] as String? ?? '',
       firstName: m['firstName'] as String?,
       lastName: m['lastName'] as String?,
     );

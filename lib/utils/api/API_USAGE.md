@@ -99,7 +99,7 @@ await ApiMiddleware.init();
 ## Product Review
 
 - `ApiMiddleware.productReview.addReview(orderRefNo: ..., productCode: ..., rating: ..., reviewComment: ...)` → `ApiResponse<dynamic>` (POST `/ProductReview/Create`)
-- `ApiMiddleware.productReview.getReviews(productCode)` → `ApiResponse<List<ProductReviewItem?>>`
+- `ApiMiddleware.productReview.getReviews(productCode)` → `ApiResponse<List<ProductReviewItem?>>` (GET `/ProductReview/{productCode}`) — items now include `reviewId/autoId`, `idno`, `orderRefNo`, `rating`, `reviewComment`, `createdAt`, `reviewerName`
 
 ## Wishlist
 
