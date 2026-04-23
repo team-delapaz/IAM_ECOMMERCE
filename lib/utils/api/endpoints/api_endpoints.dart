@@ -61,4 +61,8 @@ class ApiEndpoints {
   static const String walletValidateOrder = '/Wallet/ValidateOrder';
   static const String walletPayOrder = '/Wallet/PayOrder';
   static String walletTransaction(String tranno) => '/Wallet/Transaction/$tranno';
+
+  // Fulfillment APIs
+  static const String fulfillmentTypes = '/FulfillmentTypes';
+  static const String branches = '/Branches';
 }

@@ -997,3 +997,44 @@ class BarangayItem {
     );
   }
 }
+
+class FulfillmentTypeItem {
+  final int fulfillmentTypeId;
+  final String fulfillmentTypeCode;
+  final String fulfillmentTypeName;
+
+  FulfillmentTypeItem({
+    required this.fulfillmentTypeId,
+    required this.fulfillmentTypeCode,
+    required this.fulfillmentTypeName,
+  });
+
+  static FulfillmentTypeItem? fromJson(dynamic json) {
+    final m = asMap(json);
+    if (m == null) return null;
+    return FulfillmentTypeItem(
+      fulfillmentTypeId: (m['fulfillmentTypeId'] as int?) ?? 0,
+      fulfillmentTypeCode: m['fulfillmentTypeCode'] as String? ?? '',
+      fulfillmentTypeName: m['fulfillmentTypeName'] as String? ?? '',
+    );
+  }
+}
+
+class BranchItem {
+  final String areaCode;
+  final String areaName;
+
+  BranchItem({
+    required this.areaCode,
+    required this.areaName,
+  });
+
+  static BranchItem? fromJson(dynamic json) {
+    final m = asMap(json);
+    if (m == null) return null;
+    return BranchItem(
+      areaCode: m['areaCode'] as String? ?? '',
+      areaName: m['areaName'] as String? ?? '',
+    );
+  }
+}
