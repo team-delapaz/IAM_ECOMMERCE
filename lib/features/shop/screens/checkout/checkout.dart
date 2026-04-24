@@ -5,7 +5,6 @@ import 'package:iam_ecomm/common/widgets/container/rounded_container.dart';
 import 'package:iam_ecomm/common/widgets/images/iam_rounded_images.dart';
 import 'package:iam_ecomm/common/widgets/payments/checkout_webview_sheet.dart';
 import 'package:iam_ecomm/common/widgets/payments/iam_wallet_pay_sheet.dart';
-import 'package:iam_ecomm/common/widgets/products.cart/coupon_widget.dart';
 import 'package:iam_ecomm/common/widgets/success_screen/success_screen.dart';
 import 'package:iam_ecomm/features/authentication/controllers/auth_controller.dart';
 import 'package:iam_ecomm/features/shop/controllers/products/checkout_controller.dart';
@@ -192,21 +191,15 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         .trim();
     final fulfillmentTypeCode = _selectedFulfillmentTypeCode.trim();
     final fulfillmentTypeId = _selectedFulfillmentTypeId;
-    final selectedAreaCode = _selectedBranchAreaCode?.trim();
     final address = _selectedAddress;
     final fallbackSubtotal = model.subtotal;
-
-    final branchRequired =
-        fulfillmentTypeCode.toUpperCase() == 'PICKUP' &&
-        (selectedAreaCode == null || selectedAreaCode.isEmpty);
 
     final shouldRequireAddress = fulfillmentTypeCode.toUpperCase() != 'PICKUP';
     if (model.items.isEmpty ||
         providerCode.isEmpty ||
         (shouldRequireAddress && address == null) ||
         fulfillmentTypeId == null ||
-        fulfillmentTypeCode.isEmpty ||
-        branchRequired) {
+        fulfillmentTypeCode.isEmpty) {
       setState(() {
         _shippingFee = 0;
         _processingFee = 0;
@@ -455,6 +448,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     final fulfillmentTypeCode = _selectedFulfillmentTypeCode.trim();
     final fulfillmentTypeId = _selectedFulfillmentTypeId;
     final selectedAreaCode = _selectedBranchAreaCode?.trim();
+    final areaCodeToSend = (selectedAreaCode == null || selectedAreaCode.isEmpty)
+        ? '000'
+        : selectedAreaCode;
 
     final isPickup = fulfillmentTypeCode.toUpperCase() == 'PICKUP';
     if (fulfillmentTypeCode.isEmpty) {
@@ -476,21 +472,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         SnackBar(
           content: const Text(
             'Please select a valid fulfillment option.',
-            style: TextStyle(color: Colors.white),
-          ),
-          backgroundColor: Colors.red[300],
-          behavior: SnackBarBehavior.floating,
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        ),
-      );
-      return;
-    }
-
-    if (isPickup && (selectedAreaCode == null || selectedAreaCode.isEmpty)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text(
-            'Please select a pickup branch.',
             style: TextStyle(color: Colors.white),
           ),
           backgroundColor: Colors.red[300],
@@ -532,7 +513,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       completeAddress: isPickup ? '' : selectedAddress.completeAddress,
       notes: notesToSend,
       fulfillmentTypeId: fulfillmentTypeId,
-      areaCode: selectedAreaCode,
+      areaCode: areaCodeToSend,
     );
     if (!res.success) {
       final msg = res.message.isNotEmpty ? res.message : 'Checkout failed.';
@@ -799,8 +780,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     },
                   ),
                   const SizedBox(height: IAMSizes.spaceBtwSections),
-                  IAMCouponCode(),
-                  const SizedBox(height: IAMSizes.spaceBtwSections),
+                  //IAMCouponCode(),
+                  //const SizedBox(height: IAMSizes.spaceBtwSections),
                   TextField(
                     controller: _notesController,
                     maxLines: 3,
@@ -895,10 +876,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             final paymentProviderSelected =
                 _checkoutController.selectedPaymentProviderCode.isNotEmpty;
             final hasFulfillment = _selectedFulfillmentTypeCode.trim().isNotEmpty;
-            final pickupSelected =
-                _selectedFulfillmentTypeCode.trim().toUpperCase() == 'PICKUP';
-            final branchSelected = _selectedBranchAreaCode?.trim().isNotEmpty ==
-                true;
             String? warningMessage;
             if (!hasItems) {
               warningMessage = 'Your cart is empty.';
@@ -908,8 +885,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               warningMessage = 'Please select a payment provider.';
             } else if (!hasFulfillment) {
               warningMessage = 'Please select fulfillment.';
-            } else if (pickupSelected && !branchSelected) {
-              warningMessage = 'Please select a pickup branch.';
             }
             return SafeArea(
               top: false,
@@ -922,7 +897,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     onPressed: (!hasItems ||
                             !paymentProviderSelected ||
                             !hasFulfillment ||
-                            (pickupSelected && !branchSelected) ||
                             _isComputingFees)
                         ? null
                         : () {
@@ -977,24 +951,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         );
                         return;
                       }
-                      if (pickupSelected && !branchSelected) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: const Text(
-                              'Please select a pickup branch.',
-                              style: TextStyle(color: Color.fromARGB(255, 35, 35, 35)),
-                            ),
-                            backgroundColor: Colors.red[300],
-                            behavior: SnackBarBehavior.floating,
-                            margin: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 8,
-                            ),
-                          ),
-                        );
-                        return;
-                      }
-
+                      _placeOrder(model);
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: IAMColors.primary,
                       foregroundColor: IAMColors.white,
@@ -1014,7 +972,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       ((!hasItems ||
                                       !paymentProviderSelected ||
                                       !hasFulfillment ||
-                                      (pickupSelected && !branchSelected) ||
                                       _isComputingFees) &&
                                   warningMessage !=
                                       null)
