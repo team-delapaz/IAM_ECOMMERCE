@@ -119,7 +119,6 @@ class _UserAddressScreenState extends State<UserAddressScreen> {
           await Get.to(() => const AddNewAddressScreen());
           await _reload();
         },
-        backgroundColor: IAMColors.primary,
         foregroundColor: IAMColors.textWhite,
         child: const Icon(Iconsax.add),
       ),
