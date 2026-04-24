@@ -223,33 +223,29 @@ class DeliveredTab extends StatelessWidget {
             children: [
               Expanded(
                 child: FutureBuilder<ApiResponse<List<ProductReviewItem?>>>(
-                  future: (items.isNotEmpty && items.first?.productCode != null)
+                  future: (order.orderRefno.isNotEmpty)
                       ? ApiMiddleware.productReview.getReviews(
                           items.first!.productCode!,
                         )
                       : null,
                   builder: (context, reviewSnapshot) {
-                    bool hasReviewed = false;
-                    ProductReviewItem? firstReview;
+                    bool hasReview = false;
 
                     if (reviewSnapshot.hasData &&
                         reviewSnapshot.data!.success &&
                         reviewSnapshot.data!.data != null) {
                       final reviews = reviewSnapshot.data!.data!
-                          .where((r) => r != null)
-                          .cast<ProductReviewItem>()
+                          .whereType<ProductReviewItem>()
                           .toList();
 
-                      if (reviews.isNotEmpty) {
-                        hasReviewed = true;
-                        firstReview = reviews.first;
-                      }
+                      hasReview = reviews.isNotEmpty;
                     }
 
                     return OutlinedButton.icon(
                       onPressed: () async {
-                        if (items.isEmpty || items.first?.productCode == null)
+                        if (items.isEmpty || items.first?.productCode == null) {
                           return;
+                        }
 
                         final productCode = items.first!.productCode!;
 
@@ -257,30 +253,24 @@ class DeliveredTab extends StatelessWidget {
                             .productReview
                             .getReviews(productCode);
 
-                        final hasReviewed =
-                            reviewsResponse.success &&
-                            reviewsResponse.data != null &&
-                            reviewsResponse.data!.isNotEmpty;
+                        final reviews = (reviewsResponse.data ?? [])
+                            .whereType<ProductReviewItem>()
+                            .toList();
 
-                        if (hasReviewed) {
-                          final firstReview = reviewsResponse.data!.firstWhere(
-                            (r) => r != null,
-                            orElse: () => null,
-                          );
+                        final orderReviews = reviews;
+
+                        if (orderReviews.isNotEmpty) {
+                          _showViewReviewModal(context, orderReviews);
+                        } else {
+                          _showRatingModal(context, order.orderRefno, items);
                         }
-
-                        _showRatingModal(
-                          context,
-                          productCode,
-                          order.orderRefno,
-                        );
                       },
                       icon: const Icon(
                         Iconsax.star1,
                         size: 23,
                         color: IAMColors.primary,
                       ),
-                      label: Text(hasReviewed ? 'View Rating' : 'Rate'),
+                      label: Text(hasReview ? 'View Rating' : 'Rate'),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: IAMColors.dark,
                         side: const BorderSide(color: IAMColors.grey),
@@ -318,8 +308,6 @@ class DeliveredTab extends StatelessWidget {
     );
   }
 }
-
-// (rest of your code unchanged: _itemRow, modals, _RatingSheet)
 
 Widget _itemRow(String title, String price, String qty, String? imageUrl) {
   return Padding(
@@ -365,8 +353,8 @@ Widget _itemRow(String title, String price, String qty, String? imageUrl) {
 /// ---------------- SHOW RATING MODAL ----------------
 void _showRatingModal(
   BuildContext context,
-  String productCode,
   String orderRefNo,
+  List<dynamic> items,
 ) {
   showModalBottomSheet(
     context: context,
@@ -383,13 +371,16 @@ void _showRatingModal(
           top: IAMSizes.md,
           bottom: MediaQuery.of(context).viewInsets.bottom + IAMSizes.md,
         ),
-        child: _RatingSheet(productCode: productCode, orderRefNo: orderRefNo),
+        child: _RatingSheet(orderRefNo: orderRefNo, items: items),
       );
     },
   );
 }
 
-void _showViewReviewModal(BuildContext context, ProductReviewItem review) {
+void _showViewReviewModal(
+  BuildContext context,
+  List<ProductReviewItem> reviews,
+) {
   showModalBottomSheet(
     context: context,
     backgroundColor: IAMColors.white,
@@ -419,29 +410,42 @@ void _showViewReviewModal(BuildContext context, ProductReviewItem review) {
             ),
             const SizedBox(height: IAMSizes.md),
             const Text(
-              'Your Review',
+              'Your Reviews',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
             ),
             const SizedBox(height: IAMSizes.md),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(5, (index) {
-                final rating = review.rating ?? 0;
-                final isSelected = index < rating;
 
-                return AnimatedContainer(
-                  duration: const Duration(milliseconds: 250),
-                  margin: const EdgeInsets.symmetric(horizontal: 4),
-                  child: Icon(
-                    isSelected ? Iconsax.star1 : Iconsax.star,
-                    color: IAMColors.primary,
-                    size: isSelected ? 44 : 36,
-                  ),
-                );
-              }),
-            ),
-            const SizedBox(height: IAMSizes.md),
-            Text(review.reviewComment ?? ''),
+            ...reviews.map((review) {
+              final rating = review.rating ?? 0;
+
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(5, (index) {
+                        final isSelected = index < rating;
+
+                        return Icon(
+                          isSelected ? Iconsax.star1 : Iconsax.star,
+                          color: IAMColors.primary,
+                          size: 32,
+                        );
+                      }),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      review.reviewComment ?? '',
+                      textAlign: TextAlign.center,
+                    ),
+                    const Divider(),
+                  ],
+                ),
+              );
+            }),
+
             const SizedBox(height: IAMSizes.lg),
             OutlinedButton(
               onPressed: () => Navigator.of(context).pop(),
@@ -455,106 +459,183 @@ void _showViewReviewModal(BuildContext context, ProductReviewItem review) {
 }
 
 class _RatingSheet extends StatefulWidget {
-  final String productCode;
   final String orderRefNo;
+  final List<dynamic> items;
 
-  const _RatingSheet({required this.productCode, required this.orderRefNo});
+  const _RatingSheet({required this.orderRefNo, required this.items});
 
   @override
   State<_RatingSheet> createState() => _RatingSheetState();
 }
 
 class _RatingSheetState extends State<_RatingSheet> {
-  int _rating = 0;
-  final TextEditingController _commentController = TextEditingController();
+  final Map<String, int> _ratings = {};
+  final Map<String, TextEditingController> _controllers = {};
+
+  @override
+  void initState() {
+    super.initState();
+    for (var item in widget.items) {
+      if (item != null && item.productCode != null) {
+        _ratings[item.productCode] = 0;
+        _controllers[item.productCode] = TextEditingController();
+      }
+    }
+  }
 
   @override
   void dispose() {
-    _commentController.dispose();
+    for (var c in _controllers.values) {
+      c.dispose();
+    }
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        const SizedBox(height: 8),
-        Container(
-          width: 40,
-          height: 4,
-          decoration: BoxDecoration(
-            color: Colors.grey[300],
-            borderRadius: BorderRadius.circular(2),
+    final validItems = widget.items.where((i) => i != null).toList();
+
+    return SingleChildScrollView(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const SizedBox(height: 8),
+          Container(
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.circular(2),
+            ),
           ),
-        ),
-        const SizedBox(height: IAMSizes.md),
-        const Text(
-          'Rate this order',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-        ),
-        const SizedBox(height: IAMSizes.md),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(5, (index) {
-            final isSelected = index < _rating;
-            return GestureDetector(
-              onTap: () {
-                setState(() {
-                  _rating = index + 1;
-                });
-              },
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 250),
-                margin: const EdgeInsets.symmetric(horizontal: 4),
-                child: Icon(
-                  isSelected ? Iconsax.star1 : Iconsax.star,
-                  color: isSelected ? IAMColors.primary : Colors.grey,
-                  size: isSelected ? 44 : 36,
+          const SizedBox(height: IAMSizes.md),
+          const Text(
+            'Rate your items',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+          ),
+          const SizedBox(height: IAMSizes.md),
+
+          Column(
+            children: validItems.map((item) {
+              final code = item.productCode;
+              final rating = _ratings[code] ?? 0;
+
+              return Padding(
+                padding: const EdgeInsets.only(bottom: IAMSizes.lg),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Row(
+                        children: List.generate(5, (index) {
+                          final isSelected = index < rating;
+
+                          return GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _ratings[code] = index + 1;
+                              });
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.only(right: 6),
+                              child: Icon(
+                                isSelected ? Iconsax.star1 : Iconsax.star,
+                                color: isSelected
+                                    ? IAMColors.primary
+                                    : Colors.grey,
+                                size: isSelected ? 38 : 32,
+                              ),
+                            ),
+                          );
+                        }),
+                      ),
+                    ),
+
+                    const SizedBox(height: IAMSizes.sm),
+
+                    Row(
+                      children: [
+                        Container(
+                          width: 50,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            color: Colors.grey[200],
+                            borderRadius: BorderRadius.circular(IAMSizes.sm),
+                            image:
+                                (item.imageUrl != null &&
+                                    item.imageUrl.isNotEmpty)
+                                ? DecorationImage(
+                                    image: NetworkImage(item.imageUrl),
+                                    fit: BoxFit.cover,
+                                  )
+                                : null,
+                          ),
+                          child:
+                              (item.imageUrl == null || item.imageUrl.isEmpty)
+                              ? const Icon(Iconsax.box)
+                              : null,
+                        ),
+                        const SizedBox(width: IAMSizes.spaceBtwItems),
+                        Expanded(
+                          child: Text(
+                            item.productName ?? '',
+                            style: const TextStyle(fontWeight: FontWeight.w500),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: IAMSizes.sm),
+
+                    TextField(
+                      controller: _controllers[code],
+                      maxLines: 3,
+                      decoration: const InputDecoration(
+                        hintText: 'Write your review here!',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
+
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Cancel'),
                 ),
               ),
-            );
-          }),
-        ),
-        const SizedBox(height: IAMSizes.md),
-        TextField(
-          controller: _commentController,
-          maxLines: 4,
-          decoration: const InputDecoration(
-            hintText: 'Write your review here!',
-            border: OutlineInputBorder(),
-          ),
-        ),
-        const SizedBox(height: IAMSizes.lg),
-        Row(
-          children: [
-            Expanded(
-              child: OutlinedButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Cancel'),
-              ),
-            ),
-            const SizedBox(width: IAMSizes.spaceBtwItems),
-            Expanded(
-              child: ElevatedButton(
-                onPressed: () async {
-                  if (_rating == 0) return;
+              const SizedBox(width: IAMSizes.spaceBtwItems),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () async {
+                    try {
+                      for (var item in validItems) {
+                        final code = item.productCode;
+                        final rating = _ratings[code] ?? 0;
 
-                  try {
-                    final response = await ApiMiddleware.productReview
-                        .addReview(
-                          productCode: widget.productCode,
+                        if (rating == 0) continue;
+
+                        await ApiMiddleware.productReview.addReview(
+                          productCode: code,
                           orderRefNo: widget.orderRefNo,
-                          rating: _rating,
-                          reviewComment: _commentController.text,
+                          rating: rating,
+                          reviewComment: _controllers[code]!.text,
                         );
+                      }
 
-                    if (response.success) {
                       Navigator.of(context).pop();
 
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: const Text('Review submitted successfully!'),
+                          content: const Text(
+                            'Reviews submitted successfully!',
+                          ),
                           backgroundColor: Colors.green[300],
                           behavior: SnackBarBehavior.floating,
                           margin: const EdgeInsets.all(16),
@@ -563,14 +644,10 @@ class _RatingSheetState extends State<_RatingSheet> {
                           ),
                         ),
                       );
-                    } else {
+                    } catch (e) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text(
-                            response.message.isNotEmpty
-                                ? response.message
-                                : 'Failed to submit review',
-                          ),
+                          content: const Text('Something went wrong'),
                           backgroundColor: Colors.red[300],
                           behavior: SnackBarBehavior.floating,
                           margin: const EdgeInsets.all(16),
@@ -580,27 +657,16 @@ class _RatingSheetState extends State<_RatingSheet> {
                         ),
                       );
                     }
-                  } catch (e) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: const Text('Something went wrong'),
-                        backgroundColor: Colors.red[300],
-                        behavior: SnackBarBehavior.floating,
-                        margin: const EdgeInsets.all(16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                    );
-                  }
-                },
-                child: const Text('Confirm'),
+                  },
+                  child: const Text('Confirm'),
+                ),
               ),
-            ),
-          ],
-        ),
-        const SizedBox(height: IAMSizes.md),
-      ],
+            ],
+          ),
+
+          const SizedBox(height: IAMSizes.md),
+        ],
+      ),
     );
   }
 }

@@ -352,12 +352,9 @@ class _IAMLoginFormState extends State<IAMLoginForm> {
             const SizedBox(height: IAMSizes.spaceBtwInputFields / 2),
 
             // Remember me and forget password
-            Wrap(
-              alignment: WrapAlignment.center,
-              spacing: 12,
-              runSpacing: 4,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // remember me
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -365,7 +362,6 @@ class _IAMLoginFormState extends State<IAMLoginForm> {
                     const Text(IAMTexts.rememberMe),
                   ],
                 ),
-                // forgot password
                 TextButton(
                   onPressed: () => Get.to(() => const ForgetPassword()),
                   child: const Text(IAMTexts.forgetPassword),
