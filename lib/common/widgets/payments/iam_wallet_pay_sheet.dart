@@ -528,46 +528,6 @@ class _IamWalletPaySheetState extends State<_IamWalletPaySheet> {
                                   const SizedBox(height: 12),
                                   SizedBox(
                                     width: double.infinity,
-                                    child: OutlinedButton(
-                                      onPressed: _loadingBalance ||
-                                              _isValidating ||
-                                              _isPaying
-                                          ? null
-                                          : () => _validateOrder(),
-                                      style: OutlinedButton.styleFrom(
-                                        foregroundColor: muted,
-                                        side: BorderSide(
-                                          color: onSurface.withOpacity(
-                                            dark ? 0.18 : 0.14,
-                                          ),
-                                        ),
-                                        minimumSize: const Size.fromHeight(46),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(14),
-                                        ),
-                                      ),
-                                      child: _isValidating
-                                          ? SizedBox(
-                                              width: 22,
-                                              height: 22,
-                                              child: CircularProgressIndicator(
-                                                strokeWidth: 2,
-                                                color: IAMColors.primary
-                                                    .withOpacity(0.85),
-                                              ),
-                                            )
-                                          : Text(
-                                              'Validate payment',
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.w600,
-                                                color: onSurface.withOpacity(0.75),
-                                              ),
-                                            ),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 10),
-                                  SizedBox(
-                                    width: double.infinity,
                                     child: ElevatedButton(
                                       onPressed: (canPay && hasSufficientBalance) ? _payOrder : null,
                                       style: ElevatedButton.styleFrom(
@@ -583,7 +543,7 @@ class _IamWalletPaySheetState extends State<_IamWalletPaySheet> {
                                           borderRadius: BorderRadius.circular(16),
                                         ),
                                       ),
-                                      child: _isPaying
+                                      child: (_isPaying || _isValidating)
                                           ? const SizedBox(
                                               width: 22,
                                               height: 22,
