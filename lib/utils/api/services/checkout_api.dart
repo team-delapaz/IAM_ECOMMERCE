@@ -21,8 +21,8 @@ class CheckoutApi {
     required String postalCode,
     required String completeAddress,
     required String notes,
-    int fulfillmentTypeId = 1,
-    String areaCode = '',
+    required int fulfillmentTypeId,
+    String? areaCode,
   }) {
     return _client.post<CheckoutData?>(
       ApiEndpoints.checkout,
@@ -52,7 +52,7 @@ class CheckoutApi {
     required String country,
     required String province,
     required String city,
-    int fulfillmentTypeId = 1,
+    required int fulfillmentTypeId,
   }) {
     return _client.post<ComputeFeesData?>(
       ApiEndpoints.checkoutComputeFees,

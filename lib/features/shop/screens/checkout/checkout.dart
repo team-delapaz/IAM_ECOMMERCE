@@ -5,12 +5,12 @@ import 'package:iam_ecomm/common/widgets/container/rounded_container.dart';
 import 'package:iam_ecomm/common/widgets/images/iam_rounded_images.dart';
 import 'package:iam_ecomm/common/widgets/payments/checkout_webview_sheet.dart';
 import 'package:iam_ecomm/common/widgets/payments/iam_wallet_pay_sheet.dart';
-import 'package:iam_ecomm/common/widgets/products.cart/coupon_widget.dart';
 import 'package:iam_ecomm/common/widgets/success_screen/success_screen.dart';
 import 'package:iam_ecomm/features/authentication/controllers/auth_controller.dart';
 import 'package:iam_ecomm/features/shop/controllers/products/checkout_controller.dart';
 import 'package:iam_ecomm/features/shop/screens/checkout/widget/billing_address_section.dart';
 import 'package:iam_ecomm/features/shop/screens/checkout/widget/billing_amount_section.dart';
+import 'package:iam_ecomm/features/shop/screens/checkout/widget/billing_fulfillment_section.dart';
 import 'package:iam_ecomm/features/shop/screens/checkout/widget/billing_payment_provider_section.dart';
 import 'package:iam_ecomm/navigation_menu.dart';
 import 'package:iam_ecomm/utils/api/api.dart';
@@ -47,6 +47,40 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   num _computedGrandTotal = 0;
   bool _hasComputedFees = false;
   bool _isComputingFees = false;
+  List<FulfillmentTypeItem> _fulfillmentTypes = const [];
+  List<BranchItem> _branches = const [];
+  String _selectedFulfillmentTypeCode = 'DELIVERY';
+  String? _selectedBranchAreaCode;
+  bool _isLoadingFulfillment = false;
+  static final List<FulfillmentTypeItem> _fallbackFulfillmentTypes = [
+    FulfillmentTypeItem(
+      fulfillmentTypeId: 1,
+      fulfillmentTypeCode: 'DELIVERY',
+      fulfillmentTypeName: 'Delivery',
+    ),
+    FulfillmentTypeItem(
+      fulfillmentTypeId: 2,
+      fulfillmentTypeCode: 'PICKUP',
+      fulfillmentTypeName: 'Pickup',
+    ),
+  ];
+  static final List<BranchItem> _fallbackBranches = [
+    BranchItem(areaCode: '000', areaName: 'MAIN'),
+    BranchItem(areaCode: '104', areaName: 'ANTIPOLO'),
+    BranchItem(areaCode: '101', areaName: 'CEBU'),
+    BranchItem(areaCode: '102', areaName: 'DAVAO'),
+  ];
+  bool get _isPickupSelected =>
+      _selectedFulfillmentTypeCode.trim().toUpperCase() == 'PICKUP';
+  int? get _selectedFulfillmentTypeId {
+    final selectedCode = _selectedFulfillmentTypeCode.trim().toUpperCase();
+    for (final type in _fulfillmentTypes) {
+      if (type.fulfillmentTypeCode.trim().toUpperCase() == selectedCode) {
+        return type.fulfillmentTypeId;
+      }
+    }
+    return null;
+  }
 
   Future<void> _showOpeningCheckoutSpinner() async {
     if (!mounted) return;
@@ -138,6 +172,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       _checkoutController.selectedPaymentProviderCode,
       (_) => _refreshComputedFees(),
     );
+    _loadFulfillmentOptions();
     _refreshComputedFees();
   }
 
@@ -154,10 +189,17 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
     final providerCode = _checkoutController.selectedPaymentProviderCode.value
         .trim();
+    final fulfillmentTypeCode = _selectedFulfillmentTypeCode.trim();
+    final fulfillmentTypeId = _selectedFulfillmentTypeId;
     final address = _selectedAddress;
     final fallbackSubtotal = model.subtotal;
 
-    if (model.items.isEmpty || providerCode.isEmpty || address == null) {
+    final shouldRequireAddress = fulfillmentTypeCode.toUpperCase() != 'PICKUP';
+    if (model.items.isEmpty ||
+        providerCode.isEmpty ||
+        (shouldRequireAddress && address == null) ||
+        fulfillmentTypeId == null ||
+        fulfillmentTypeCode.isEmpty) {
       setState(() {
         _shippingFee = 0;
         _processingFee = 0;
@@ -172,9 +214,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
     final res = await ApiMiddleware.checkout.computeFees(
       paymentProviderCode: providerCode,
-      country: address.country,
-      province: address.province,
-      city: address.city,
+      country: address?.country ?? '',
+      province: address?.province ?? '',
+      city: address?.city ?? '',
+      fulfillmentTypeId: fulfillmentTypeId,
     );
     if (!mounted) return;
 
@@ -196,6 +239,64 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       _computedGrandTotal = fallbackSubtotal;
       _hasComputedFees = true;
       _isComputingFees = false;
+    });
+  }
+
+  Future<void> _loadFulfillmentOptions() async {
+    setState(() => _isLoadingFulfillment = true);
+    try {
+      final fulfillmentRes = await ApiMiddleware.fulfillment.getFulfillmentTypes();
+      final branchesRes = await ApiMiddleware.fulfillment.getBranches();
+      if (!mounted) return;
+
+      final fulfillmentItems = fulfillmentRes.data
+              ?.whereType<FulfillmentTypeItem>()
+              .where((item) => item.fulfillmentTypeCode.trim().isNotEmpty)
+              .toList() ??
+          const <FulfillmentTypeItem>[];
+      final branchItems =
+          branchesRes.data?.whereType<BranchItem>().toList() ?? const <BranchItem>[];
+
+      final typesToUse =
+          fulfillmentItems.isNotEmpty ? fulfillmentItems : _fallbackFulfillmentTypes;
+      final deliveryOption = typesToUse.where((item) {
+        return item.fulfillmentTypeCode.trim().toUpperCase() == 'DELIVERY';
+      }).toList();
+      final defaultTypeCode = deliveryOption.isNotEmpty
+          ? deliveryOption.first.fulfillmentTypeCode.trim()
+          : typesToUse.first.fulfillmentTypeCode.trim();
+
+      setState(() {
+        _fulfillmentTypes = typesToUse;
+        _branches = branchItems.isNotEmpty ? branchItems : _fallbackBranches;
+        _selectedFulfillmentTypeCode = defaultTypeCode;
+        if (_selectedFulfillmentTypeCode.trim().toUpperCase() != 'PICKUP') {
+          _selectedBranchAreaCode = null;
+        }
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _fulfillmentTypes = _fallbackFulfillmentTypes;
+        _branches = _fallbackBranches;
+        _selectedFulfillmentTypeCode = 'DELIVERY';
+        _selectedBranchAreaCode = null;
+      });
+    } finally {
+      if (!mounted) return;
+      setState(() => _isLoadingFulfillment = false);
+    }
+
+    _refreshComputedFees();
+  }
+
+  Future<void> _loadBranchesIfNeeded() async {
+    if (_branches.isNotEmpty) return;
+    final branchesRes = await ApiMiddleware.fulfillment.getBranches();
+    if (!mounted) return;
+    setState(() {
+      _branches = branchesRes.data?.whereType<BranchItem>().toList() ??
+          _fallbackBranches;
     });
   }
 
@@ -269,9 +370,21 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     return _CartViewModel(items: items, subtotal: subtotal);
   }
 
+  Future<AddressItem?> _resolveCheckoutAddress() async {
+    if (_selectedAddress != null) return _selectedAddress;
+    final res = await ApiMiddleware.address.getAddresses();
+    if (!res.success) return null;
+    final addresses = res.data?.whereType<AddressItem>().toList() ?? const [];
+    if (addresses.isEmpty) return null;
+    for (final address in addresses) {
+      if (address.isDefault) return address;
+    }
+    return addresses.first;
+  }
+
   ////temp din na section while waiting for guest session api, local storage muna.
   Future<void> _placeOrder(_CartViewModel model) async {
-    final selectedAddress = _selectedAddress;
+    final selectedAddress = await _resolveCheckoutAddress();
     if (selectedAddress == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -332,6 +445,42 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
     final notesInput = _notesController.text.trim();
     final notesToSend = notesInput.isEmpty ? 'checkout' : notesInput;
+    final fulfillmentTypeCode = _selectedFulfillmentTypeCode.trim();
+    final fulfillmentTypeId = _selectedFulfillmentTypeId;
+    final selectedAreaCode = _selectedBranchAreaCode?.trim();
+    final areaCodeToSend = (selectedAreaCode == null || selectedAreaCode.isEmpty)
+        ? '000'
+        : selectedAreaCode;
+
+    final isPickup = fulfillmentTypeCode.toUpperCase() == 'PICKUP';
+    if (fulfillmentTypeCode.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+            'Please select a fulfillment option.',
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.red[300],
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        ),
+      );
+      return;
+    }
+    if (fulfillmentTypeId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+            'Please select a valid fulfillment option.',
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.red[300],
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        ),
+      );
+      return;
+    }
 
     // Ensure a payment provider is selected before performing checkout.
     final providerCode = _checkoutController.selectedPaymentProviderCode.value;
@@ -355,14 +504,16 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       mobileNo: selectedAddress.mobileNo,
       emailAddress: emailAddress,
       paymentProviderCode: providerCode,
-      country: selectedAddress.country,
-      province: selectedAddress.province,
-      city: selectedAddress.city,
-      barangay: selectedAddress.barangay,
-      streetAddress: selectedAddress.streetAddress,
-      postalCode: selectedAddress.postalCode,
-      completeAddress: selectedAddress.completeAddress,
+      country: isPickup ? '' : selectedAddress.country,
+      province: isPickup ? '' : selectedAddress.province,
+      city: isPickup ? '' : selectedAddress.city,
+      barangay: isPickup ? '' : selectedAddress.barangay,
+      streetAddress: isPickup ? '' : selectedAddress.streetAddress,
+      postalCode: isPickup ? '' : selectedAddress.postalCode,
+      completeAddress: isPickup ? '' : selectedAddress.completeAddress,
       notes: notesToSend,
+      fulfillmentTypeId: fulfillmentTypeId,
+      areaCode: areaCodeToSend,
     );
     if (!res.success) {
       final msg = res.message.isNotEmpty ? res.message : 'Checkout failed.';
@@ -629,8 +780,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     },
                   ),
                   const SizedBox(height: IAMSizes.spaceBtwSections),
-                  IAMCouponCode(),
-                  const SizedBox(height: IAMSizes.spaceBtwSections),
+                  //IAMCouponCode(),
+                  //const SizedBox(height: IAMSizes.spaceBtwSections),
                   TextField(
                     controller: _notesController,
                     maxLines: 3,
@@ -657,27 +808,54 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         const SizedBox(height: IAMSizes.spaceBtwItems),
                         const Divider(),
                         const SizedBox(height: IAMSizes.spaceBtwItems),
-                        IAMBillingPaymentProviderSection(),
-                        const SizedBox(height: IAMSizes.spaceBtwItems),
-                        IAMBillingAddressSection(
-                          onAddressAvailabilityChanged: (hasAddress) {
-                            setState(() => _hasSavedAddress = hasAddress);
-                          },
-                          onAddressSelected: (addr) {
-                            // Always set _selectedAddress, even on initial load
-                            if (_selectedAddress != addr) {
-                              setState(() {
-                                _selectedAddress = addr;
-                                _hasSavedAddress = addr != null;
-                              });
-                            } else if (_hasSavedAddress != (addr != null)) {
-                              setState(() {
-                                _hasSavedAddress = addr != null;
-                              });
+                        IAMBillingFulfillmentSection(
+                          isLoading: _isLoadingFulfillment,
+                          fulfillmentTypes: _fulfillmentTypes,
+                          selectedFulfillmentTypeCode:
+                              _selectedFulfillmentTypeCode,
+                          branches: _branches,
+                          selectedBranchAreaCode: _selectedBranchAreaCode,
+                          onFulfillmentChanged: (code) {
+                            final normalizedCode = code.trim();
+                            setState(() {
+                              _selectedFulfillmentTypeCode = normalizedCode;
+                              if (normalizedCode.toUpperCase() != 'PICKUP') {
+                                _selectedBranchAreaCode = null;
+                              }
+                            });
+                            if (normalizedCode.toUpperCase() == 'PICKUP') {
+                              _loadBranchesIfNeeded();
                             }
                             _refreshComputedFees();
                           },
+                          onBranchChanged: (areaCode) {
+                            setState(() => _selectedBranchAreaCode = areaCode);
+                            _refreshComputedFees();
+                          },
                         ),
+                        const SizedBox(height: IAMSizes.spaceBtwItems),
+                        IAMBillingPaymentProviderSection(),
+                        const SizedBox(height: IAMSizes.spaceBtwItems),
+                        if (!_isPickupSelected)
+                          IAMBillingAddressSection(
+                            onAddressAvailabilityChanged: (hasAddress) {
+                              setState(() => _hasSavedAddress = hasAddress);
+                            },
+                            onAddressSelected: (addr) {
+                              // Always set _selectedAddress, even on initial load
+                              if (_selectedAddress != addr) {
+                                setState(() {
+                                  _selectedAddress = addr;
+                                  _hasSavedAddress = addr != null;
+                                });
+                              } else if (_hasSavedAddress != (addr != null)) {
+                                setState(() {
+                                  _hasSavedAddress = addr != null;
+                                });
+                              }
+                              _refreshComputedFees();
+                            },
+                          ),
                       ],
                     ),
                   ),
@@ -697,6 +875,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           return Obx(() {
             final paymentProviderSelected =
                 _checkoutController.selectedPaymentProviderCode.isNotEmpty;
+            final hasFulfillment = _selectedFulfillmentTypeCode.trim().isNotEmpty;
             String? warningMessage;
             if (!hasItems) {
               warningMessage = 'Your cart is empty.';
@@ -704,6 +883,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               warningMessage = 'Computing fees...';
             } else if (!paymentProviderSelected) {
               warningMessage = 'Please select a payment provider.';
+            } else if (!hasFulfillment) {
+              warningMessage = 'Please select fulfillment.';
             }
             return SafeArea(
               top: false,
@@ -715,6 +896,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   ElevatedButton(
                     onPressed: (!hasItems ||
                             !paymentProviderSelected ||
+                            !hasFulfillment ||
                             _isComputingFees)
                         ? null
                         : () {
@@ -752,7 +934,25 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         );
                         return;
                       }
-
+                      if (!hasFulfillment) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: const Text(
+                              'Please select fulfillment.',
+                              style: TextStyle(color: Color.fromARGB(255, 35, 35, 35)),
+                            ),
+                            backgroundColor: Colors.red[300],
+                            behavior: SnackBarBehavior.floating,
+                            margin: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
+                          ),
+                        );
+                        return;
+                      }
+                      _placeOrder(model);
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: IAMColors.primary,
                       foregroundColor: IAMColors.white,
@@ -769,7 +969,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     ),
 
                     child: Text(
-                      ((!hasItems || !paymentProviderSelected || _isComputingFees) &&
+                      ((!hasItems ||
+                                      !paymentProviderSelected ||
+                                      !hasFulfillment ||
+                                      _isComputingFees) &&
                                   warningMessage !=
                                       null)
                               ? warningMessage
