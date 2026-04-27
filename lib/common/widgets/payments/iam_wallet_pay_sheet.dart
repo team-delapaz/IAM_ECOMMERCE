@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:iam_ecomm/common/widgets/container/rounded_container.dart';
 import 'package:iam_ecomm/utils/api/api.dart';
 import 'package:iam_ecomm/utils/api/responses/response_prep.dart';
@@ -130,18 +131,53 @@ class _IamWalletPaySheet extends StatefulWidget {
 }
 
 class _IamWalletPaySheetState extends State<_IamWalletPaySheet> {
+  final _otpControllers = List.generate(6, (_) => TextEditingController());
+  final _otpFocusNodes = List.generate(6, (_) => FocusNode());
   WalletBalanceData? _walletData;
   bool _loadingBalance = true;
   bool _isValidating = false;
+  bool _isSendingOtp = false;
+  bool _isVerifyingOtp = false;
   bool _isPaying = false;
   bool _validated = false;
+  bool _otpValidated = false;
   String? _statusText;
   bool _statusIsError = false;
+  String? _otpError;
 
   @override
   void initState() {
     super.initState();
     _loadBalance();
+  }
+
+  @override
+  void dispose() {
+    for (final c in _otpControllers) {
+      c.dispose();
+    }
+    for (final f in _otpFocusNodes) {
+      f.dispose();
+    }
+    super.dispose();
+  }
+
+  String get _otpValue => _otpControllers.map((c) => c.text).join();
+
+  void _clearOtpInput() {
+    for (final c in _otpControllers) {
+      c.clear();
+    }
+  }
+
+  void _focusOtpIndex(int index) {
+    if (index < 0 || index >= _otpFocusNodes.length) return;
+    _otpFocusNodes[index].requestFocus();
+  }
+
+  void _clearOtpError() {
+    if (_otpError == null) return;
+    setState(() => _otpError = null);
   }
 
   Future<void> _loadBalance() async {
@@ -204,8 +240,83 @@ class _IamWalletPaySheetState extends State<_IamWalletPaySheet> {
     return res.success;
   }
 
+  Future<void> _sendOtp() async {
+    if (_isSendingOtp || _isVerifyingOtp || _isPaying || _isValidating) return;
+
+    var isValidated = _validated;
+    if (!isValidated) {
+      isValidated = await _validateOrder(showSuccessMessage: false);
+      if (!mounted || !isValidated) return;
+    }
+
+    setState(() {
+      _isSendingOtp = true;
+      _statusText = null;
+      _statusIsError = false;
+      _otpError = null;
+    });
+
+    final res = await ApiMiddleware.wallet.sendOtp(orderRefNo: widget.orderRef);
+    if (!mounted) return;
+
+    setState(() {
+      _isSendingOtp = false;
+      if (res.success) {
+        _otpValidated = false;
+        _clearOtpInput();
+        _statusText = res.message.isNotEmpty
+            ? res.message
+            : 'OTP has been sent to your registered contact.';
+        _statusIsError = false;
+        _focusOtpIndex(0);
+      } else {
+        _statusText =
+            res.message.isNotEmpty ? res.message : 'Unable to send wallet OTP.';
+        _statusIsError = true;
+      }
+    });
+  }
+
+  Future<void> _validateOtpCode() async {
+    if (_isVerifyingOtp || _isSendingOtp || _isPaying) return;
+    final otpCode = _otpValue.trim();
+    if (otpCode.length != 6) {
+      setState(() => _otpError = 'Enter the 6-digit OTP code.');
+      return;
+    }
+    _clearOtpError();
+
+    setState(() {
+      _isVerifyingOtp = true;
+      _statusText = null;
+      _statusIsError = false;
+    });
+
+    final res = await ApiMiddleware.wallet.validateOtp(
+      orderRefNo: widget.orderRef,
+      otpCode: otpCode,
+    );
+    if (!mounted) return;
+
+    setState(() {
+      _isVerifyingOtp = false;
+      _otpValidated = res.success;
+      if (res.success) {
+        _statusText = res.message.isNotEmpty
+            ? res.message
+            : 'OTP verified. You can now proceed with payment.';
+        _statusIsError = false;
+      } else {
+        _otpError = res.message.isNotEmpty ? res.message : 'Invalid OTP code.';
+        _statusText =
+            res.message.isNotEmpty ? res.message : 'Unable to validate OTP.';
+        _statusIsError = true;
+      }
+    });
+  }
+
   Future<void> _payOrder() async {
-    if (_isPaying || _isValidating) return;
+    if (_isPaying || _isValidating || _isSendingOtp || _isVerifyingOtp) return;
     setState(() {
       _isPaying = true;
       _statusText = null;
@@ -220,6 +331,15 @@ class _IamWalletPaySheetState extends State<_IamWalletPaySheet> {
         setState(() => _isPaying = false);
         return;
       }
+    }
+
+    if (!_otpValidated) {
+      setState(() {
+        _isPaying = false;
+        _statusText = 'OTP verification is required before wallet payment.';
+        _statusIsError = true;
+      });
+      return;
     }
 
     final res = await ApiMiddleware.wallet.payOrder(
@@ -252,7 +372,12 @@ class _IamWalletPaySheetState extends State<_IamWalletPaySheet> {
     final amountText = IAMFormatter.formatCurrency(widget.totalAmount.toDouble());
     final balance = _walletData?.balance ?? 0;
     final balanceText = IAMFormatter.formatCurrency(balance.toDouble());
-    final canPay = !_loadingBalance && !_isPaying && !_isValidating;
+    final canPay = !_loadingBalance &&
+        !_isPaying &&
+        !_isValidating &&
+        !_isSendingOtp &&
+        !_isVerifyingOtp &&
+        _otpValidated;
     final hasSufficientBalance = !_loadingBalance && balance >= widget.totalAmount;
 
     return FractionallySizedBox(
@@ -508,7 +633,9 @@ class _IamWalletPaySheetState extends State<_IamWalletPaySheet> {
                                   ],
                                   const SizedBox(height: 20),
                                   Text(
-                                    'Step 1 — confirm funds. Step 2 — charge wallet.',
+                                    'Step 1 — confirm funds.\n'
+                                    'Step 2 — send and verify OTP.\n'
+                                    'Step 3 — charge wallet.',
                                     style: Theme.of(context)
                                         .textTheme
                                         .bodySmall
@@ -527,6 +654,138 @@ class _IamWalletPaySheetState extends State<_IamWalletPaySheet> {
                                           ),
                                     ),
                                   ],
+                                  const SizedBox(height: 14),
+                                  Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: Text(
+                                      'Wallet OTP',
+                                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                            color: onSurface,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  LayoutBuilder(
+                                    builder: (context, constraints) {
+                                      const spacing = 6.0;
+                                      final rawWidth =
+                                          (constraints.maxWidth - (spacing * 5)) / 6;
+                                      final cellWidth = rawWidth.clamp(34.0, 40.0);
+                                      return Row(
+                                        children: List.generate(6, (i) {
+                                          return Padding(
+                                            padding: EdgeInsets.only(
+                                              right: i == 5 ? 0 : spacing,
+                                            ),
+                                            child: SizedBox(
+                                              width: cellWidth,
+                                              child: TextField(
+                                                controller: _otpControllers[i],
+                                                focusNode: _otpFocusNodes[i],
+                                                enabled: !_isPaying &&
+                                                    !_isSendingOtp &&
+                                                    !_isVerifyingOtp,
+                                                keyboardType: TextInputType.number,
+                                                textAlign: TextAlign.center,
+                                                maxLength: 1,
+                                                inputFormatters: [
+                                                  FilteringTextInputFormatter.digitsOnly,
+                                                  LengthLimitingTextInputFormatter(1),
+                                                ],
+                                                decoration: InputDecoration(
+                                                  counterText: '',
+                                                  errorText: null,
+                                                  isDense: true,
+                                                  contentPadding:
+                                                      const EdgeInsets.symmetric(vertical: 12),
+                                                  border: OutlineInputBorder(
+                                                    borderRadius: BorderRadius.circular(10),
+                                                  ),
+                                                  focusedBorder: OutlineInputBorder(
+                                                    borderRadius: BorderRadius.circular(10),
+                                                    borderSide: BorderSide(
+                                                      color: _otpError == null
+                                                          ? Theme.of(context).colorScheme.primary
+                                                          : Theme.of(context).colorScheme.error,
+                                                      width: 1.5,
+                                                    ),
+                                                  ),
+                                                  enabledBorder: OutlineInputBorder(
+                                                    borderRadius: BorderRadius.circular(10),
+                                                    borderSide: BorderSide(
+                                                      color: _otpError == null
+                                                          ? Theme.of(context)
+                                                              .dividerColor
+                                                              .withOpacity(0.8)
+                                                          : Theme.of(context).colorScheme.error,
+                                                    ),
+                                                  ),
+                                                ),
+                                                onChanged: (v) {
+                                                  _clearOtpError();
+                                                  if (v.isNotEmpty) {
+                                                    if (i < 5) {
+                                                      _focusOtpIndex(i + 1);
+                                                    } else {
+                                                      FocusScope.of(context).unfocus();
+                                                    }
+                                                  } else if (i > 0) {
+                                                    _focusOtpIndex(i - 1);
+                                                  }
+                                                },
+                                                onSubmitted: (_) => _validateOtpCode(),
+                                              ),
+                                            ),
+                                          );
+                                        }),
+                                      );
+                                    },
+                                  ),
+                                  if (_otpError != null) ...[
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      _otpError!,
+                                      textAlign: TextAlign.center,
+                                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                            color: Theme.of(context).colorScheme.error,
+                                          ),
+                                    ),
+                                  ],
+                                  const SizedBox(height: 10),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: OutlinedButton(
+                                          onPressed: canPay && hasSufficientBalance ? _sendOtp : null,
+                                          child: _isSendingOtp
+                                              ? const SizedBox(
+                                                  width: 16,
+                                                  height: 16,
+                                                  child: CircularProgressIndicator(
+                                                    strokeWidth: 2,
+                                                  ),
+                                                )
+                                              : const Text('Send OTP'),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 10),
+                                      Expanded(
+                                        child: OutlinedButton(
+                                          onPressed: canPay ? _validateOtpCode : null,
+                                          child: _isVerifyingOtp
+                                              ? const SizedBox(
+                                                  width: 16,
+                                                  height: 16,
+                                                  child: CircularProgressIndicator(
+                                                    strokeWidth: 2,
+                                                  ),
+                                                )
+                                              : Text(_otpValidated ? 'OTP Verified' : 'Verify OTP'),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                   const SizedBox(height: 12),
                                   SizedBox(
                                     width: double.infinity,
