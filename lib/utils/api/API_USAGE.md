@@ -66,8 +66,8 @@ await ApiMiddleware.init();
 
 ## Checkout
 
-- `ApiMiddleware.checkout.checkout(fullName: ..., mobileNo: ..., emailAddress: ..., paymentProviderCode: ..., country: ..., province: ..., city: ..., barangay: ..., streetAddress: ..., postalCode: ..., completeAddress: ..., notes: 'optional note')` → `ApiResponse<CheckoutData?>`
-- `ApiMiddleware.checkout.computeFees(paymentProviderCode: 'IAMWALLET', country: 'PHILIPPINES', province: 'METRO-MANILA', city: 'QUEZON-CITY')` → `ApiResponse<ComputeFeesData?>` (POST `/Checkout/ComputeFees`) — preview fees from the active cart; success `data` includes `cartRefno`, amounts, `totalBoxes`. On failure (e.g. no active cart), `success` is false, `data` is null, and `message` explains the error (e.g. `"Database error while computing fees: No active cart found."`).
+- `ApiMiddleware.checkout.checkout(fullName: ..., mobileNo: ..., emailAddress: ..., paymentProviderCode: ..., country: ..., province: ..., city: ..., barangay: ..., streetAddress: ..., postalCode: ..., completeAddress: ..., notes: 'optional note', fulfillmentTypeId: 2, areaCode: '101')` → `ApiResponse<CheckoutData?>` (POST `/Checkout`) — latest API body includes `fulfillmentTypeId` and `areaCode`; use fulfillment type from `getFulfillmentTypes()` and branch `areaCode` from `getBranches()` for pickup flows.
+- `ApiMiddleware.checkout.computeFees(paymentProviderCode: 'IAMWALLET', country: 'PHILIPPINES', province: 'METRO-MANILA', city: 'QUEZON-CITY', fulfillmentTypeId: 2)` → `ApiResponse<ComputeFeesData?>` (POST `/Checkout/ComputeFees`) — latest API body includes `fulfillmentTypeId`; keep this value aligned with checkout request. Success `data` includes `cartRefno`, amounts, `totalBoxes`. On failure (e.g. no active cart), `success` is false, `data` is null, and `message` explains the error.
 
 ## Location
 
@@ -78,8 +78,8 @@ await ApiMiddleware.init();
 
 ## Fulfillment
 
-- `ApiMiddleware.fulfillment.getFulfillmentTypes()` → `ApiResponse<List<FulfillmentTypeItem?>>` (GET `/FulfillmentTypes`) — returns options like `DELIVERY`, `PICKUP`
-- `ApiMiddleware.fulfillment.getBranches()` → `ApiResponse<List<BranchItem?>>` (GET `/Branches`) — returns branch list (`areaCode`, `areaName`)
+- `ApiMiddleware.fulfillment.getFulfillmentTypes()` → `ApiResponse<List<FulfillmentTypeItem?>>` (GET `/api/FulfillmentTypes`) — returns options like `DELIVERY`, `PICKUP`
+- `ApiMiddleware.fulfillment.getBranches()` → `ApiResponse<List<BranchItem?>>` (GET `/api/Branches`) — returns branch list (`areaCode`, `areaName`)
 
 ## Address
 
@@ -114,6 +114,8 @@ await ApiMiddleware.init();
 - `ApiMiddleware.wallet.validateOrder(amount: ..., orderRefNo: ..., remarks: ...)` → `ApiResponse<WalletOrderPaymentData?>` (POST `/Wallet/ValidateOrder`)
 - `ApiMiddleware.wallet.payOrder(amount: ..., orderRefNo: ..., remarks: ...)` → `ApiResponse<WalletOrderPaymentData?>` (POST `/Wallet/PayOrder`)
 - `ApiMiddleware.wallet.getTransaction(tranno)` → `ApiResponse<dynamic>` (GET `/Wallet/Transaction/{tranno}`)
+- `ApiMiddleware.wallet.sendOtp(orderRefNo: ...)` → `ApiResponse<dynamic>` (POST `/Wallet/SendOtp`, body `{ "orderRefNo": "..." }`) — Willl add DTO control laterrrr
+- `ApiMiddleware.wallet.validateOtp(orderRefNo: ..., otpCode: ...)` → `ApiResponse<dynamic>` (POST `/Wallet/ValidateOtp`, body `{ "orderRefNo": "...", "otpCode": "..." }`) — Willl add DTO control laterrrr
 
 ## Response handling
 

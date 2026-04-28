@@ -119,6 +119,7 @@ class _IAMBillingPaymentProviderSectionState
     }
 
     final hasSelection = _current != null;
+
     final iconPath = hasSelection
         ? _iconForProviderCode(_current!.provider.providerCode)
         : null;
@@ -126,11 +127,39 @@ class _IAMBillingPaymentProviderSectionState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        IAMSectionHeading(
-          title: 'Payment Provider',
-          buttonTitle: hasSelection ? 'Change' : 'Select',
-          onPressed: () => _showSelector(context),
+        /// HEADER
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Payment Provider',
+              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 19),
+            ),
+
+            GestureDetector(
+              onTap: () => _showSelector(context),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: IAMColors.primary.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  hasSelection ? 'Change' : 'Select',
+                  style: const TextStyle(
+                    color: IAMColors.primary,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
+
         const SizedBox(height: IAMSizes.spaceBtwItems / 2),
         Row(
           children: [
@@ -148,17 +177,66 @@ class _IAMBillingPaymentProviderSectionState
                     : const SizedBox.shrink(),
               ),
             ),
+
             const SizedBox(width: IAMSizes.spaceBtwItems / 2),
+
             Expanded(
-              child: Text(
-                hasSelection
-                    ? _current!.provider.providerName
-                    : 'Select Payment Provider',
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: hasSelection ? null : Theme.of(context).hintColor,
-                ),
-                overflow: TextOverflow.ellipsis,
-              ),
+              child: hasSelection
+                  ? Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            _current!.provider.providerName,
+                            style: Theme.of(context).textTheme.bodyLarge,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+
+                        const SizedBox(width: 8),
+                        GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _current = null;
+                            });
+
+                            _checkout.clearPaymentProvider();
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(2),
+                            decoration: BoxDecoration(
+                              color: Colors.grey.withOpacity(0.15),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.close,
+                              size: 14,
+                              color: Color.fromARGB(135, 120, 120, 120),
+                            ),
+                          ),
+                        ),
+                      ],
+                    )
+                  : Row(
+                      children: const [
+                        Icon(
+                          Icons.info_outline_rounded,
+                          size: 14,
+                          color: Color.fromARGB(255, 226, 118, 110),
+                        ),
+                        SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            'Select Payment Provider',
+                            style: TextStyle(
+                              color: Color.fromARGB(255, 226, 118, 110),
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
             ),
           ],
         ),

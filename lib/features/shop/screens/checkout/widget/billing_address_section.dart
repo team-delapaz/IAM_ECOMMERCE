@@ -5,6 +5,7 @@ import 'package:iam_ecomm/features/personalization/screens/address/add_new_addre
 import 'package:iam_ecomm/features/personalization/screens/address/widgets/single_address.dart';
 import 'package:iam_ecomm/utils/api/api.dart';
 import 'package:iam_ecomm/utils/api/responses/response_prep.dart';
+import 'package:iam_ecomm/utils/constants/colors.dart';
 import 'package:iam_ecomm/utils/constants/sizes.dart';
 import 'package:iconsax/iconsax.dart';
 
@@ -193,11 +194,39 @@ class _IAMBillingAddressSectionState extends State<IAMBillingAddressSection> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        IAMSectionHeading(
-          title: 'Shipping Address',
-          buttonTitle: _addresses.isEmpty ? 'Add' : 'Change',
-          onPressed: _openSelectSheet,
+        /// HEADER (CHIP BUTTON STYLE)
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Shipping Address',
+              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 19),
+            ),
+
+            GestureDetector(
+              onTap: _openSelectSheet,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: IAMColors.primary.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  _addresses.isEmpty ? 'Add' : 'Change',
+                  style: const TextStyle(
+                    color: IAMColors.primary,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
+
         const SizedBox(height: IAMSizes.spaceBtwItems / 2),
 
         if (_loading)
@@ -210,39 +239,105 @@ class _IAMBillingAddressSectionState extends State<IAMBillingAddressSection> {
             style: Theme.of(context).textTheme.bodyMedium,
           )
         else ...[
-          Text(
-            _selectedAddress!.recipientName,
-            style: Theme.of(context).textTheme.bodyLarge,
-          ),
-
-          const SizedBox(height: IAMSizes.spaceBtwItems / 2),
-
-          Row(
-            children: [
-              const Icon(Icons.phone, color: Colors.grey, size: 16),
-              const SizedBox(width: IAMSizes.spaceBtwItems),
-              Text(
-                _selectedAddress!.mobileNo,
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-            ],
-          ),
-
-          const SizedBox(height: IAMSizes.spaceBtwItems / 2),
-
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Icon(Icons.location_history, color: Colors.grey, size: 16),
-              const SizedBox(width: IAMSizes.spaceBtwItems),
-              Expanded(
-                child: Text(
-                  _selectedAddress!.completeAddress,
-                  style: Theme.of(context).textTheme.bodyMedium,
-                  softWrap: true,
+          /// NAME INSIDE CARD WITH CHECK ICON
+          Container(
+            padding: const EdgeInsets.all(IAMSizes.md),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.04),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
                 ),
-              ),
-            ],
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                /// TITLE
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        _selectedAddress!.recipientName,
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.withOpacity(0.15),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.location_on,
+                        color: Colors.black87,
+                        size: 16,
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: IAMSizes.spaceBtwItems / 2),
+
+                /// PHONE ROW (BADGE ICON)
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.withOpacity(0.15),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.phone,
+                        color: Colors.grey,
+                        size: 14,
+                      ),
+                    ),
+                    const SizedBox(width: IAMSizes.spaceBtwItems),
+                    Text(
+                      _selectedAddress!.mobileNo,
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: IAMSizes.spaceBtwItems / 2),
+
+                /// ADDRESS ROW (BADGE ICON)
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.withOpacity(0.15),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.location_history,
+                        color: Colors.grey,
+                        size: 14,
+                      ),
+                    ),
+                    const SizedBox(width: IAMSizes.spaceBtwItems),
+                    Expanded(
+                      child: Text(
+                        _selectedAddress!.completeAddress,
+                        style: Theme.of(context).textTheme.bodyMedium,
+                        softWrap: true,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ],
       ],

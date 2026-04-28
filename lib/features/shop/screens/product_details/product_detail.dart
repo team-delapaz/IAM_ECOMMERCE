@@ -334,6 +334,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       return Column(
                         children: filteredReviews.map((review) {
                           if (review == null) return const SizedBox();
+                          final reviewerName =
+                              review.reviewerName.trim().isNotEmpty
+                              ? review.reviewerName.trim()
+                              : '${review.firstName ?? ''} ${review.lastName ?? ''}'
+                                    .trim();
 
                           return Container(
                             width: double.infinity,
@@ -348,10 +353,20 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
+                                Text(
+                                  reviewerName.isNotEmpty
+                                      ? reviewerName
+                                      : 'Anonymous',
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
                                 Row(
                                   children: List.generate(5, (index) {
                                     return Icon(
-                                      index < (review.rating ?? 0)
+                                      index < review.rating
                                           ? Icons.star
                                           : Icons.star_border,
                                       color: Colors.amber,
@@ -361,7 +376,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
-                                  review.reviewComment ?? 'No comment',
+                                  review.reviewComment,
                                   style: const TextStyle(fontSize: 14),
                                 ),
                               ],
