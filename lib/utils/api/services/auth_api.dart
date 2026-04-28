@@ -56,4 +56,28 @@ class AuthApi {
       fromJsonData: VerifyResponse.fromJson,
     );
   }
+
+  Future<ApiResponse<dynamic>> forgotPassword(String emailAddress) {
+    return _client.post<dynamic>(
+      ApiEndpoints.authForgotPassword,
+      body: {
+        'emailAddress': emailAddress,
+      },
+    );
+  }
+
+  Future<ApiResponse<dynamic>> resetPassword({
+    required String emailAddress,
+    required String resetCode,
+    required String newPassword,
+  }) {
+    return _client.post<dynamic>(
+      ApiEndpoints.authResetPassword,
+      body: {
+        'emailAddress': emailAddress,
+        'resetCode': resetCode,
+        'newPassword': newPassword,
+      },
+    );
+  }
 }

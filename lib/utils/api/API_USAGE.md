@@ -38,6 +38,8 @@ await ApiMiddleware.init();
 - `ApiMiddleware.auth.resendVerificationCode(email)` → `ApiResponse<VerificationResponse?>`
 - `ApiMiddleware.auth.verifyCode(email: ..., code: ...)` → `ApiResponse<VerifyResponse?>`
 
+- `ApiMiddleware.auth.forgotPassword(emailAddress)` -> `ApiResponse<dynamic>` (POST `/Auth/ForgotPassword`, body `{ "emailAddress": "..." }`)
+- `ApiMiddleware.auth.resetPassword(emailAddress: ..., resetCode: ..., newPassword: ...)` -> `ApiResponse<dynamic>` (POST `/Auth/ResetPassword`, body `{ "emailAddress": "...", "resetCode": "...", "newPassword": "..." }`)
 ## Cart
 
 - `ApiMiddleware.cart.add(productCode: 'X', qty: 1)` → `ApiResponse<CartPayload?>`
@@ -134,3 +136,4 @@ Typed models for login and products live in `responses/response_prep.dart`.
 To follow to : some response mapping is left dynamic until some of thee API contracts are fixed.
 
 Endpoints are in `endpoints/api_endpoints.dart`. Base URL is set in `ApiClient` / `ApiEndpoints.baseUrl`-
+
