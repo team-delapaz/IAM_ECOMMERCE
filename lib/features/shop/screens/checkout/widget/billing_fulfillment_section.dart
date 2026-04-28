@@ -8,6 +8,7 @@ class IAMBillingFulfillmentSection extends StatelessWidget {
     required this.isLoading,
     required this.fulfillmentTypes,
     required this.selectedFulfillmentTypeCode,
+    required this.isPickupSelected,
     required this.branches,
     required this.selectedBranchAreaCode,
     required this.onFulfillmentChanged,
@@ -17,6 +18,7 @@ class IAMBillingFulfillmentSection extends StatelessWidget {
   final bool isLoading;
   final List<FulfillmentTypeItem> fulfillmentTypes;
   final String selectedFulfillmentTypeCode;
+  final bool isPickupSelected;
   final List<BranchItem> branches;
   final String? selectedBranchAreaCode;
   final ValueChanged<String> onFulfillmentChanged;
@@ -38,7 +40,6 @@ class IAMBillingFulfillmentSection extends StatelessWidget {
             )
         ? normalizedSelectedType
         : null;
-    final isPickup = normalizedSelectedType.toUpperCase() == 'PICKUP';
     final normalizedSelectedBranchCode = selectedBranchAreaCode?.trim();
     final branchItems = branches
         .where((branch) => branch.areaCode.trim().isNotEmpty)
@@ -76,7 +77,7 @@ class IAMBillingFulfillmentSection extends StatelessWidget {
                   onFulfillmentChanged(value);
                 },
         ),
-        if (isPickup) ...[
+        if (isPickupSelected) ...[
           const SizedBox(height: IAMSizes.spaceBtwItems),
           DropdownButtonFormField<String>(
             value: selectedBranch,

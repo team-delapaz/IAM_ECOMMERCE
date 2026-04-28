@@ -71,7 +71,25 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     BranchItem(areaCode: '102', areaName: 'DAVAO'),
   ];
   bool get _isPickupSelected =>
-      _selectedFulfillmentTypeCode.trim().toUpperCase() == 'PICKUP';
+      _isPickupFulfillmentCode(_selectedFulfillmentTypeCode);
+
+  bool _isPickupFulfillmentCode(String fulfillmentCode) {
+    final normalizedCode = fulfillmentCode.trim().toUpperCase();
+    if (normalizedCode.isEmpty) return false;
+    final matchedType = _fulfillmentTypes.where((type) {
+      return type.fulfillmentTypeCode.trim().toUpperCase() == normalizedCode;
+    }).toList();
+    if (matchedType.isNotEmpty) {
+      final item = matchedType.first;
+      final code = item.fulfillmentTypeCode.trim().toUpperCase();
+      final name = item.fulfillmentTypeName.trim().toUpperCase();
+      return item.fulfillmentTypeId == 2 ||
+          code == 'PICKUP' ||
+          name.contains('PICKUP');
+    }
+    return normalizedCode == 'PICKUP';
+  }
+
   int? get _selectedFulfillmentTypeId {
     final selectedCode = _selectedFulfillmentTypeCode.trim().toUpperCase();
     for (final type in _fulfillmentTypes) {
@@ -194,7 +212,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     final address = _selectedAddress;
     final fallbackSubtotal = model.subtotal;
 
-    final shouldRequireAddress = fulfillmentTypeCode.toUpperCase() != 'PICKUP';
+    final shouldRequireAddress = !_isPickupSelected;
     if (model.items.isEmpty ||
         providerCode.isEmpty ||
         (shouldRequireAddress && address == null) ||
@@ -270,7 +288,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         _fulfillmentTypes = typesToUse;
         _branches = branchItems.isNotEmpty ? branchItems : _fallbackBranches;
         _selectedFulfillmentTypeCode = defaultTypeCode;
-        if (_selectedFulfillmentTypeCode.trim().toUpperCase() != 'PICKUP') {
+        if (!_isPickupSelected) {
           _selectedBranchAreaCode = null;
         }
       });
@@ -452,7 +470,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         ? '000'
         : selectedAreaCode;
 
-    final isPickup = fulfillmentTypeCode.toUpperCase() == 'PICKUP';
+    final isPickup = _isPickupSelected;
     if (fulfillmentTypeCode.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -813,17 +831,18 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                           fulfillmentTypes: _fulfillmentTypes,
                           selectedFulfillmentTypeCode:
                               _selectedFulfillmentTypeCode,
+                          isPickupSelected: _isPickupSelected,
                           branches: _branches,
                           selectedBranchAreaCode: _selectedBranchAreaCode,
                           onFulfillmentChanged: (code) {
                             final normalizedCode = code.trim();
                             setState(() {
                               _selectedFulfillmentTypeCode = normalizedCode;
-                              if (normalizedCode.toUpperCase() != 'PICKUP') {
+                              if (!_isPickupFulfillmentCode(normalizedCode)) {
                                 _selectedBranchAreaCode = null;
                               }
                             });
-                            if (normalizedCode.toUpperCase() == 'PICKUP') {
+                            if (_isPickupFulfillmentCode(normalizedCode)) {
                               _loadBranchesIfNeeded();
                             }
                             _refreshComputedFees();
