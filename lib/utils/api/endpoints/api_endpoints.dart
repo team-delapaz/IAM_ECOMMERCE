@@ -67,6 +67,10 @@ class ApiEndpoints {
   static const String walletSendOtp = '/Wallet/SendOtp';
   static const String walletValidateOtp = '/Wallet/ValidateOtp';
 
+  // Points APIs
+  static const String points = '/Points';
+  static const String pointsBalance = '/Points/Balance';
+
   // Fulfillment APIs (/api routes outside /v1)
   static const String fulfillmentTypes = '$rootUrl/api/FulfillmentTypes';
   static const String branches = '$rootUrl/api/Branches';

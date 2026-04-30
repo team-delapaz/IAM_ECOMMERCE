@@ -221,6 +221,31 @@ class WalletOrderPaymentData {
   }
 }
 
+class PointsBalanceData {
+  final String accountId;
+  final num totalPoints;
+  final num earnedPoints;
+  final num redeemedPoints;
+
+  PointsBalanceData({
+    required this.accountId,
+    required this.totalPoints,
+    required this.earnedPoints,
+    required this.redeemedPoints,
+  });
+
+  static PointsBalanceData? fromJson(dynamic json) {
+    final m = asMap(json);
+    if (m == null) return null;
+    return PointsBalanceData(
+      accountId: m['accountId'] as String? ?? '',
+      totalPoints: (m['totalPoints'] as num?) ?? 0,
+      earnedPoints: (m['earnedPoints'] as num?) ?? 0,
+      redeemedPoints: (m['redeemedPoints'] as num?) ?? 0,
+    );
+  }
+}
+
 class CheckoutData {
   final String orderRefNo;
   final String cartRefNo;

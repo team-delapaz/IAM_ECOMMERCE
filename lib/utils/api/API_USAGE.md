@@ -119,6 +119,11 @@ await ApiMiddleware.init();
 - `ApiMiddleware.wallet.sendOtp(orderRefNo: ...)` → `ApiResponse<dynamic>` (POST `/Wallet/SendOtp`, body `{ "orderRefNo": "..." }`) — Willl add DTO control laterrrr
 - `ApiMiddleware.wallet.validateOtp(orderRefNo: ..., otpCode: ...)` → `ApiResponse<dynamic>` (POST `/Wallet/ValidateOtp`, body `{ "orderRefNo": "...", "otpCode": "..." }`) — Willl add DTO control laterrrr
 
+## Points (JWT required)
+
+- `ApiMiddleware.points.getPoints()` → `ApiResponse<List<dynamic>?>` (GET `/Points`)
+- `ApiMiddleware.points.getBalance()` → `ApiResponse<PointsBalanceData?>` (GET `/Points/Balance`)
+
 ## Response handling
 
 ```dart

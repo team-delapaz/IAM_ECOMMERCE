@@ -9,6 +9,7 @@ import 'services/location_api.dart';
 import 'services/member_api.dart';
 import 'services/orders_api.dart';
 import 'services/payment_api.dart';
+import 'services/points_api.dart';
 import 'services/product_review_api.dart';
 import 'services/products_api.dart';
 import 'services/wallet_api.dart';
@@ -35,6 +36,7 @@ class ApiMiddleware {
   static final MemberApi member = MemberApi(_client);
   static final OrdersApi orders = OrdersApi(_client);
   static final PaymentApi payment = PaymentApi(_client);
+  static final PointsApi points = PointsApi(_client);
   static final ProductReviewApi productReview = ProductReviewApi(_client);
   static final ProductsApi products = ProductsApi(_client);
   static final WalletApi wallet = WalletApi(_client);
