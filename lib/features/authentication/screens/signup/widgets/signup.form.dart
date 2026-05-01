@@ -54,10 +54,9 @@ class _IAMSignupFormState extends State<IAMSignupForm> {
       /// -------- ADDED: Handle API response properly --------
       if (res.success) {
         /// Save token if returned by API
-        if (res.data != null &&
-            res.data["token"] != null &&
-            res.data["token"]["accessToken"] != null) {
-          await ApiMiddleware.setToken(res.data["token"]["accessToken"]);
+        if (res.data?.token != null &&
+            res.data!.token!.accessToken.isNotEmpty) {
+          await ApiMiddleware.setToken(res.data!.token!.accessToken);
         }
 
         ScaffoldMessenger.of(context).showSnackBar(

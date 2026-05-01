@@ -8,6 +8,12 @@ List<Map<String, dynamic>>? asListMap(dynamic v) {
   return list.map((e) => asMap(e) ?? {}).toList();
 }
 
+String? asNonEmptyString(dynamic v) {
+  final text = v as String?;
+  final trimmed = text?.trim();
+  return trimmed == null || trimmed.isEmpty ? null : trimmed;
+}
+
 class LoginData {
   final TokenInfo? token;
   final UserInfo? user;
@@ -395,6 +401,10 @@ class UserInfo {
   final String fullName;
   final String packageCode;
   final String packageName;
+  final String emailAddress;
+  final String mobileNo;
+  final String? referralId;
+  final String? referralName;
   final bool isMember;
 
   UserInfo({
@@ -405,6 +415,10 @@ class UserInfo {
     required this.fullName,
     required this.packageCode,
     required this.packageName,
+    required this.emailAddress,
+    required this.mobileNo,
+    required this.referralId,
+    required this.referralName,
     required this.isMember,
   });
 
@@ -419,6 +433,10 @@ class UserInfo {
       fullName: m['fullName'] as String? ?? '',
       packageCode: m['packageCode'] as String? ?? '',
       packageName: m['packageName'] as String? ?? '',
+      emailAddress: m['emailAddress'] as String? ?? '',
+      mobileNo: m['mobileNo'] as String? ?? '',
+      referralId: asNonEmptyString(m['referralId']),
+      referralName: asNonEmptyString(m['referralName']),
       isMember: m['isMember'] as bool? ?? false,
     );
   }

@@ -16,7 +16,7 @@ class AuthApi {
     );
   }
 
-  Future<ApiResponse<dynamic>> signup({
+  Future<ApiResponse<LoginData?>> signup({
     required String email,
     required String mobileNo,
     required String password,
@@ -24,7 +24,7 @@ class AuthApi {
     required String lastName,
     String? referralId,
   }) {
-    return _client.post<dynamic>(
+    return _client.post<LoginData?>(
       ApiEndpoints.authSignup,
       body: {
         'email': email,
@@ -35,6 +35,7 @@ class AuthApi {
         if (referralId != null && referralId.trim().isNotEmpty)
           'referralId': referralId.trim(),
       },
+      fromJsonData: LoginData.fromJson,
     );
   }
 
