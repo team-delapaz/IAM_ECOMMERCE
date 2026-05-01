@@ -8,6 +8,12 @@ List<Map<String, dynamic>>? asListMap(dynamic v) {
   return list.map((e) => asMap(e) ?? {}).toList();
 }
 
+String? asNonEmptyString(dynamic v) {
+  final text = v as String?;
+  final trimmed = text?.trim();
+  return trimmed == null || trimmed.isEmpty ? null : trimmed;
+}
+
 class LoginData {
   final TokenInfo? token;
   final UserInfo? user;
@@ -70,6 +76,20 @@ class VerifyResponse {
     return VerifyResponse(
       isVerified: (m['isVerified'] as bool?) ?? false,
       message: m['message'] as String? ?? '',
+    );
+  }
+}
+
+class ValidateResetCodeResponse {
+  final bool isValid;
+
+  ValidateResetCodeResponse({required this.isValid});
+
+  static ValidateResetCodeResponse? fromJson(dynamic json) {
+    final m = asMap(json);
+    if (m == null) return null;
+    return ValidateResetCodeResponse(
+      isValid: (m['isValid'] as bool?) ?? false,
     );
   }
 }
@@ -220,6 +240,31 @@ class WalletOrderPaymentData {
     );
   }
 }
+class PointsBalanceData {
+  final String accountId;
+  final num totalPoints;
+  final num earnedPoints;
+  final num redeemedPoints;
+
+  PointsBalanceData({
+    required this.accountId,
+    required this.totalPoints,
+    required this.earnedPoints,
+    required this.redeemedPoints,
+  });
+
+  static PointsBalanceData? fromJson(dynamic json) {
+    final m = asMap(json);
+    if (m == null) return null;
+
+    return PointsBalanceData(
+      accountId: m['accountId'] as String? ?? '',
+      totalPoints: (m['totalPoints'] as num?) ?? 0,
+      earnedPoints: (m['earnedPoints'] as num?) ?? 0,
+      redeemedPoints: (m['redeemedPoints'] as num?) ?? 0,
+    );
+  }
+}
 
 class WalletSendOtpData {
   final String emailAddress;
@@ -250,6 +295,7 @@ class WalletSendOtpData {
       'recipientEmail',
       'otpEmail',
     ]);
+
     final maskedEmail = readString([
       'maskedEmail',
       'emailMasked',
@@ -258,6 +304,7 @@ class WalletSendOtpData {
     ]);
 
     if (emailAddress.isEmpty && maskedEmail.isEmpty) return null;
+
     return WalletSendOtpData(
       emailAddress: emailAddress,
       maskedEmail: maskedEmail,
@@ -400,6 +447,10 @@ class UserInfo {
   final String fullName;
   final String packageCode;
   final String packageName;
+  final String emailAddress;
+  final String mobileNo;
+  final String? referralId;
+  final String? referralName;
   final bool isMember;
 
   UserInfo({
@@ -410,6 +461,10 @@ class UserInfo {
     required this.fullName,
     required this.packageCode,
     required this.packageName,
+    required this.emailAddress,
+    required this.mobileNo,
+    required this.referralId,
+    required this.referralName,
     required this.isMember,
   });
 
@@ -424,6 +479,10 @@ class UserInfo {
       fullName: m['fullName'] as String? ?? '',
       packageCode: m['packageCode'] as String? ?? '',
       packageName: m['packageName'] as String? ?? '',
+      emailAddress: m['emailAddress'] as String? ?? '',
+      mobileNo: m['mobileNo'] as String? ?? '',
+      referralId: asNonEmptyString(m['referralId']),
+      referralName: asNonEmptyString(m['referralName']),
       isMember: m['isMember'] as bool? ?? false,
     );
   }

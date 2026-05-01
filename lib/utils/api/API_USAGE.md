@@ -34,10 +34,13 @@ await ApiMiddleware.init();
 ## Auth
 
 - `ApiMiddleware.auth.login(username, password)` → `ApiResponse<LoginData?>`
-- `ApiMiddleware.auth.signup(email: ..., mobileNo: ..., password: ..., firstName: ..., lastName: ...)` → `ApiResponse<dynamic>`
+- `ApiMiddleware.auth.signup(email: ..., mobileNo: ..., password: ..., firstName: ..., lastName: ..., referralId: 'optional')` → `ApiResponse<LoginData?>` (POST `/Auth/Signup`; `referralId` is optional and only sent when provided. Signups without referral return blank referral strings from the backend; the model normalizes blank `data.user.referralId` and `data.user.referralName` to `null`. Valid referral signups return those values. If an included referral ID is invalid/inactive, backend may return `status: 500`, `success: false`, `message: "Referral ID does not exist or is inactive."`, `data: null`; show `res.message`.)
 - `ApiMiddleware.auth.resendVerificationCode(email)` → `ApiResponse<VerificationResponse?>`
 - `ApiMiddleware.auth.verifyCode(email: ..., code: ...)` → `ApiResponse<VerifyResponse?>`
 
+- `ApiMiddleware.auth.forgotPassword(emailAddress)` -> `ApiResponse<dynamic>` (POST `/Auth/ForgotPassword`, body `{ "emailAddress": "..." }`)
+- `ApiMiddleware.auth.validateResetCode(emailAddress: ..., resetCode: ...)` -> `ApiResponse<ValidateResetCodeResponse?>` (POST `/Auth/ValidateResetCode`, body `{ "emailAddress": "...", "resetCode": "..." }`; success `data.isValid` is `true` when the reset code is valid)
+- `ApiMiddleware.auth.resetPassword(emailAddress: ..., resetCode: ..., newPassword: ...)` -> `ApiResponse<dynamic>` (POST `/Auth/ResetPassword`, body `{ "emailAddress": "...", "resetCode": "...", "newPassword": "..." }`)
 ## Cart
 
 - `ApiMiddleware.cart.add(productCode: 'X', qty: 1)` → `ApiResponse<CartPayload?>`
@@ -117,6 +120,11 @@ await ApiMiddleware.init();
 - `ApiMiddleware.wallet.sendOtp(orderRefNo: ...)` → `ApiResponse<dynamic>` (POST `/Wallet/SendOtp`, body `{ "orderRefNo": "..." }`) — Willl add DTO control laterrrr
 - `ApiMiddleware.wallet.validateOtp(orderRefNo: ..., otpCode: ...)` → `ApiResponse<dynamic>` (POST `/Wallet/ValidateOtp`, body `{ "orderRefNo": "...", "otpCode": "..." }`) — Willl add DTO control laterrrr
 
+## Points (JWT required)
+
+- `ApiMiddleware.points.getPoints()` → `ApiResponse<List<dynamic>?>` (GET `/Points`)
+- `ApiMiddleware.points.getBalance()` → `ApiResponse<PointsBalanceData?>` (GET `/Points/Balance`)
+
 ## Response handling
 
 ```dart
@@ -134,3 +142,4 @@ Typed models for login and products live in `responses/response_prep.dart`.
 To follow to : some response mapping is left dynamic until some of thee API contracts are fixed.
 
 Endpoints are in `endpoints/api_endpoints.dart`. Base URL is set in `ApiClient` / `ApiEndpoints.baseUrl`-
+

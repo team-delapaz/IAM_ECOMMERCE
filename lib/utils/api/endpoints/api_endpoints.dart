@@ -4,11 +4,14 @@ class ApiEndpoints {
 
   static const String baseUrl = 'https://ecom-api-staging.iam-ww.com/v1';
   static const String rootUrl = 'https://ecom-api-staging.iam-ww.com';
-
+  
   static const String authLogin = '/Auth/Login';
   static const String authSignup = '/Auth/Signup';
   static const String authResendVerificationCode = '/Auth/ResendVerificationCode';
   static const String authVerifyCode = '/Auth/VerifyEmailCode';
+  static const String authForgotPassword = '/Auth/ForgotPassword';
+  static const String authValidateResetCode = '/Auth/ValidateResetCode';
+  static const String authResetPassword = '/Auth/ResetPassword';
 
   static const String cart = '/Cart';
   static const String cartAdd = '/Cart/Add';
@@ -64,6 +67,10 @@ class ApiEndpoints {
   static String walletTransaction(String tranno) => '/Wallet/Transaction/$tranno';
   static const String walletSendOtp = '/Wallet/SendOtp';
   static const String walletValidateOtp = '/Wallet/ValidateOtp';
+
+  // Points APIs
+  static const String points = '/Points';
+  static const String pointsBalance = '/Points/Balance';
 
   // Fulfillment APIs (/api routes outside /v1)
   static const String fulfillmentTypes = '$rootUrl/api/FulfillmentTypes';

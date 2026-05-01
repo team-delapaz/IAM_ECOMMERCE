@@ -16,14 +16,15 @@ class AuthApi {
     );
   }
 
-  Future<ApiResponse<dynamic>> signup({
+  Future<ApiResponse<LoginData?>> signup({
     required String email,
     required String mobileNo,
     required String password,
     required String firstName,
     required String lastName,
+    String? referralId,
   }) {
-    return _client.post<dynamic>(
+    return _client.post<LoginData?>(
       ApiEndpoints.authSignup,
       body: {
         'email': email,
@@ -31,7 +32,10 @@ class AuthApi {
         'password': password,
         'firstName': firstName,
         'lastName': lastName,
+        if (referralId != null && referralId.trim().isNotEmpty)
+          'referralId': referralId.trim(),
       },
+      fromJsonData: LoginData.fromJson,
     );
   }
 
@@ -54,6 +58,44 @@ class AuthApi {
         'code': code,
       },
       fromJsonData: VerifyResponse.fromJson,
+    );
+  }
+
+  Future<ApiResponse<dynamic>> forgotPassword(String emailAddress) {
+    return _client.post<dynamic>(
+      ApiEndpoints.authForgotPassword,
+      body: {
+        'emailAddress': emailAddress,
+      },
+    );
+  }
+
+  Future<ApiResponse<ValidateResetCodeResponse?>> validateResetCode({
+    required String emailAddress,
+    required String resetCode,
+  }) {
+    return _client.post<ValidateResetCodeResponse?>(
+      ApiEndpoints.authValidateResetCode,
+      body: {
+        'emailAddress': emailAddress,
+        'resetCode': resetCode,
+      },
+      fromJsonData: ValidateResetCodeResponse.fromJson,
+    );
+  }
+
+  Future<ApiResponse<dynamic>> resetPassword({
+    required String emailAddress,
+    required String resetCode,
+    required String newPassword,
+  }) {
+    return _client.post<dynamic>(
+      ApiEndpoints.authResetPassword,
+      body: {
+        'emailAddress': emailAddress,
+        'resetCode': resetCode,
+        'newPassword': newPassword,
+      },
     );
   }
 }
