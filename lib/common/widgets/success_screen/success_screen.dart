@@ -11,10 +11,12 @@ class SuccessScreen extends StatelessWidget {
     required this.title,
     required this.subTitle,
     required this.onPressed,
+    this.subTitleWidget,
   });
 
   final String image, title, subTitle;
   final VoidCallback onPressed;
+  final Widget? subTitleWidget;
 
   ///final VoidCallback? onPressed;   and remove the required for the error msg.
 
@@ -41,11 +43,12 @@ class SuccessScreen extends StatelessWidget {
               ),
               const SizedBox(height: IAMSizes.spaceBtwItems),
 
-              Text(
-                subTitle,
-                style: Theme.of(context).textTheme.labelMedium,
-                textAlign: TextAlign.center,
-              ),
+              subTitleWidget ??
+                  Text(
+                    subTitle,
+                    style: Theme.of(context).textTheme.labelMedium,
+                    textAlign: TextAlign.center,
+                  ),
               const SizedBox(height: IAMSizes.spaceBtwSections),
               //BUTTONS
               SizedBox(

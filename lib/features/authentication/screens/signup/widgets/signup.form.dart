@@ -25,6 +25,7 @@ class _IAMSignupFormState extends State<IAMSignupForm> {
   final _usernameController = TextEditingController();
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
+  final _referralIdController = TextEditingController();
   final _passwordController = TextEditingController();
 
   Future<void> _submitForm() async {
@@ -43,6 +44,7 @@ class _IAMSignupFormState extends State<IAMSignupForm> {
         password: _passwordController.text,
         firstName: _firstNameController.text.trim(),
         lastName: _lastNameController.text.trim(),
+        referralId: _referralIdController.text.trim(),
       );
 
       if (!mounted) return;
@@ -89,7 +91,12 @@ class _IAMSignupFormState extends State<IAMSignupForm> {
         if (!mounted) return;
 
         /// Navigate to verify email
-        Get.to(() => VerifyEmailScreen(email: _emailController.text.trim()));
+        Get.to(
+          () => VerifyEmailScreen(
+            email: _emailController.text.trim(),
+            referralName: res.data?.user?.referralName,
+          ),
+        );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -137,6 +144,7 @@ class _IAMSignupFormState extends State<IAMSignupForm> {
     _usernameController.dispose();
     _emailController.dispose();
     _phoneController.dispose();
+    _referralIdController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -210,6 +218,18 @@ class _IAMSignupFormState extends State<IAMSignupForm> {
               if (!regex.hasMatch(v)) return 'Invalid phone number';
               return null;
             },
+          ),
+
+          const SizedBox(height: IAMSizes.spaceBtwInputFields),
+
+          TextFormField(
+            controller: _referralIdController,
+            expands: false,
+            decoration: const InputDecoration(
+              labelText: 'Referral ID (Optional)',
+              prefixIcon: Icon(Iconsax.profile_2user),
+            ),
+            validator: (_) => null,
           ),
 
           const SizedBox(height: IAMSizes.spaceBtwInputFields),

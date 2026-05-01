@@ -11,9 +11,14 @@ import 'package:iam_ecomm/utils/constants/text_strings.dart';
 import 'package:iam_ecomm/utils/helpers/helper_functions.dart';
 
 class VerifyEmailScreen extends StatefulWidget {
-  const VerifyEmailScreen({super.key, required this.email});
+  const VerifyEmailScreen({
+    super.key,
+    required this.email,
+    this.referralName,
+  });
 
   final String email;
+  final String? referralName;
 
   @override
   State<VerifyEmailScreen> createState() => _VerifyEmailScreenState();
@@ -66,11 +71,40 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
     setState(() => _isVerifying = false);
 
     if (res.success && res.data?.isVerified == true) {
+      final referralName = widget.referralName?.trim() ?? '';
+      final baseSubtitleStyle = Theme.of(context).textTheme.labelMedium;
+      final emphasisSubtitleStyle =
+          Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+              );
+
       Get.to(
         () => SuccessScreen(
           image: IAMImages.successRegistration,
           title: IAMTexts.yourAccountCreatedTitle,
           subTitle: IAMTexts.yourAccountCreatedSubTitle,
+          subTitleWidget: referralName.isNotEmpty
+              ? RichText(
+                  textAlign: TextAlign.center,
+                  text: TextSpan(
+                    children: [
+                      TextSpan(
+                        text: '${IAMTexts.yourAccountCreatedSubTitle}\n\n',
+                        style: baseSubtitleStyle,
+                      ),
+                      const TextSpan(
+                        text: 'Referral: ',
+                        style: TextStyle(fontWeight: FontWeight.w700),
+                      ),
+                      TextSpan(
+                        text: referralName,
+                        style: emphasisSubtitleStyle,
+                      ),
+                    ],
+                    style: baseSubtitleStyle,
+                  ),
+                )
+              : null,
           onPressed: () => Get.to(() => const LoginScreen()),
         ),
       );
@@ -139,6 +173,15 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                 style: Theme.of(context).textTheme.labelLarge,
                 textAlign: TextAlign.center,
               ),
+              if (widget.referralName != null &&
+                  widget.referralName!.trim().isNotEmpty) ...[
+                const SizedBox(height: IAMSizes.spaceBtwItems / 2),
+                Text(
+                  'Referral: ${widget.referralName!}',
+                  style: Theme.of(context).textTheme.labelMedium,
+                  textAlign: TextAlign.center,
+                ),
+              ],
               const SizedBox(height: IAMSizes.spaceBtwItems),
               Text(
                 IAMTexts.confirmEmailSubTitle,
