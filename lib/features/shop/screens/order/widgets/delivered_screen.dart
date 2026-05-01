@@ -391,67 +391,135 @@ void _showViewReviewModal(
     builder: (_) {
       return Padding(
         padding: EdgeInsets.only(
-          left: IAMSizes.md,
-          right: IAMSizes.md,
-          top: IAMSizes.md,
-          bottom: MediaQuery.of(context).viewInsets.bottom + IAMSizes.md,
+          left: IAMSizes.lg,
+          right: IAMSizes.lg,
+          top: IAMSizes.lg,
+          bottom: MediaQuery.of(context).viewInsets.bottom + IAMSizes.lg,
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: 8),
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: IAMSizes.md),
-            const Text(
-              'Your Reviews',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-            ),
-            const SizedBox(height: IAMSizes.md),
-
-            ...reviews.map((review) {
-              final rating = review.rating ?? 0;
-
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(5, (index) {
-                        final isSelected = index < rating;
-
-                        return Icon(
-                          isSelected ? Iconsax.star1 : Iconsax.star,
-                          color: IAMColors.primary,
-                          size: 32,
-                        );
-                      }),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      review.reviewComment ?? '',
-                      textAlign: TextAlign.center,
-                    ),
-                    const Divider(),
-                  ],
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              /// Top drag handle
+              Center(
+                child: Container(
+                  width: 50,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(100),
+                  ),
                 ),
-              );
-            }),
+              ),
 
-            const SizedBox(height: IAMSizes.lg),
-            OutlinedButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Close'),
-            ),
-          ],
+              const SizedBox(height: IAMSizes.lg),
+
+              /// Title
+              const Center(
+                child: Text(
+                  'Your Reviews',
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
+                ),
+              ),
+
+              const SizedBox(height: IAMSizes.xl),
+
+              /// Reviews List
+              ...reviews.map((review) {
+                final rating = review.rating ?? 0;
+
+                return Container(
+                  margin: const EdgeInsets.only(bottom: IAMSizes.lg),
+                  padding: const EdgeInsets.all(IAMSizes.md),
+                  decoration: BoxDecoration(
+                    color: IAMColors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.grey.shade200),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.03),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      /// Stars
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: List.generate(5, (index) {
+                          final isSelected = index < rating;
+
+                          return AnimatedScale(
+                            scale: isSelected ? 1.25 : 1.0,
+                            duration: const Duration(milliseconds: 450),
+                            curve: Curves.easeOutBack,
+                            child: Padding(
+                              padding: const EdgeInsets.only(right: 8),
+                              child: Icon(
+                                isSelected ? Iconsax.star1 : Iconsax.star,
+                                color: isSelected
+                                    ? IAMColors.primary
+                                    : Colors.grey.shade400,
+                                size: isSelected ? 38 : 28,
+                              ),
+                            ),
+                          );
+                        }),
+                      ),
+
+                      const SizedBox(height: IAMSizes.md),
+
+                      /// Review Comment Box
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(IAMSizes.md),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade50,
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: Text(
+                          (review.reviewComment ?? '').isNotEmpty
+                              ? review.reviewComment!
+                              : 'No review comment provided.',
+                          style: TextStyle(
+                            fontSize: 14,
+                            height: 1.5,
+                            color: Colors.grey.shade700,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+
+              const SizedBox(height: IAMSizes.md),
+
+              /// Close Button
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: IAMSizes.md),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                  ),
+                  child: const Text(
+                    'Close',
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: IAMSizes.md),
+            ],
+          ),
         ),
       );
     },
