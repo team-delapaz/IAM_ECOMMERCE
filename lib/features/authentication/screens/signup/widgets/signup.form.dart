@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iam_ecomm/features/authentication/screens/signup/verify_email.dart';
 import 'package:iam_ecomm/features/authentication/screens/signup/widgets/termsandconditions.dart';
+import 'package:iam_ecomm/features/personalization/screens/address/add_new_address.dart';
 import 'package:iam_ecomm/utils/api/api.dart';
 import 'package:iam_ecomm/utils/constants/sizes.dart';
 import 'package:iam_ecomm/utils/constants/text_strings.dart';
@@ -62,7 +63,9 @@ class _IAMSignupFormState extends State<IAMSignupForm> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              res.message ?? "Account created successfully",
+              res.message.isNotEmpty
+                  ? res.message
+                  : "Account created successfully",
               style: const TextStyle(color: Colors.white),
             ),
             backgroundColor: Colors.green[300],
@@ -72,13 +75,29 @@ class _IAMSignupFormState extends State<IAMSignupForm> {
           ),
         );
 
+        final firstName = _firstNameController.text.trim();
+        final lastName = _lastNameController.text.trim();
+        final fullName = '$firstName $lastName'.trim();
+
+        // Route brand-new users to their first address setup and keep
+        // recipient name aligned with the account name from signup.
+        await Get.to(
+          () => AddNewAddressScreen(
+            prefilledRecipientName: fullName,
+            lockRecipientName: true,
+          ),
+        );
+        if (!mounted) return;
+
         /// Navigate to verify email
         Get.to(() => VerifyEmailScreen(email: _emailController.text.trim()));
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              res.message ?? "Unable to create account",
+              res.message.isNotEmpty
+                  ? res.message
+                  : "Unable to create account",
               style: const TextStyle(color: Colors.white),
             ),
             backgroundColor: Colors.red[300],

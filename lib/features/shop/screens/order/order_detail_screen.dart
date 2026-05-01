@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:iam_ecomm/common/widgets/container/rounded_container.dart';
 import 'package:iam_ecomm/common/widgets/payments/checkout_webview_sheet.dart';
 import 'package:iam_ecomm/common/widgets/payments/iam_wallet_pay_sheet.dart';
@@ -9,6 +10,7 @@ import 'package:iam_ecomm/utils/api/responses/response_prep.dart';
 import 'package:iam_ecomm/utils/constants/colors.dart';
 import 'package:iam_ecomm/utils/constants/sizes.dart';
 import 'package:iam_ecomm/utils/helpers/helper_functions.dart';
+import 'package:iam_ecomm/navigation_menu.dart';
 import 'package:intl/intl.dart';
 import 'package:iam_ecomm/utils/formatters/formatter.dart';
 
@@ -469,11 +471,15 @@ Future<bool> _handlePayNow(
   if (choice == null) return false;
 
   if (choice == _PayProviderChoice.wallet) {
-    return showIamWalletPaySheet(
+    final paid = await showIamWalletPaySheet(
       context: context,
       orderRef: orderRef,
       totalAmount: amount,
     );
+    if (!paid) {
+      _redirectToStoreWithUnpaidToast();
+    }
+    return paid;
   }
 
   final memberRes = await ApiMiddleware.member.getMember();
@@ -541,14 +547,61 @@ Future<bool> _handlePayNow(
     return false;
   }
 
-  await showCheckoutWebViewSheet(
+  final paid = await showCheckoutWebViewSheet(
     context: context,
     checkoutUrl: checkoutUrl,
     orderRef: orderRef,
     totalAmount: amount,
   );
+  if (!paid && context.mounted) {
+    _redirectToStoreWithUnpaidToast();
+  }
+  return paid;
+}
 
-  return true;
+void _redirectToStoreWithUnpaidToast() {
+  final navController = Get.isRegistered<NavigationController>()
+      ? Get.find<NavigationController>()
+      : Get.put(NavigationController());
+  navController.selectedIndex.value = 1;
+  Get.offAll(() => const NavigationMenu());
+  void showOnReady([int attempts = 0]) {
+    final currentContext = Get.context;
+    if (currentContext == null) {
+      if (attempts < 10) {
+        Future.delayed(
+          const Duration(milliseconds: 120),
+          () => showOnReady(attempts + 1),
+        );
+      }
+      return;
+    }
+    final messenger = ScaffoldMessenger.maybeOf(currentContext);
+    if (messenger == null) {
+      if (attempts < 10) {
+        Future.delayed(
+          const Duration(milliseconds: 120),
+          () => showOnReady(attempts + 1),
+        );
+      }
+      return;
+    }
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(
+      SnackBar(
+        content: const Text(
+          'Order is currently unpaid, head to "My Orders" to continue payment.',
+          style: TextStyle(color: Colors.white),
+        ),
+        backgroundColor: Colors.red.shade300,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(12),
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
+  WidgetsBinding.instance.addPostFrameCallback((_) => showOnReady());
 }
 
 enum _PayProviderChoice { wallet, paymaya }
@@ -567,7 +620,7 @@ class _PayChoiceSheet extends StatelessWidget {
     final muted = onSurface.withOpacity(dark ? 0.72 : 0.62);
 
     return FractionallySizedBox(
-      heightFactor: 0.46,
+      heightFactor: 0.58,
       alignment: Alignment.bottomCenter,
       child: ClipRRect(
         borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),

@@ -79,18 +79,24 @@ class VerifyResponse {
 class ProductReviewItem {
   final int autoId;
   final String productCode;
+  final String idno;
+  final String orderRefNo;
   final int rating;
   final String reviewComment;
   final String createdAt;
+  final String reviewerName;
   final String? firstName;
   final String? lastName;
 
   ProductReviewItem({
     required this.autoId,
     required this.productCode,
+    required this.idno,
+    required this.orderRefNo,
     required this.rating,
     required this.reviewComment,
     required this.createdAt,
+    required this.reviewerName,
     this.firstName,
     this.lastName,
   });
@@ -99,11 +105,14 @@ class ProductReviewItem {
     final m = asMap(json);
     if (m == null) return null;
     return ProductReviewItem(
-      autoId: (m['autoId'] as int?) ?? 0,
+      autoId: (m['autoId'] as int?) ?? (m['reviewId'] as int? ?? 0),
       productCode: m['productCode'] as String? ?? '',
+      idno: m['idno'] as String? ?? '',
+      orderRefNo: m['orderRefNo'] as String? ?? '',
       rating: (m['rating'] as int?) ?? 0,
       reviewComment: m['reviewComment'] as String? ?? '',
       createdAt: m['createdAt'] as String? ?? '',
+      reviewerName: m['reviewerName'] as String? ?? '',
       firstName: m['firstName'] as String?,
       lastName: m['lastName'] as String?,
     );
@@ -208,6 +217,133 @@ class WalletOrderPaymentData {
       paymentRefNo: m['paymentRefNo'] as String? ?? '',
       amount: (m['amount'] as num?) ?? 0,
       remainingBalance: (m['remainingBalance'] as num?) ?? 0,
+    );
+  }
+}
+
+class CheckoutData {
+  final String orderRefNo;
+  final String cartRefNo;
+  final num subtotalAmount;
+  final num shippingAmount;
+  final num processingFeeAmount;
+  final num voucherDiscountAmount;
+  final num discountAmount;
+  final num totalAmount;
+  final int orderStatusId;
+  final int paymentStatusId;
+  final String notes;
+  final List<OrderProductItem?> items;
+
+  CheckoutData({
+    required this.orderRefNo,
+    required this.cartRefNo,
+    required this.subtotalAmount,
+    required this.shippingAmount,
+    required this.processingFeeAmount,
+    required this.voucherDiscountAmount,
+    required this.discountAmount,
+    required this.totalAmount,
+    required this.orderStatusId,
+    required this.paymentStatusId,
+    required this.notes,
+    required this.items,
+  });
+
+  static CheckoutData? fromJson(dynamic json) {
+    final m = asMap(json);
+    if (m == null) return null;
+    final itemsList = (m['items'] is List ? (m['items'] as List) : const [])
+        .map((e) => OrderProductItem.fromJson(e))
+        .whereType<OrderProductItem>()
+        .toList();
+    return CheckoutData(
+      orderRefNo: (m['orderRefNo'] as String?) ?? (m['orderRefno'] as String? ?? ''),
+      cartRefNo: (m['cartRefNo'] as String?) ?? (m['cartRefno'] as String? ?? ''),
+      subtotalAmount: (m['subtotalAmount'] as num?) ?? 0,
+      shippingAmount: (m['shippingAmount'] as num?) ?? 0,
+      processingFeeAmount: (m['processingFeeAmount'] as num?) ?? 0,
+      voucherDiscountAmount: (m['voucherDiscountAmount'] as num?) ?? 0,
+      discountAmount: (m['discountAmount'] as num?) ?? 0,
+      totalAmount: (m['totalAmount'] as num?) ?? 0,
+      orderStatusId: (m['orderStatusId'] as int?) ?? 0,
+      paymentStatusId: (m['paymentStatusId'] as int?) ?? 0,
+      notes: m['notes'] as String? ?? '',
+      items: itemsList,
+    );
+  }
+}
+
+class ComputeFeesData {
+  final String cartRefno;
+  final num subtotalAmount;
+  final num shippingAmount;
+  final num processingFeeAmount;
+  final num voucherDiscountAmount;
+  final num discountAmount;
+  final num totalAmount;
+  final int totalBoxes;
+
+  ComputeFeesData({
+    required this.cartRefno,
+    required this.subtotalAmount,
+    required this.shippingAmount,
+    required this.processingFeeAmount,
+    required this.voucherDiscountAmount,
+    required this.discountAmount,
+    required this.totalAmount,
+    required this.totalBoxes,
+  });
+
+  static ComputeFeesData? fromJson(dynamic json) {
+    final m = asMap(json);
+    if (m == null) return null;
+    return ComputeFeesData(
+      cartRefno: (m['cartRefno'] as String?) ?? (m['cartRefNo'] as String? ?? ''),
+      subtotalAmount: (m['subtotalAmount'] as num?) ?? 0,
+      shippingAmount: (m['shippingAmount'] as num?) ?? 0,
+      processingFeeAmount: (m['processingFeeAmount'] as num?) ?? 0,
+      voucherDiscountAmount: (m['voucherDiscountAmount'] as num?) ?? 0,
+      discountAmount: (m['discountAmount'] as num?) ?? 0,
+      totalAmount: (m['totalAmount'] as num?) ?? 0,
+      totalBoxes: (m['totalBoxes'] as int?) ?? 0,
+    );
+  }
+}
+
+class OrderStatusHistoryItem {
+  final int autoId;
+  final String orderRefNo;
+  final int orderStatusId;
+  final String orderStatusName;
+  final String trackingNo;
+  final String remarks;
+  final String userName;
+  final String tranDate;
+
+  OrderStatusHistoryItem({
+    required this.autoId,
+    required this.orderRefNo,
+    required this.orderStatusId,
+    required this.orderStatusName,
+    required this.trackingNo,
+    required this.remarks,
+    required this.userName,
+    required this.tranDate,
+  });
+
+  static OrderStatusHistoryItem? fromJson(dynamic json) {
+    final m = asMap(json);
+    if (m == null) return null;
+    return OrderStatusHistoryItem(
+      autoId: (m['autoId'] as int?) ?? 0,
+      orderRefNo: m['orderRefNo'] as String? ?? '',
+      orderStatusId: (m['orderStatusId'] as int?) ?? 0,
+      orderStatusName: m['orderStatusName'] as String? ?? '',
+      trackingNo: m['trackingNo'] as String? ?? '',
+      remarks: m['remarks'] as String? ?? '',
+      userName: m['userName'] as String? ?? '',
+      tranDate: m['tranDate'] as String? ?? '',
     );
   }
 }
@@ -867,6 +1003,47 @@ class BarangayItem {
     if (m == null) return null;
     return BarangayItem(
       barangay: m['barangay'] as String? ?? '',
+    );
+  }
+}
+
+class FulfillmentTypeItem {
+  final int fulfillmentTypeId;
+  final String fulfillmentTypeCode;
+  final String fulfillmentTypeName;
+
+  FulfillmentTypeItem({
+    required this.fulfillmentTypeId,
+    required this.fulfillmentTypeCode,
+    required this.fulfillmentTypeName,
+  });
+
+  static FulfillmentTypeItem? fromJson(dynamic json) {
+    final m = asMap(json);
+    if (m == null) return null;
+    return FulfillmentTypeItem(
+      fulfillmentTypeId: (m['fulfillmentTypeId'] as int?) ?? 0,
+      fulfillmentTypeCode: m['fulfillmentTypeCode'] as String? ?? '',
+      fulfillmentTypeName: m['fulfillmentTypeName'] as String? ?? '',
+    );
+  }
+}
+
+class BranchItem {
+  final String areaCode;
+  final String areaName;
+
+  BranchItem({
+    required this.areaCode,
+    required this.areaName,
+  });
+
+  static BranchItem? fromJson(dynamic json) {
+    final m = asMap(json);
+    if (m == null) return null;
+    return BranchItem(
+      areaCode: m['areaCode'] as String? ?? '',
+      areaName: m['areaName'] as String? ?? '',
     );
   }
 }

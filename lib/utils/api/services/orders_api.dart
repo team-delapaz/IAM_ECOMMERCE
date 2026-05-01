@@ -27,4 +27,16 @@ class OrdersApi {
       fromJsonData: OrderDetailItem.fromJson,
     );
   }
+
+  /// Get order status history by reference number
+  Future<ApiResponse<List<OrderStatusHistoryItem?>>> getOrderHistory(String refNo) {
+    return _client.get<List<OrderStatusHistoryItem?>>(
+      ApiEndpoints.orderHistoryByRefNo(refNo),
+      fromJsonData: (dynamic v) {
+        if (v == null) return null;
+        final list = v is List ? v : [];
+        return list.map((e) => OrderStatusHistoryItem.fromJson(e)).toList();
+      },
+    );
+  }
 }

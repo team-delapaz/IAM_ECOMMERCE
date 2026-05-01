@@ -66,7 +66,8 @@ await ApiMiddleware.init();
 
 ## Checkout
 
-- `ApiMiddleware.checkout.checkout(fullName: ..., mobileNo: ..., emailAddress: ..., paymentProviderCode: ..., country: ..., province: ..., city: ..., barangay: ..., streetAddress: ..., postalCode: ..., completeAddress: ..., notes: 'optional note')` → `ApiResponse<dynamic>`
+- `ApiMiddleware.checkout.checkout(fullName: ..., mobileNo: ..., emailAddress: ..., paymentProviderCode: ..., country: ..., province: ..., city: ..., barangay: ..., streetAddress: ..., postalCode: ..., completeAddress: ..., notes: 'optional note')` → `ApiResponse<CheckoutData?>`
+- `ApiMiddleware.checkout.computeFees(paymentProviderCode: 'IAMWALLET', country: 'PHILIPPINES', province: 'METRO-MANILA', city: 'QUEZON-CITY')` → `ApiResponse<ComputeFeesData?>` (POST `/Checkout/ComputeFees`) — preview fees from the active cart; success `data` includes `cartRefno`, amounts, `totalBoxes`. On failure (e.g. no active cart), `success` is false, `data` is null, and `message` explains the error (e.g. `"Database error while computing fees: No active cart found."`).
 
 ## Location
 
@@ -74,6 +75,11 @@ await ApiMiddleware.init();
 - `ApiMiddleware.location.getProvinces(country)` → `ApiResponse<List<ProvinceItem?>>`
 - `ApiMiddleware.location.getCities(country, province)` → `ApiResponse<List<CityItem?>>`
 - `ApiMiddleware.location.getBarangays(country, province, city)` → `ApiResponse<List<BarangayItem?>>`
+
+## Fulfillment
+
+- `ApiMiddleware.fulfillment.getFulfillmentTypes()` → `ApiResponse<List<FulfillmentTypeItem?>>` (GET `/FulfillmentTypes`) — returns options like `DELIVERY`, `PICKUP`
+- `ApiMiddleware.fulfillment.getBranches()` → `ApiResponse<List<BranchItem?>>` (GET `/Branches`) — returns branch list (`areaCode`, `areaName`)
 
 ## Address
 
@@ -88,11 +94,12 @@ await ApiMiddleware.init();
 
 - `ApiMiddleware.orders.getOrders()` → `ApiResponse<List<OrderItem?>>`
 - `ApiMiddleware.orders.getOrderDetail(refNo)` → `ApiResponse<OrderDetailItem?>`
+- `ApiMiddleware.orders.getOrderHistory(refNo)` → `ApiResponse<List<OrderStatusHistoryItem?>>` (GET `/Orders/{orderRefNo}/History`) — status timeline (e.g. `Delivered`, `In Transit`, with `trackingNo`, `remarks`, `userName`, `tranDate`)
 
 ## Product Review
 
 - `ApiMiddleware.productReview.addReview(orderRefNo: ..., productCode: ..., rating: ..., reviewComment: ...)` → `ApiResponse<dynamic>` (POST `/ProductReview/Create`)
-- `ApiMiddleware.productReview.getReviews(productCode)` → `ApiResponse<List<ProductReviewItem?>>`
+- `ApiMiddleware.productReview.getReviews(productCode)` → `ApiResponse<List<ProductReviewItem?>>` (GET `/ProductReview/{productCode}`) — items now include `reviewId/autoId`, `idno`, `orderRefNo`, `rating`, `reviewComment`, `createdAt`, `reviewerName`
 
 ## Wishlist
 

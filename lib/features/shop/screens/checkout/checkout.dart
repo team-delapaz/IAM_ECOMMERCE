@@ -3,6 +3,8 @@ import 'package:get/get.dart';
 import 'package:iam_ecomm/common/widgets/appbar/appbar.dart';
 import 'package:iam_ecomm/common/widgets/container/rounded_container.dart';
 import 'package:iam_ecomm/common/widgets/images/iam_rounded_images.dart';
+import 'package:iam_ecomm/common/widgets/payments/checkout_webview_sheet.dart';
+import 'package:iam_ecomm/common/widgets/payments/iam_wallet_pay_sheet.dart';
 import 'package:iam_ecomm/common/widgets/products.cart/coupon_widget.dart';
 import 'package:iam_ecomm/common/widgets/success_screen/success_screen.dart';
 import 'package:iam_ecomm/features/authentication/controllers/auth_controller.dart';
@@ -39,6 +41,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   AddressItem? _selectedAddress;
   bool _hasSavedAddress = false;
   late final CheckoutController _checkoutController;
+  late final Worker _paymentProviderWorker;
+  num _shippingFee = 0;
+  num _processingFee = 0;
+  num _computedGrandTotal = 0;
+  bool _hasComputedFees = false;
+  bool _isComputingFees = false;
 
   Future<void> _showOpeningCheckoutSpinner() async {
     if (!mounted) return;
@@ -105,27 +113,17 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     Navigator.of(context, rootNavigator: true).pop();
   }
 
-  Future<void> _showCheckoutUrlSheet({
+  Future<bool> _showCheckoutUrlSheet({
     required String checkoutUrl,
     required String orderRef,
     required num totalAmount,
   }) async {
-    if (!mounted) return;
-
-    await showModalBottomSheet<void>(
+    if (!mounted) return false;
+    return showCheckoutWebViewSheet(
       context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      backgroundColor: Colors.transparent,
-      isDismissible: false,
-      enableDrag: false,
-      builder: (_) {
-        return _CheckoutWebViewSheet(
-          checkoutUrl: checkoutUrl,
-          orderRef: orderRef,
-          totalAmount: totalAmount,
-        );
-      },
+      checkoutUrl: checkoutUrl,
+      orderRef: orderRef,
+      totalAmount: totalAmount,
     );
   }
 
@@ -136,12 +134,69 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     _checkoutController = Get.isRegistered<CheckoutController>()
         ? CheckoutController.instance
         : Get.put(CheckoutController());
+    _paymentProviderWorker = ever<String>(
+      _checkoutController.selectedPaymentProviderCode,
+      (_) => _refreshComputedFees(),
+    );
+    _refreshComputedFees();
   }
 
   @override
   void dispose() {
+    _paymentProviderWorker.dispose();
     _notesController.dispose();
     super.dispose();
+  }
+
+  Future<void> _refreshComputedFees() async {
+    final model = await _cartFuture;
+    if (!mounted) return;
+
+    final providerCode = _checkoutController.selectedPaymentProviderCode.value
+        .trim();
+    final address = _selectedAddress;
+    final fallbackSubtotal = model.subtotal;
+
+    if (model.items.isEmpty || providerCode.isEmpty || address == null) {
+      setState(() {
+        _shippingFee = 0;
+        _processingFee = 0;
+        _computedGrandTotal = fallbackSubtotal;
+        _hasComputedFees = true;
+        _isComputingFees = false;
+      });
+      return;
+    }
+
+    setState(() => _isComputingFees = true);
+
+    final res = await ApiMiddleware.checkout.computeFees(
+      paymentProviderCode: providerCode,
+      country: address.country,
+      province: address.province,
+      city: address.city,
+    );
+    if (!mounted) return;
+
+    final data = res.data;
+    if (res.success && data != null) {
+      setState(() {
+        _shippingFee = data.shippingAmount;
+        _processingFee = data.processingFeeAmount;
+        _computedGrandTotal = data.totalAmount;
+        _hasComputedFees = true;
+        _isComputingFees = false;
+      });
+      return;
+    }
+
+    setState(() {
+      _shippingFee = 0;
+      _processingFee = 0;
+      _computedGrandTotal = fallbackSubtotal;
+      _hasComputedFees = true;
+      _isComputingFees = false;
+    });
   }
 
   Future<_CartViewModel> _loadCart() async {
@@ -242,21 +297,30 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     if (isLoggedIn) {
       final memberRes = await ApiMiddleware.member.getMember();
       if (!memberRes.success || memberRes.data == null) {
+        final msg = memberRes.message.trim();
+        final isMemberNotFound =
+            memberRes.status == 404 ||
+            msg.toLowerCase().contains('Member not found');
+
         // Fallback: use idNo from selected address if available
         memberIdno = selectedAddress.idNo;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              memberRes.message.isNotEmpty
-                  ? memberRes.message
-                  : 'Unable to load your profile. Proceeding with address info.',
-              style: const TextStyle(color: Colors.white),
+
+        // Expected for non-members checking out: do not show an error.
+        if (!isMemberNotFound) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                msg.isNotEmpty
+                    ? msg
+                    : 'Unable to load your profile. Proceeding with address info.',
+                style: const TextStyle(color: Colors.white),
+              ),
+              backgroundColor: Colors.red[300],
+              behavior: SnackBarBehavior.floating,
+              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             ),
-            backgroundColor: Colors.red[300],
-            behavior: SnackBarBehavior.floating,
-            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          ),
-        );
+          );
+        }
       } else {
         final member = memberRes.data!;
         emailAddress = member.emailAddress;
@@ -314,9 +378,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       return;
     }
 
-    final data = res.data as Map<String, dynamic>? ?? {};
-    final orderRef = data['orderRefno'] as String? ?? '';
-    final totalAmount = (data['totalAmount'] as num?) ?? model.subtotal;
+    final orderRef = res.data?.orderRefNo ?? '';
+    final totalAmount =
+        res.data?.totalAmount ??
+        (_hasComputedFees ? _computedGrandTotal : model.subtotal);
 
     // After a successful checkout, create a payment record using the selected
     // payment provider/method and the order reference from the checkout API.
@@ -325,7 +390,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         orderRef: orderRef,
         totalAmount: totalAmount,
       );
-      if (!paid) return;
+      if (!paid) {
+        _redirectToStoreWithUnpaidToast();
+        return;
+      }
       _showPaymentSuccess(orderRef: orderRef, totalAmount: totalAmount);
       return;
     }
@@ -360,11 +428,14 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     if (checkoutUrl.isNotEmpty) {
       await _showOpeningCheckoutSpinner();
       if (!mounted) return;
-      await _showCheckoutUrlSheet(
+      final paid = await _showCheckoutUrlSheet(
         checkoutUrl: checkoutUrl,
         orderRef: orderRef,
         totalAmount: totalAmount,
       );
+      if (!paid && mounted) {
+        _redirectToStoreWithUnpaidToast();
+      }
       return;
     }
 
@@ -389,15 +460,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     required String orderRef,
     required num totalAmount,
   }) async {
-    final result = await showModalBottomSheet<bool>(
+    return showIamWalletPaySheet(
       context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) =>
-          _IamWalletPaymentSheet(orderRef: orderRef, totalAmount: totalAmount),
+      orderRef: orderRef,
+      totalAmount: totalAmount,
     );
-    return result ?? false;
   }
 
   void _showPaymentSuccess({
@@ -414,6 +481,52 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         onPressed: () => Get.offAll(() => const NavigationMenu()),
       ),
     );
+  }
+
+  void _redirectToStoreWithUnpaidToast() {
+    if (!mounted) return;
+    final navController = Get.isRegistered<NavigationController>()
+        ? Get.find<NavigationController>()
+        : Get.put(NavigationController());
+    navController.selectedIndex.value = 1;
+    Get.offAll(() => const NavigationMenu());
+    void showOnReady([int attempts = 0]) {
+      final currentContext = Get.context;
+      if (currentContext == null) {
+        if (attempts < 10) {
+          Future.delayed(
+            const Duration(milliseconds: 120),
+            () => showOnReady(attempts + 1),
+          );
+        }
+        return;
+      }
+      final messenger = ScaffoldMessenger.maybeOf(currentContext);
+      if (messenger == null) {
+        if (attempts < 10) {
+          Future.delayed(
+            const Duration(milliseconds: 120),
+            () => showOnReady(attempts + 1),
+          );
+        }
+        return;
+      }
+      messenger.hideCurrentSnackBar();
+      messenger.showSnackBar(
+        SnackBar(
+          content: const Text(
+            'Order is currently unpaid, head to "My Orders" to continue payment.',
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.red.shade300,
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.all(12),
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) => showOnReady());
   }
 
   @override
@@ -532,7 +645,14 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     backgroundColor: dark ? IAMColors.black : IAMColors.white,
                     child: Column(
                       children: [
-                        IAMBillingAmountSection(subtotal: model.subtotal),
+                        IAMBillingAmountSection(
+                          subtotal: model.subtotal,
+                          shipping: _shippingFee,
+                          tax: _processingFee,
+                          totalOverride: _hasComputedFees
+                              ? _computedGrandTotal
+                              : model.subtotal,
+                        ),
                         const SizedBox(height: IAMSizes.spaceBtwItems),
                         const Divider(),
                         const SizedBox(height: IAMSizes.spaceBtwItems),
@@ -554,6 +674,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                 _hasSavedAddress = addr != null;
                               });
                             }
+                            _refreshComputedFees();
                           },
                         ),
                       ],
@@ -571,13 +692,20 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           final model = snapshot.data;
           final hasItems = model != null && model.items.isNotEmpty;
           final subtotal = model?.subtotal ?? 0;
-
+          final payableTotal = _hasComputedFees
+              ? _computedGrandTotal
+              : subtotal;
           return Obx(() {
             final paymentProviderSelected =
                 _checkoutController.selectedPaymentProviderCode.isNotEmpty;
-
-            final canCheckout = hasItems && paymentProviderSelected;
-
+            String? warningMessage;
+            if (!hasItems) {
+              warningMessage = 'Your cart is empty.';
+            } else if (_isComputingFees) {
+              warningMessage = 'Computing fees...';
+            } else if (!paymentProviderSelected) {
+              warningMessage = 'Please select a payment provider.';
+            }
             return SafeArea(
               top: false,
               minimum: const EdgeInsets.all(IAMSizes.defaultSpace),
@@ -586,11 +714,52 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   ElevatedButton(
-                    onPressed: canCheckout
-                        ? () {
-                            _placeOrder(model);
-                          }
-                        : null,
+                    onPressed:
+                        (!hasItems ||
+                            !paymentProviderSelected ||
+                            _isComputingFees)
+                        ? null
+                        : () {
+                            if (!hasItems) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: const Text(
+                                    'Your cart is empty.',
+                                    style: TextStyle(
+                                      color: Color.fromARGB(255, 35, 35, 35),
+                                    ),
+                                  ),
+                                  backgroundColor: Colors.red[300],
+                                  behavior: SnackBarBehavior.floating,
+                                  margin: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 8,
+                                  ),
+                                ),
+                              );
+                              return;
+                            }
+
+                            if (!paymentProviderSelected) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: const Text(
+                                    'Please select a payment method.',
+                                    style: TextStyle(
+                                      color: Color.fromARGB(255, 35, 35, 35),
+                                    ),
+                                  ),
+                                  backgroundColor: Colors.red[300],
+                                  behavior: SnackBarBehavior.floating,
+                                  margin: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 8,
+                                  ),
+                                ),
+                              );
+                              return;
+                            }
+                          }, // ✅ THIS WAS MISSING
 
                     style: ElevatedButton.styleFrom(
                       backgroundColor: IAMColors.primary,
@@ -608,10 +777,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     ),
 
                     child: Text(
-                      canCheckout
-                          ? 'Checkout ${IAMFormatter.formatCurrency(subtotal.toDouble())}'
-                          : 'Checkout',
-
+                      ((!hasItems ||
+                                  !paymentProviderSelected ||
+                                  _isComputingFees) &&
+                              warningMessage != null)
+                          ? warningMessage
+                          : 'Checkout ${IAMFormatter.formatCurrency(payableTotal.toDouble())}',
                       textAlign: TextAlign.center,
                     ),
                   ),

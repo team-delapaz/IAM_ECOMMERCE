@@ -420,118 +420,123 @@ class _CartScreenState extends State<CartScreen> {
         ),
       ),
 
-      bottomNavigationBar: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Cart summary + checkout row
-          Padding(
-            padding: const EdgeInsets.all(IAMSizes.defaultSpace),
-            child: FutureBuilder<_CartViewModel>(
-              future: _cartFuture,
-              builder: (context, snapshot) {
-                final model = snapshot.data;
-                final hasItems = model != null && model.items.isNotEmpty;
-                final subtotal = (model?.subtotal ?? 0).toDouble();
-                final shippingFee =
-                    50.0; // replace with your calculation if needed
+      bottomNavigationBar: SafeArea(
+        top: false,
+        minimum: const EdgeInsets.only(bottom: IAMSizes.sm),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Cart summary + checkout row
+            Padding(
+              padding: const EdgeInsets.all(IAMSizes.defaultSpace),
+              child: FutureBuilder<_CartViewModel>(
+                future: _cartFuture,
+                builder: (context, snapshot) {
+                  final model = snapshot.data;
+                  final hasItems = model != null && model.items.isNotEmpty;
+                  final subtotal = (model?.subtotal ?? 0).toDouble();
 
-                return Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: IAMSizes.defaultSpace,
-                    vertical: 12,
-                  ),
-                  decoration: BoxDecoration(
-                    color: dark ? IAMColors.dark : IAMColors.white,
-                    borderRadius: BorderRadius.circular(IAMSizes.cardRadiusLg),
-                    boxShadow: dark ? null : kElevationToShadow[1],
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      // Subtotal + Shipping
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Subtotal: ${IAMFormatter.formatCurrency(subtotal)}',
-                            style: Theme.of(context).textTheme.bodyLarge
-                                ?.copyWith(fontWeight: FontWeight.w500),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Shipping: ${IAMFormatter.formatCurrency(shippingFee)}',
-                            style: Theme.of(context).textTheme.bodySmall
-                                ?.copyWith(
-                                  color: dark
-                                      ? IAMColors.lightGrey
-                                      : Colors.grey,
-                                ),
-                          ),
-                        ],
-                      ),
+                  return Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: IAMSizes.defaultSpace,
+                      vertical: 12,
+                    ),
+                    decoration: BoxDecoration(
+                      color: dark ? IAMColors.dark : IAMColors.white,
+                      borderRadius: BorderRadius.circular(IAMSizes.cardRadiusLg),
+                      boxShadow: dark ? null : kElevationToShadow[1],
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        // Subtotal + Shipping
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Subtotal: ${IAMFormatter.formatCurrency(subtotal)}',
+                              style: Theme.of(context).textTheme.bodyLarge
+                                  ?.copyWith(fontWeight: FontWeight.w500),
+                            ),
 
-                      // Checkout button
-                      ElevatedButton(
-                        onPressed: !hasItems
-                            ? null
-                            : () async {
-                                final isLoggedIn =
-                                    Get.isRegistered<AuthController>() &&
-                                    AuthController.instance.isLoggedIn.value;
+                            /*const SizedBox(height: 4),
+                            Text(
+                              'Shipping: ${IAMFormatter.formatCurrency(shippingFee)}',
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(
+                                    color: dark
+                                        ? IAMColors.lightGrey
+                                        : Colors.grey,
+                                  ),
+                            ),*/
+                          ],
+                        ),
 
-                                if (!isLoggedIn) {
-                                  await showDialog<bool>(
-                                    context: context,
-                                    builder: (context) => AlertDialog(
-                                      title: const Text('Have an account?'),
-                                      content: const Text(
-                                        'Have an account? Login now.\nNew to IAM? Sign-up here.',
+                        // Checkout button
+                        ElevatedButton(
+                          onPressed: !hasItems
+                              ? null
+                              : () async {
+                                  final isLoggedIn =
+                                      Get.isRegistered<AuthController>() &&
+                                      AuthController.instance.isLoggedIn.value;
+
+                                  if (!isLoggedIn) {
+                                    await showDialog<bool>(
+                                      context: context,
+                                      builder: (context) => AlertDialog(
+                                        title: const Text('Have an account?'),
+                                        content: const Text(
+                                          'Have an account? Login now.\nNew to IAM? Sign-up here.',
+                                        ),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () {
+                                              Navigator.of(context).pop(true);
+                                              Get.to(() => const LoginScreen());
+                                            },
+                                            child: const Text('Login now'),
+                                          ),
+                                          TextButton(
+                                            onPressed: () {
+                                              Navigator.of(context).pop(true);
+                                              Get.to(
+                                                () => const SignupScreen(),
+                                              );
+                                            },
+                                            child: const Text('Signup here'),
+                                          ),
+                                        ],
                                       ),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () {
-                                            Navigator.of(context).pop(true);
-                                            Get.to(() => const LoginScreen());
-                                          },
-                                          child: const Text('Login now'),
-                                        ),
-                                        TextButton(
-                                          onPressed: () {
-                                            Navigator.of(context).pop(true);
-                                            Get.to(() => const SignupScreen());
-                                          },
-                                          child: const Text('Signup here'),
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                  return;
-                                }
+                                    );
+                                    return;
+                                  }
 
-                                await Get.to(() => const CheckoutScreen());
-                              },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: IAMColors.primary,
-                          foregroundColor: IAMColors.white,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 12,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(
-                              IAMSizes.cardRadiusLg,
+                                  await Get.to(() => const CheckoutScreen());
+                                },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: IAMColors.primary,
+                            foregroundColor: IAMColors.white,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 12,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                IAMSizes.cardRadiusLg,
+                              ),
                             ),
                           ),
+                          child: const Text('Checkout'),
                         ),
-                        child: const Text('Checkout'),
-                      ),
-                    ],
-                  ),
-                );
-              },
+                      ],
+                    ),
+                  );
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

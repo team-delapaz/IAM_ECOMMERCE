@@ -24,6 +24,7 @@ class ApiEndpoints {
   static const String paymentProviders = '/Payment/PaymentProviders';
 
   static const String checkout = '/Checkout';
+  static const String checkoutComputeFees = '/Checkout/ComputeFees';
 
   static const String paymentCreate = '/Payment/CreatePayment';
   static const String paymentCallback = '/Payment/Callback';
@@ -44,6 +45,7 @@ class ApiEndpoints {
   // Orders APIs
   static const String orders = '/Orders';
   static String orderByRefNo(String refNo) => '/Orders/$refNo';
+  static String orderHistoryByRefNo(String refNo) => '/Orders/$refNo/History';
 
   // Product Review APIs
   static const String productReviewCreate = '/ProductReview/Create';
@@ -59,4 +61,8 @@ class ApiEndpoints {
   static const String walletValidateOrder = '/Wallet/ValidateOrder';
   static const String walletPayOrder = '/Wallet/PayOrder';
   static String walletTransaction(String tranno) => '/Wallet/Transaction/$tranno';
+
+  // Fulfillment APIs
+  static const String fulfillmentTypes = '/FulfillmentTypes';
+  static const String branches = '/Branches';
 }

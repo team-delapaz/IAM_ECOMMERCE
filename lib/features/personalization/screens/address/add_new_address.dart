@@ -6,9 +6,16 @@ import 'package:iam_ecomm/utils/api/responses/response_prep.dart';
 import 'package:iconsax/iconsax.dart';
 
 class AddNewAddressScreen extends StatefulWidget {
-  const AddNewAddressScreen({super.key, this.initialAddress});
+  const AddNewAddressScreen({
+    super.key,
+    this.initialAddress,
+    this.prefilledRecipientName,
+    this.lockRecipientName = false,
+  });
 
   final AddressItem? initialAddress;
+  final String? prefilledRecipientName;
+  final bool lockRecipientName;
 
   @override
   State<AddNewAddressScreen> createState() => _AddNewAddressScreenState();
@@ -46,6 +53,11 @@ class _AddNewAddressScreenState extends State<AddNewAddressScreen> {
   }
 
   Future<void> _init() async {
+    if (widget.initialAddress == null &&
+        (widget.prefilledRecipientName ?? '').trim().isNotEmpty) {
+      _nameController.text = widget.prefilledRecipientName!.trim();
+    }
+
     await _loadCountries();
 
     final initial = widget.initialAddress;
@@ -390,6 +402,8 @@ class _AddNewAddressScreenState extends State<AddNewAddressScreen> {
                 /// Name
                 TextFormField(
                   controller: _nameController,
+                  enabled: !(widget.initialAddress == null &&
+                      widget.lockRecipientName),
                   decoration: const InputDecoration(
                     prefixIcon: Icon(Iconsax.user),
                     labelText: 'Name',

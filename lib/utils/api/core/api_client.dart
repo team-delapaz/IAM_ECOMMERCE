@@ -93,12 +93,33 @@ class ApiClient {
     if (data is Map<String, dynamic>) {
       return ApiResponse.fromJson(data, fromJsonData);
     }
+
     return ApiResponse<T>(
       status: e.response?.statusCode ?? 0,
       success: false,
-      message: e.response?.data?['message'] as String? ?? e.message ?? 'Request failed',
+      message: _friendlyErrorMessage(e),
       data: null,
     );
+  }
+
+  String _friendlyErrorMessage(DioException e) {
+    switch (e.type) {
+      case DioExceptionType.connectionTimeout:
+      case DioExceptionType.sendTimeout:
+      case DioExceptionType.receiveTimeout:
+        return 'Oops, the page was unresponsive. Please try again.';
+      case DioExceptionType.connectionError:
+        return 'Unable to connect right now. Please check your internet and try again.';
+      case DioExceptionType.cancel:
+        return 'Request was cancelled. Please try again.';
+      case DioExceptionType.badCertificate:
+        return 'A secure connection could not be established. Please try again later.';
+      case DioExceptionType.unknown:
+      case DioExceptionType.badResponse:
+        return e.response?.data?['message'] as String? ??
+            e.message ??
+            'Something went wrong. Please try again.';
+    }
   }
 
   ApiResponse<T> _parseResponse<T>(
