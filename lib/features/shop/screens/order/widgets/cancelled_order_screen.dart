@@ -2,13 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:iam_ecomm/common/widgets/container/rounded_container.dart';
 import 'package:iam_ecomm/utils/api/api.dart';
 import 'package:iam_ecomm/utils/api/responses/response_prep.dart';
+import 'package:iam_ecomm/features/shop/screens/order/order_status_ids.dart';
 import 'package:iam_ecomm/utils/constants/colors.dart';
 import 'package:iam_ecomm/utils/constants/sizes.dart';
+import 'package:iam_ecomm/utils/helpers/helper_functions.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:intl/intl.dart';
-
-/// API: cancelled orders use `orderStatusId` **6**.
-const int _kCancelledOrderStatusId = 6;
 
 class CancelledTab extends StatelessWidget {
   const CancelledTab({super.key});
@@ -51,16 +50,21 @@ class CancelledTab extends StatelessWidget {
           return const Center(child: Text('No orders found'));
         }
 
+        const terminalIds = {
+          OrderStatusIds.cancelled,
+          OrderStatusIds.failedDelivery,
+          OrderStatusIds.returned,
+          OrderStatusIds.lostAndDamaged,
+        };
         final orders = (snapshot.data!.data ?? [])
             .where(
               (order) =>
-                  order != null &&
-                  order.orderStatusId == _kCancelledOrderStatusId,
+                  order != null && terminalIds.contains(order.orderStatusId),
             )
             .toList();
 
         if (orders.isEmpty) {
-          return const Center(child: Text('No cancelled orders'));
+          return const Center(child: Text('No orders in this category'));
         }
 
         return FutureBuilder(
@@ -102,11 +106,12 @@ class CancelledTab extends StatelessWidget {
     OrderItem order,
     OrderDetailItem orderDetail,
   ) {
+    final dark = IAMHelperFunctions.isDarkMode(context);
     final items = orderDetail.items;
 
     return IAMRoundedContainer(
       padding: const EdgeInsets.all(IAMSizes.md),
-      backgroundColor: IAMColors.light,
+      backgroundColor: dark ? IAMColors.dark : IAMColors.light,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -152,8 +157,8 @@ class CancelledTab extends StatelessWidget {
             children: [
               Container(
                 padding: const EdgeInsets.all(6),
-                decoration: const BoxDecoration(
-                  color: IAMColors.lightGrey,
+                decoration: BoxDecoration(
+                  color: dark ? IAMColors.darkerGrey : IAMColors.lightGrey,
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
@@ -175,14 +180,17 @@ class CancelledTab extends StatelessWidget {
           Column(
             children: items.whereType<OrderProductItem>().map((line) {
               return _itemRow(
-                line.productName.isEmpty ? 'Unnamed Product' : line.productName,
-                NumberFormat.currency(
+                dark: dark,
+                title: line.productName.isEmpty
+                    ? 'Unnamed Product'
+                    : line.productName,
+                price: NumberFormat.currency(
                   locale: 'en_PH',
                   symbol: '₱',
                   decimalDigits: 2,
                 ).format(line.sellingPrice),
-                'x${line.qty}',
-                line.imageUrl.isEmpty ? null : line.imageUrl,
+                qty: 'x${line.qty}',
+                imageUrl: line.imageUrl.isEmpty ? null : line.imageUrl,
               );
             }).toList(),
           ),
@@ -207,7 +215,13 @@ class CancelledTab extends StatelessWidget {
   }
 }
 
-Widget _itemRow(String title, String price, String qty, String? imageUrl) {
+Widget _itemRow({
+  required bool dark,
+  required String title,
+  required String price,
+  required String qty,
+  required String? imageUrl,
+}) {
   return Padding(
     padding: const EdgeInsets.symmetric(vertical: 4),
     child: Row(
@@ -216,7 +230,7 @@ Widget _itemRow(String title, String price, String qty, String? imageUrl) {
           width: 50,
           height: 50,
           decoration: BoxDecoration(
-            color: Colors.grey[200],
+            color: dark ? IAMColors.darkerGrey : Colors.grey[200],
             borderRadius: BorderRadius.circular(IAMSizes.sm),
             image: (imageUrl != null && imageUrl.isNotEmpty)
                 ? DecorationImage(

@@ -7,6 +7,7 @@ import 'package:iam_ecomm/features/authentication/screens/signup/signup.dart';
 import 'package:iam_ecomm/features/personalization/screens/address/add_new_address.dart';
 import 'package:iam_ecomm/features/personalization/screens/address/address.dart';
 import 'package:iam_ecomm/features/shop/screens/checkout/checkout.dart';
+import 'package:iam_ecomm/navigation_menu.dart';
 import 'package:iam_ecomm/utils/api/api.dart';
 import 'package:iam_ecomm/utils/api/core/api_response.dart';
 import 'package:iam_ecomm/utils/api/responses/response_prep.dart';
@@ -136,6 +137,168 @@ class _CartScreenState extends State<CartScreen> {
 
   Future<void> _removeItem(_CartItemView item) => _updateQuantity(item, 0);
 
+  /// Visual guide: gold cart outline on light cream circle, headline, CTA to Store.
+  Widget _buildEmptyCartContent(BuildContext context) {
+    final dark = IAMHelperFunctions.isDarkMode(context);
+    final creamCircle = dark
+        ? IAMColors.primary.withValues(alpha: 0.12)
+        : const Color(0xFFFFF9E5);
+
+    void startShopping() {
+      if (Get.isRegistered<NavigationController>()) {
+        Get.find<NavigationController>().navigateToStore(0);
+      }
+      if (Navigator.of(context).canPop()) {
+        Get.back();
+      }
+    }
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: IAMSizes.sm),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(
+                  width: 288,
+                  height: 264,
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    alignment: Alignment.center,
+                    children: [
+                      Positioned(
+                        bottom: 8,
+                        child: Container(
+                          width: 180,
+                          height: 32,
+                        ),
+                      ),
+                      // Ornaments spaced for 200×200 circle (scaled from earlier 140px layout).
+                      _emptyCartSparkle(
+                        right: 18,
+                        top: 26,
+                      ),
+                      _emptyCartSparkle(
+                        left: 2,
+                        top: 76,
+                        small: true,
+                      ),
+                      _emptyCartSparkle(
+                        right: 4,
+                        bottom: 86,
+                        dot: true,
+                      ),
+                      _emptyCartSparkle(
+                        left: 26,
+                        bottom: 94,
+                        dot: true,
+                      ),
+                      Container(
+                        width: 200,
+                        height: 200,
+                        decoration: BoxDecoration(
+                          color: creamCircle,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.shopping_cart_outlined,
+                          size: 100,
+                          color: IAMColors.primary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: IAMSizes.spaceBtwSections),
+                Text(
+                  'Your cart is empty',
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: dark ? IAMColors.white : IAMColors.black,
+                      ),
+                ),
+                const SizedBox(height: IAMSizes.md),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: IAMSizes.md),
+                  child: Text(
+                    'Looks like you haven\'t added anything yet. Start shopping and find something you\'ll love.',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: dark
+                              ? IAMColors.darkGrey
+                              : IAMColors.textSecondary,
+                          height: 1.45,
+                        ),
+                  ),
+                ),
+                const SizedBox(height: IAMSizes.spaceBtwSections),
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: IAMSizes.defaultSpace,
+                  ),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: startShopping,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: IAMColors.primary,
+                        foregroundColor: IAMColors.white,
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 16,
+                          horizontal: 24,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(
+                            IAMSizes.cardRadiusLg,
+                          ),
+                        ),
+                      ),
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text('Start Shopping'),
+                          SizedBox(width: 8),
+                          Icon(Icons.arrow_forward, size: 20),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _emptyCartSparkle({
+    double? left,
+    double? right,
+    double? top,
+    double? bottom,
+    bool small = false,
+    bool dot = false,
+  }) {
+    final size = small ? 12.0 : 16.0;
+    return Positioned(
+      left: left,
+      right: right,
+      top: top,
+      bottom: bottom,
+      child: Icon(
+        dot ? Icons.circle : Icons.add,
+        size: dot ? 6 : size,
+        color: IAMColors.primary.withValues(alpha: dot ? 0.45 : 0.55),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final dark = IAMHelperFunctions.isDarkMode(context);
@@ -201,7 +364,7 @@ class _CartScreenState extends State<CartScreen> {
               return Center(child: Text(model.error!));
             }
             if (model.items.isEmpty) {
-              return const Center(child: Text('Your cart is empty.'));
+              return _buildEmptyCartContent(context);
             }
             return ListView.separated(
               itemCount: model.items.length,
@@ -422,23 +585,25 @@ class _CartScreenState extends State<CartScreen> {
         ),
       ),
 
-      bottomNavigationBar: SafeArea(
-        top: false,
-        minimum: const EdgeInsets.only(bottom: IAMSizes.sm),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Cart summary + checkout row
-            Padding(
-              padding: const EdgeInsets.all(IAMSizes.defaultSpace),
-              child: FutureBuilder<_CartViewModel>(
-                future: _cartFuture,
-                builder: (context, snapshot) {
-                  final model = snapshot.data;
-                  final hasItems = model != null && model.items.isNotEmpty;
-                  final subtotal = (model?.subtotal ?? 0).toDouble();
+      bottomNavigationBar: FutureBuilder<_CartViewModel>(
+        future: _cartFuture,
+        builder: (context, snapshot) {
+          final model = snapshot.data;
+          final showCheckout = model != null && model.items.isNotEmpty;
+          if (!showCheckout) {
+            return const SizedBox.shrink();
+          }
+          final subtotal = model.subtotal.toDouble();
 
-                  return Container(
+          return SafeArea(
+            top: false,
+            minimum: const EdgeInsets.only(bottom: IAMSizes.sm),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(IAMSizes.defaultSpace),
+                  child: Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: IAMSizes.defaultSpace,
                       vertical: 12,
@@ -451,7 +616,6 @@ class _CartScreenState extends State<CartScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        // Subtotal + Shipping
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -473,98 +637,91 @@ class _CartScreenState extends State<CartScreen> {
                             ),*/
                           ],
                         ),
-
-                        // Checkout button
                         ElevatedButton(
-                          onPressed: !hasItems
-                              ? null
-                              : () async {
-                                  final isLoggedIn =
-                                      Get.isRegistered<AuthController>() &&
-                                      AuthController.instance.isLoggedIn.value;
+                          onPressed: () async {
+                            final isLoggedIn =
+                                Get.isRegistered<AuthController>() &&
+                                AuthController.instance.isLoggedIn.value;
 
-                                  if (!isLoggedIn) {
-                                    await showDialog<bool>(
-                                      context: context,
-                                      builder: (context) => AlertDialog(
-                                        title: const Text('Have an account?'),
-                                        content: const Text(
-                                          'Have an account? Login now.\nNew to IAM? Sign-up here.',
-                                        ),
-                                        actions: [
-                                          TextButton(
-                                            onPressed: () {
-                                              Navigator.of(context).pop(true);
-                                              Get.to(() => const LoginScreen());
-                                            },
-                                            child: const Text('Login now'),
-                                          ),
-                                          TextButton(
-                                            onPressed: () {
-                                              Navigator.of(context).pop(true);
-                                              Get.to(
-                                                () => const SignupScreen(),
-                                              );
-                                            },
-                                            child: const Text('Signup here'),
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                    return;
-                                  }
+                            if (!isLoggedIn) {
+                              await showDialog<bool>(
+                                context: context,
+                                builder: (context) => AlertDialog(
+                                  title: const Text('Have an account?'),
+                                  content: const Text(
+                                    'Have an account? Login now.\nNew to IAM? Sign-up here.',
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.of(context).pop(true);
+                                        Get.to(() => const LoginScreen());
+                                      },
+                                      child: const Text('Login now'),
+                                    ),
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.of(context).pop(true);
+                                        Get.to(
+                                          () => const SignupScreen(),
+                                        );
+                                      },
+                                      child: const Text('Signup here'),
+                                    ),
+                                  ],
+                                ),
+                              );
+                              return;
+                            }
 
-                                  final addressRes =
-                                      await ApiMiddleware.address.getAddresses();
-                                  if (!addressRes.success) {
-                                    if (!context.mounted) return;
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(
-                                          addressRes.message.isNotEmpty
-                                              ? addressRes.message
-                                              : 'Unable to check delivery address.',
-                                        ),
-                                      ),
-                                    );
-                                    return;
-                                  }
+                            final addressRes =
+                                await ApiMiddleware.address.getAddresses();
+                            if (!addressRes.success) {
+                              if (!context.mounted) return;
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    addressRes.message.isNotEmpty
+                                        ? addressRes.message
+                                        : 'Unable to check delivery address.',
+                                  ),
+                                ),
+                              );
+                              return;
+                            }
 
-                                  final addresses = addressRes.data
-                                          ?.whereType<AddressItem>()
-                                          .toList() ??
-                                      const <AddressItem>[];
+                            final addresses =
+                                addressRes.data?.whereType<AddressItem>().toList() ??
+                                    const <AddressItem>[];
 
-                                  if (addresses.isEmpty) {
-                                    // New users may not have an address yet; require it before checkout.
-                                    final fullName = (AuthController
-                                                .instance.user.value?.fullName ??
-                                            '')
-                                        .trim();
-                                    await Get.to(
-                                      () => AddNewAddressScreen(
-                                        prefilledRecipientName: fullName,
-                                        lockRecipientName: fullName.isNotEmpty,
-                                        lockDefaultForNewAddress: true,
-                                      ),
-                                    );
+                            if (addresses.isEmpty) {
+                              final fullName = (AuthController
+                                          .instance.user.value?.fullName ??
+                                      '')
+                                  .trim();
+                              await Get.to(
+                                () => AddNewAddressScreen(
+                                  prefilledRecipientName: fullName,
+                                  lockRecipientName: fullName.isNotEmpty,
+                                  lockDefaultForNewAddress: true,
+                                ),
+                              );
 
-                                    final retry =
-                                        await ApiMiddleware.address.getAddresses();
-                                    final retryAddresses = retry.data
-                                            ?.whereType<AddressItem>()
-                                            .toList() ??
-                                        const <AddressItem>[];
+                              final retry =
+                                  await ApiMiddleware.address.getAddresses();
+                              final retryAddresses = retry.data
+                                      ?.whereType<AddressItem>()
+                                      .toList() ??
+                                  const <AddressItem>[];
 
-                                    if (retryAddresses.isEmpty) {
-                                      // User backed out or still no address; keep them in cart.
-                                      await Get.to(() => const UserAddressScreen());
-                                      return;
-                                    }
-                                  }
+                              if (retryAddresses.isEmpty) {
+                                await Get.to(() => const UserAddressScreen());
+                                return;
+                              }
+                            }
 
-                                  await Get.to(() => const CheckoutScreen());
-                                },
+                            await Get.to(() => const CheckoutScreen());
+                          },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: IAMColors.primary,
                             foregroundColor: IAMColors.white,
@@ -582,12 +739,12 @@ class _CartScreenState extends State<CartScreen> {
                         ),
                       ],
                     ),
-                  );
-                },
-              ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }

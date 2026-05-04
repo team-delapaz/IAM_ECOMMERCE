@@ -11,19 +11,51 @@ import 'package:iam_ecomm/utils/helpers/helper_functions.dart';
 import 'package:iam_ecomm/utils/api/api.dart';
 import 'package:iam_ecomm/utils/api/core/api_response.dart';
 import 'package:iam_ecomm/features/shop/screens/order/order_detail_screen.dart';
+import 'package:iam_ecomm/features/shop/screens/order/order_status_ids.dart';
 import 'package:iam_ecomm/utils/api/responses/response_prep.dart';
 import 'package:iam_ecomm/navigation_menu.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:intl/intl.dart';
 
-class ProcessingTab extends StatefulWidget {
-  const ProcessingTab({super.key});
+/// Orders shown while moving toward delivery (positive pipeline). Filter by [`OrderStatusIds`].
+class PipelineStageTab extends StatefulWidget {
+  const PipelineStageTab({
+    super.key,
+    required this.stageIds,
+    required this.emptyMessage,
+  });
+
+  final Set<int> stageIds;
+  final String emptyMessage;
 
   @override
-  State<ProcessingTab> createState() => _ProcessingTabState();
+  State<PipelineStageTab> createState() => _PipelineStageTabState();
 }
 
-class _ProcessingTabState extends State<ProcessingTab> {
+bool _orderMatchesPipelineStage(OrderItem order, Set<int> stageIds) {
+  if (stageIds.contains(order.orderStatusId)) return true;
+  final n = order.orderStatusName.toLowerCase().trim();
+  if (stageIds.contains(OrderStatusIds.pending) &&
+      (n == 'pending' || n.startsWith('pending'))) {
+    return true;
+  }
+  if (stageIds.contains(OrderStatusIds.verified) && n.contains('verified')) {
+    return true;
+  }
+  if (stageIds.contains(OrderStatusIds.readyToShip) &&
+      (n.contains('ready') && (n.contains('ship') || n.contains('pickup')))) {
+    return true;
+  }
+  if (stageIds.contains(OrderStatusIds.inTransit) &&
+      (n.contains('transit') ||
+          (n.contains('shipped') && !n.contains('ready')) ||
+          n.contains('on the way'))) {
+    return true;
+  }
+  return false;
+}
+
+class _PipelineStageTabState extends State<PipelineStageTab> {
   Future<ApiResponse<List<OrderItem?>>>? _ordersFuture;
 
   @override
@@ -57,15 +89,14 @@ class _ProcessingTabState extends State<ProcessingTab> {
         }
 
         final List<OrderItem?> orders = (snapshot.data!.data ?? [])
-            .where(
-              (order) =>
-                  order != null &&
-                  order.orderStatusName.toLowerCase() == 'pending',
-            )
+            .where((order) {
+              final o = order;
+              return o != null && _orderMatchesPipelineStage(o, widget.stageIds);
+            })
             .toList();
 
         if (orders.isEmpty) {
-          return const Center(child: Text('No orders found'));
+          return Center(child: Text(widget.emptyMessage));
         }
 
         return ListView.separated(

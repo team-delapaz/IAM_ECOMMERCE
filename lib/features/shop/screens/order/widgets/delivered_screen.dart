@@ -8,6 +8,7 @@ import 'package:iam_ecomm/common/widgets/container/rounded_container.dart';
 import 'package:intl/intl.dart';
 import 'package:iam_ecomm/utils/api/api.dart';
 import 'package:iam_ecomm/utils/api/responses/response_prep.dart';
+import 'package:iam_ecomm/features/shop/screens/order/order_status_ids.dart';
 
 class DeliveredTab extends StatelessWidget {
   const DeliveredTab({super.key});
@@ -54,7 +55,8 @@ class DeliveredTab extends StatelessWidget {
             .where(
               (order) =>
                   order != null &&
-                  order.orderStatusName.toLowerCase() == 'delivered',
+                  (order.orderStatusId == OrderStatusIds.delivered ||
+                      order.orderStatusName.toLowerCase() == 'delivered'),
             )
             .toList();
 
@@ -111,11 +113,12 @@ class DeliveredTab extends StatelessWidget {
     DateTime orderDate,
     OrderDetailItem orderDetail,
   ) {
+    final dark = IAMHelperFunctions.isDarkMode(context);
     final items = orderDetail.items ?? [];
 
     return IAMRoundedContainer(
       padding: const EdgeInsets.all(IAMSizes.md),
-      backgroundColor: IAMColors.light,
+      backgroundColor: dark ? IAMColors.dark : IAMColors.light,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -161,8 +164,8 @@ class DeliveredTab extends StatelessWidget {
             children: [
               Container(
                 padding: const EdgeInsets.all(6),
-                decoration: const BoxDecoration(
-                  color: IAMColors.lightGrey,
+                decoration: BoxDecoration(
+                  color: dark ? IAMColors.darkerGrey : IAMColors.lightGrey,
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
@@ -195,6 +198,7 @@ class DeliveredTab extends StatelessWidget {
                 ).format(nonNullItem.sellingPrice ?? 0),
                 'x${nonNullItem.qty ?? 1}',
                 nonNullItem.imageUrl,
+                dark: dark,
               );
             }).toList(),
           ),
@@ -309,7 +313,13 @@ class DeliveredTab extends StatelessWidget {
   }
 }
 
-Widget _itemRow(String title, String price, String qty, String? imageUrl) {
+Widget _itemRow(
+  String title,
+  String price,
+  String qty,
+  String? imageUrl, {
+  required bool dark,
+}) {
   return Padding(
     padding: const EdgeInsets.symmetric(vertical: 4),
     child: Row(
@@ -318,7 +328,7 @@ Widget _itemRow(String title, String price, String qty, String? imageUrl) {
           width: 50,
           height: 50,
           decoration: BoxDecoration(
-            color: Colors.grey[200],
+            color: dark ? IAMColors.darkerGrey : Colors.grey[200],
             borderRadius: BorderRadius.circular(IAMSizes.sm),
             image: (imageUrl != null && imageUrl.isNotEmpty)
                 ? DecorationImage(

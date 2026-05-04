@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:iam_ecomm/common/texts/section_heading.dart';
 import 'package:iam_ecomm/common/widgets/container/rounded_container.dart';
 import 'package:iam_ecomm/features/shop/controllers/products/checkout_controller.dart';
 import 'package:iam_ecomm/utils/api/api.dart';
@@ -166,7 +165,7 @@ class _IAMBillingPaymentProviderSectionState
             IAMRoundedContainer(
               width: 60,
               height: 35,
-              backgroundColor: dark ? IAMColors.light : IAMColors.white,
+              backgroundColor: dark ? IAMColors.darkContainer : IAMColors.white,
               padding: const EdgeInsets.all(IAMSizes.sm),
               child: Center(
                 child: hasSelection && iconPath != null
