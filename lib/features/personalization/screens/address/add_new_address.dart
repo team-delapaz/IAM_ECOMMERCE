@@ -11,11 +11,13 @@ class AddNewAddressScreen extends StatefulWidget {
     this.initialAddress,
     this.prefilledRecipientName,
     this.lockRecipientName = false,
+    this.lockDefaultForNewAddress = false,
   });
 
   final AddressItem? initialAddress;
   final String? prefilledRecipientName;
   final bool lockRecipientName;
+  final bool lockDefaultForNewAddress;
 
   @override
   State<AddNewAddressScreen> createState() => _AddNewAddressScreenState();
@@ -53,6 +55,10 @@ class _AddNewAddressScreenState extends State<AddNewAddressScreen> {
   }
 
   Future<void> _init() async {
+    if (widget.initialAddress == null && widget.lockDefaultForNewAddress) {
+      _setAsDefault = true;
+    }
+
     if (widget.initialAddress == null &&
         (widget.prefilledRecipientName ?? '').trim().isNotEmpty) {
       _nameController.text = widget.prefilledRecipientName!.trim();
@@ -387,6 +393,8 @@ class _AddNewAddressScreenState extends State<AddNewAddressScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final lockDefaultSwitch =
+        widget.initialAddress == null && widget.lockDefaultForNewAddress;
     return Scaffold(
       appBar: const IAMAppBar(
         showBackArrow: true,
@@ -589,7 +597,9 @@ class _AddNewAddressScreenState extends State<AddNewAddressScreen> {
                   contentPadding: EdgeInsets.zero,
                   title: const Text('Set as default address'),
                   value: _setAsDefault,
-                  onChanged: (v) => setState(() => _setAsDefault = v),
+                  onChanged: lockDefaultSwitch
+                      ? null
+                      : (v) => setState(() => _setAsDefault = v),
                 ),
 
                 SizedBox(

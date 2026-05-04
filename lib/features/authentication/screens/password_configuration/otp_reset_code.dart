@@ -21,6 +21,12 @@ class _OtpResetCodeScreenState extends State<OtpResetCodeScreen> {
   bool _isResending = false;
   String? _pinError;
 
+  double _clampDouble(double v, double min, double max) {
+    if (v < min) return min;
+    if (v > max) return max;
+    return v;
+  }
+
   @override
   void dispose() {
     for (final c in _pinControllers) {
@@ -122,65 +128,81 @@ class _OtpResetCodeScreenState extends State<OtpResetCodeScreen> {
               style: Theme.of(context).textTheme.labelMedium,
             ),
             const SizedBox(height: IAMSizes.spaceBtwSections * 2),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(6, (i) {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 6),
-                  child: SizedBox(
-                    width: 46,
-                    child: TextField(
-                      controller: _pinControllers[i],
-                      focusNode: _pinFocusNodes[i],
-                      enabled: !_isValidating,
-                      keyboardType: TextInputType.number,
-                      textAlign: TextAlign.center,
-                      maxLength: 1,
-                      inputFormatters: [
-                        FilteringTextInputFormatter.digitsOnly,
-                        LengthLimitingTextInputFormatter(1),
-                      ],
-                      decoration: InputDecoration(
-                        counterText: '',
-                        errorText: null,
-                        border: const OutlineInputBorder(),
-                        focusedBorder: OutlineInputBorder(
-                          borderSide: BorderSide(
-                            color: _pinError == null
-                                ? Theme.of(context).colorScheme.primary
-                                : Theme.of(context).colorScheme.error,
-                            width: 1.5,
+            LayoutBuilder(
+              builder: (context, constraints) {
+                const digits = 6;
+                const gap = 12.0; // space between boxes (matches previous 6+6 padding)
+                const maxBoxWidth = 46.0;
+                const minBoxWidth = 32.0;
+                final available = constraints.maxWidth;
+                final boxWidth =
+                    _clampDouble((available - (gap * (digits - 1))) / digits,
+                        minBoxWidth, maxBoxWidth);
+
+                return Center(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: List.generate(digits, (i) {
+                      return Padding(
+                        padding: EdgeInsets.only(right: i == digits - 1 ? 0 : gap),
+                        child: SizedBox(
+                          width: boxWidth,
+                          child: TextField(
+                            controller: _pinControllers[i],
+                            focusNode: _pinFocusNodes[i],
+                            enabled: !_isValidating,
+                            keyboardType: TextInputType.number,
+                            textAlign: TextAlign.center,
+                            maxLength: 1,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                              LengthLimitingTextInputFormatter(1),
+                            ],
+                            decoration: InputDecoration(
+                              counterText: '',
+                              errorText: null,
+                              border: const OutlineInputBorder(),
+                              focusedBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                  color: _pinError == null
+                                      ? Theme.of(context).colorScheme.primary
+                                      : Theme.of(context).colorScheme.error,
+                                  width: 1.5,
+                                ),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                  color: _pinError == null
+                                      ? Theme.of(context).dividerColor
+                                      : Theme.of(context).colorScheme.error,
+                                  width: 1.2,
+                                ),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            onChanged: (v) {
+                              _clearPinError();
+                              if (v.isNotEmpty) {
+                                if (i < 5) {
+                                  _focusIndex(i + 1);
+                                } else {
+                                  FocusScope.of(context).unfocus();
+                                  _validateCode();
+                                }
+                              } else {
+                                if (i > 0) _focusIndex(i - 1);
+                              }
+                            },
+                            onSubmitted: (_) =>
+                                _isValidating ? null : _validateCode(),
                           ),
-                          borderRadius: BorderRadius.circular(12),
                         ),
-                        enabledBorder: OutlineInputBorder(
-                          borderSide: BorderSide(
-                            color: _pinError == null
-                                ? Theme.of(context).dividerColor
-                                : Theme.of(context).colorScheme.error,
-                            width: 1.2,
-                          ),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      onChanged: (v) {
-                        _clearPinError();
-                        if (v.isNotEmpty) {
-                          if (i < 5) {
-                            _focusIndex(i + 1);
-                          } else {
-                            FocusScope.of(context).unfocus();
-                            _validateCode();
-                          }
-                        } else {
-                          if (i > 0) _focusIndex(i - 1);
-                        }
-                      },
-                      onSubmitted: (_) => _isValidating ? null : _validateCode(),
-                    ),
+                      );
+                    }),
                   ),
                 );
-              }),
+              },
             ),
             if (_pinError != null) ...[
               const SizedBox(height: 8),

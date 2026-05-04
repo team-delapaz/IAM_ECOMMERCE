@@ -89,7 +89,7 @@ class _ForgetPasswordState extends State<ForgetPassword> {
                 keyboardType: TextInputType.emailAddress,
                 textInputAction: TextInputAction.done,
                 decoration: const InputDecoration(
-                  labelText: IAMTexts.email,
+                  labelText: IAMTexts.emailAddress,
                   prefixIcon: Icon(Iconsax.direct_right),
                 ),
                 validator: (value) {

@@ -14,6 +14,15 @@ String? asNonEmptyString(dynamic v) {
   return trimmed == null || trimmed.isEmpty ? null : trimmed;
 }
 
+String readStringValue(Map<String, dynamic> m, List<String> keys) {
+  for (final key in keys) {
+    final raw = m[key];
+    final text = raw?.toString().trim();
+    if (text != null && text.isNotEmpty) return text;
+  }
+  return '';
+}
+
 class LoginData {
   final TokenInfo? token;
   final UserInfo? user;
@@ -442,6 +451,7 @@ class OrderStatusHistoryItem {
 class UserInfo {
   final String idno;
   final String codedIdno;
+  final String username;
   final String firstName;
   final String lastName;
   final String fullName;
@@ -456,6 +466,7 @@ class UserInfo {
   UserInfo({
     required this.idno,
     required this.codedIdno,
+    required this.username,
     required this.firstName,
     required this.lastName,
     required this.fullName,
@@ -474,6 +485,7 @@ class UserInfo {
     return UserInfo(
       idno: m['idno'] as String? ?? '',
       codedIdno: m['codedIdno'] as String? ?? '',
+      username: readStringValue(m, ['username', 'userName', 'user_name']),
       firstName: m['firstName'] as String? ?? '',
       lastName: m['lastName'] as String? ?? '',
       fullName: m['fullName'] as String? ?? '',
@@ -624,6 +636,7 @@ class CartItem {
 
 class MemberPayload {
   final String idno;
+  final String username;
   final String firstName;
   final String lastName;
   final String middleName;
@@ -637,6 +650,7 @@ class MemberPayload {
 
   MemberPayload({
     required this.idno,
+    required this.username,
     required this.firstName,
     required this.lastName,
     required this.middleName,
@@ -654,6 +668,7 @@ class MemberPayload {
     if (m == null) return null;
     return MemberPayload(
       idno: m['idno'] as String? ?? '',
+      username: readStringValue(m, ['username', 'userName', 'user_name']),
       firstName: m['firstName'] as String? ?? '',
       lastName: m['lastName'] as String? ?? '',
       middleName: m['middleName'] as String? ?? '',

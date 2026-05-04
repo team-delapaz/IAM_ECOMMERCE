@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iam_ecomm/features/authentication/screens/signup/verify_email.dart';
 import 'package:iam_ecomm/features/authentication/screens/signup/widgets/termsandconditions.dart';
-import 'package:iam_ecomm/features/personalization/screens/address/add_new_address.dart';
 import 'package:iam_ecomm/utils/api/api.dart';
 import 'package:iam_ecomm/utils/constants/sizes.dart';
 import 'package:iam_ecomm/utils/constants/text_strings.dart';
@@ -19,6 +18,7 @@ class _IAMSignupFormState extends State<IAMSignupForm> {
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
   bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
 
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
@@ -27,6 +27,7 @@ class _IAMSignupFormState extends State<IAMSignupForm> {
   final _phoneController = TextEditingController();
   final _referralIdController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
 
   Future<void> _submitForm() async {
     if (!_formKey.currentState!.validate()) {
@@ -75,20 +76,6 @@ class _IAMSignupFormState extends State<IAMSignupForm> {
             duration: const Duration(seconds: 3),
           ),
         );
-
-        final firstName = _firstNameController.text.trim();
-        final lastName = _lastNameController.text.trim();
-        final fullName = '$firstName $lastName'.trim();
-
-        // Route brand-new users to their first address setup and keep
-        // recipient name aligned with the account name from signup.
-        await Get.to(
-          () => AddNewAddressScreen(
-            prefilledRecipientName: fullName,
-            lockRecipientName: true,
-          ),
-        );
-        if (!mounted) return;
 
         /// Navigate to verify email
         Get.to(
@@ -146,6 +133,7 @@ class _IAMSignupFormState extends State<IAMSignupForm> {
     _phoneController.dispose();
     _referralIdController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
@@ -192,7 +180,7 @@ class _IAMSignupFormState extends State<IAMSignupForm> {
             controller: _emailController,
             expands: false,
             decoration: const InputDecoration(
-              labelText: IAMTexts.email,
+              labelText: IAMTexts.emailAddress,
               prefixIcon: Icon(Iconsax.direct),
             ),
             validator: (v) {
@@ -220,19 +208,10 @@ class _IAMSignupFormState extends State<IAMSignupForm> {
             },
           ),
 
-          const SizedBox(height: IAMSizes.spaceBtwInputFields),
-
-          TextFormField(
-            controller: _referralIdController,
-            expands: false,
-            decoration: const InputDecoration(
-              labelText: 'Referral ID (Optional)',
-              prefixIcon: Icon(Iconsax.profile_2user),
-            ),
-            validator: (_) => null,
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: IAMSizes.spaceBtwSections),
+            child: Divider(height: 1),
           ),
-
-          const SizedBox(height: IAMSizes.spaceBtwInputFields),
 
           TextFormField(
             controller: _passwordController,
@@ -247,8 +226,54 @@ class _IAMSignupFormState extends State<IAMSignupForm> {
                     setState(() => _obscurePassword = !_obscurePassword),
               ),
             ),
+            onChanged: (_) {
+              // Keep confirm password validation in sync
+              if (_confirmPasswordController.text.isNotEmpty) {
+                _formKey.currentState?.validate();
+              }
+            },
             validator: (v) =>
                 (v == null || v.isEmpty) ? 'Required Field*' : null,
+          ),
+
+          const SizedBox(height: IAMSizes.spaceBtwInputFields),
+
+          TextFormField(
+            controller: _confirmPasswordController,
+            obscureText: _obscureConfirmPassword,
+            obscuringCharacter: '•',
+            decoration: InputDecoration(
+              prefixIcon: const Icon(Iconsax.password_check),
+              labelText: 'Confirm Password',
+              suffixIcon: IconButton(
+                icon: Icon(_obscureConfirmPassword
+                    ? Iconsax.eye_slash
+                    : Iconsax.eye),
+                onPressed: () => setState(
+                  () => _obscureConfirmPassword = !_obscureConfirmPassword,
+                ),
+              ),
+            ),
+            validator: (v) {
+              if (v == null || v.isEmpty) return 'Required Field*';
+              if (v != _passwordController.text) return 'Passwords do not match';
+              return null;
+            },
+          ),
+
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: IAMSizes.spaceBtwSections),
+            child: Divider(height: 1),
+          ),
+
+          TextFormField(
+            controller: _referralIdController,
+            expands: false,
+            decoration: const InputDecoration(
+              labelText: 'Referral ID (Optional)',
+              prefixIcon: Icon(Iconsax.profile_2user),
+            ),
+            validator: (_) => null,
           ),
 
           const SizedBox(height: IAMSizes.spaceBtwSections),

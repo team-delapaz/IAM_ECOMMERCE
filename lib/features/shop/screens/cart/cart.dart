@@ -4,6 +4,8 @@ import 'package:iam_ecomm/common/widgets/appbar/appbar.dart';
 import 'package:iam_ecomm/features/authentication/controllers/auth_controller.dart';
 import 'package:iam_ecomm/features/authentication/screens/login/login.dart';
 import 'package:iam_ecomm/features/authentication/screens/signup/signup.dart';
+import 'package:iam_ecomm/features/personalization/screens/address/add_new_address.dart';
+import 'package:iam_ecomm/features/personalization/screens/address/address.dart';
 import 'package:iam_ecomm/features/shop/screens/checkout/checkout.dart';
 import 'package:iam_ecomm/utils/api/api.dart';
 import 'package:iam_ecomm/utils/api/core/api_response.dart';
@@ -510,6 +512,55 @@ class _CartScreenState extends State<CartScreen> {
                                       ),
                                     );
                                     return;
+                                  }
+
+                                  final addressRes =
+                                      await ApiMiddleware.address.getAddresses();
+                                  if (!addressRes.success) {
+                                    if (!context.mounted) return;
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          addressRes.message.isNotEmpty
+                                              ? addressRes.message
+                                              : 'Unable to check delivery address.',
+                                        ),
+                                      ),
+                                    );
+                                    return;
+                                  }
+
+                                  final addresses = addressRes.data
+                                          ?.whereType<AddressItem>()
+                                          .toList() ??
+                                      const <AddressItem>[];
+
+                                  if (addresses.isEmpty) {
+                                    // New users may not have an address yet; require it before checkout.
+                                    final fullName = (AuthController
+                                                .instance.user.value?.fullName ??
+                                            '')
+                                        .trim();
+                                    await Get.to(
+                                      () => AddNewAddressScreen(
+                                        prefilledRecipientName: fullName,
+                                        lockRecipientName: fullName.isNotEmpty,
+                                        lockDefaultForNewAddress: true,
+                                      ),
+                                    );
+
+                                    final retry =
+                                        await ApiMiddleware.address.getAddresses();
+                                    final retryAddresses = retry.data
+                                            ?.whereType<AddressItem>()
+                                            .toList() ??
+                                        const <AddressItem>[];
+
+                                    if (retryAddresses.isEmpty) {
+                                      // User backed out or still no address; keep them in cart.
+                                      await Get.to(() => const UserAddressScreen());
+                                      return;
+                                    }
                                   }
 
                                   await Get.to(() => const CheckoutScreen());

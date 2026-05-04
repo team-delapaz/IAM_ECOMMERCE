@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iam_ecomm/common/widgets/appbar/appbar.dart';
+import 'package:iam_ecomm/features/authentication/controllers/auth_controller.dart';
 import 'package:iam_ecomm/features/personalization/screens/address/add_new_address.dart';
 import 'package:iam_ecomm/features/personalization/screens/address/widgets/single_address.dart';
 import 'package:iam_ecomm/utils/api/api.dart';
@@ -19,6 +20,7 @@ class UserAddressScreen extends StatefulWidget {
 
 class _UserAddressScreenState extends State<UserAddressScreen> {
   late Future<ApiResponse<List<AddressItem?>>> _addressesFuture;
+  List<AddressItem> _latestAddresses = const [];
 
   @override
   void initState() {
@@ -116,7 +118,16 @@ class _UserAddressScreenState extends State<UserAddressScreen> {
       floatingActionButton: FloatingActionButton(
         backgroundColor: IAMColors.primary.withOpacity(0.8),
         onPressed: () async {
-          await Get.to(() => const AddNewAddressScreen());
+          final isFirstAddress = _latestAddresses.isEmpty;
+          final fullName =
+              (AuthController.instance.user.value?.fullName ?? '').trim();
+          await Get.to(
+            () => AddNewAddressScreen(
+              prefilledRecipientName: isFirstAddress ? fullName : null,
+              lockRecipientName: isFirstAddress && fullName.isNotEmpty,
+              lockDefaultForNewAddress: isFirstAddress,
+            ),
+          );
           await _reload();
         },
         foregroundColor: IAMColors.textWhite,
@@ -144,6 +155,7 @@ class _UserAddressScreenState extends State<UserAddressScreen> {
 
           final addresses =
               snapshot.data!.data?.whereType<AddressItem>().toList() ?? [];
+          _latestAddresses = addresses;
 
           if (addresses.isEmpty) {
             return const Center(child: Text('No saved addresses yet.'));

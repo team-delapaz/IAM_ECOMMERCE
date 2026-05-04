@@ -4,10 +4,8 @@ import 'package:iam_ecomm/features/authentication/controllers/auth_controller.da
 import 'package:iam_ecomm/features/authentication/screens/password_configuration/forget_password.dart';
 import 'package:iam_ecomm/features/authentication/screens/signup/resend_verification_email.dart';
 import 'package:iam_ecomm/features/authentication/screens/signup/signup.dart';
-import 'package:iam_ecomm/features/personalization/screens/address/add_new_address.dart';
 import 'package:iam_ecomm/navigation_menu.dart';
 import 'package:iam_ecomm/utils/api/api.dart';
-import 'package:iam_ecomm/utils/api/responses/response_prep.dart';
 import 'package:iam_ecomm/utils/constants/sizes.dart';
 import 'package:iam_ecomm/utils/constants/text_strings.dart';
 import 'package:iam_ecomm/utils/local_storage/storage_utility.dart';
@@ -75,44 +73,6 @@ class _IAMLoginFormState extends State<IAMLoginForm> {
     }
   }
 
-  Future<void> _ensureHasAddressOrPrompt() async {
-    // Check if user has existing addresses
-    const maxAttempts = 3; // Reduced attempts since we're checking first
-
-    for (var attempt = 0; attempt < maxAttempts; attempt++) {
-      final res = await ApiMiddleware.address.getAddresses();
-      final addresses = res.data?.whereType<AddressItem>().toList() ?? const [];
-
-      if (res.success && addresses.isNotEmpty) {
-        // User has addresses, no need to prompt
-        return;
-      }
-
-      if (res.success && addresses.isEmpty) {
-        // User has no addresses, force them to add one
-        await Get.to(() => const AddNewAddressScreen());
-        continue;
-      }
-
-      // If address API fails, don't block login forever
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            res.message.isNotEmpty
-                ? res.message
-                : 'Unable to load addresses right now.',
-            style: const TextStyle(color: Colors.white),
-          ),
-          backgroundColor: Colors.red[300],
-          behavior: SnackBarBehavior.floating,
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        ),
-      );
-      return;
-    }
-  }
-
   @override
   void dispose() {
     _emailController.dispose();
@@ -162,75 +122,11 @@ class _IAMLoginFormState extends State<IAMLoginForm> {
     await _mergeGuestCartIntoServer();
     if (!mounted) return;
 
-    // Check if user has existing addresses
-    print('DEBUG: Checking for existing addresses...');
-    final addressRes = await ApiMiddleware.address.getAddresses();
-    final addresses =
-        addressRes.data?.whereType<AddressItem>().toList() ?? const [];
-    print(
-      'DEBUG: Address API success: ${addressRes.success}, addresses found: ${addresses.length}',
-    );
-    print('DEBUG: addresses.isNotEmpty: ${addresses.isNotEmpty}');
-    print('DEBUG: addressRes.success: ${addressRes.success}');
-    print(
-      'DEBUG: Combined condition: ${addressRes.success && addresses.isNotEmpty}',
-    );
-    print('DEBUG: mounted status: ${!mounted}');
-
-    if (addressRes.success && addresses.isNotEmpty) {
-      // User has addresses, go directly to NavigationMenu with Home tab selected
-      print(
-        'DEBUG: User has addresses, navigating to NavigationMenu with Home tab',
-      );
-      final successMsg = res.message.isNotEmpty
-          ? res.message
-          : 'You are now signed in.';
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              successMsg,
-              style: const TextStyle(color: Colors.white),
-            ),
-            backgroundColor: Colors.green[300],
-            behavior: SnackBarBehavior.floating,
-            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          ),
-        );
-      }
-
-      final navController = Get.isRegistered<NavigationController>()
-          ? Get.find<NavigationController>()
-          : Get.put(NavigationController());
-      navController.selectedIndex.value = 0;
-      AuthController.instance.login(loggedInUser);
-      print(
-        'DEBUG: NavigationController selectedIndex set to: ${navController.selectedIndex.value}',
-      );
-
-      print('DEBUG: About to call Get.offAll(NavigationMenu)');
-      Get.offAll(const NavigationMenu());
-      print('DEBUG: Get.offAll(NavigationMenu) called');
-      return;
-    }
-
-    print(
-      'DEBUG: User has no addresses or API failed, prompting to add address',
-    );
-    // User has no addresses or API failed, prompt to add one
-    await _ensureHasAddressOrPrompt();
-    if (!mounted) return;
-
-    print('DEBUG: Address prompt completed, navigating to NavigationMenu');
-    // After adding address, go to NavigationMenu with Home tab selected
     final navController = Get.isRegistered<NavigationController>()
         ? Get.find<NavigationController>()
         : Get.put(NavigationController());
     navController.selectedIndex.value = 0;
     AuthController.instance.login(loggedInUser);
-    print(
-      'DEBUG: NavigationController selectedIndex set to: ${navController.selectedIndex.value}',
-    );
 
     final successMsg = res.message.isNotEmpty
         ? res.message
@@ -245,7 +141,6 @@ class _IAMLoginFormState extends State<IAMLoginForm> {
       ),
     );
 
-    print('DEBUG: About to call Get.offAll(NavigationMenu)');
     Get.offAll(const NavigationMenu());
   }
 

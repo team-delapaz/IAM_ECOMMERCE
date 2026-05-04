@@ -5,6 +5,7 @@ import 'package:iam_ecomm/common/widgets/layouts/grid_layout.dart';
 import 'package:iam_ecomm/common/widgets/loaders/skeleton.dart';
 import 'package:iam_ecomm/common/widgets/products/product_cards/product_card_vertical.dart';
 import 'package:iam_ecomm/features/shop/controllers/store_controller.dart';
+import 'package:iam_ecomm/features/shop/screens/all_products/all_products.dart';
 import 'package:iam_ecomm/utils/constants/product_categories.dart';
 import 'package:iam_ecomm/utils/constants/sizes.dart';
 
@@ -55,7 +56,10 @@ class _IAMCategoryTabState extends State<IAMCategoryTab> {
                 ],
               ),*/
               const SizedBox(height: IAMSizes.spaceBtwItems),
-              IAMSectionHeading(title: categoryName, onPressed: () {}),
+              IAMSectionHeading(
+                title: categoryName,
+                onPressed: () => Get.to(() => const AllProducts()),
+              ),
               const SizedBox(height: IAMSizes.spaceBtwItems),
               Obx(() {
                 if (controller.loadingByCategory[categoryId] == true) {
