@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:iam_ecomm/utils/api/responses/response_prep.dart';
+import 'package:iam_ecomm/utils/constants/colors.dart';
 import 'package:iam_ecomm/utils/constants/sizes.dart';
+import 'package:iam_ecomm/utils/helpers/helper_functions.dart';
 
 class IAMBillingFulfillmentSection extends StatelessWidget {
   const IAMBillingFulfillmentSection({
@@ -26,6 +28,10 @@ class IAMBillingFulfillmentSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final dark = IAMHelperFunctions.isDarkMode(context);
+    final labelColor = dark ? IAMColors.lightGrey : IAMColors.darkGrey;
+    final textColor = dark ? IAMColors.white : IAMColors.black;
+
     if (isLoading) {
       return const LinearProgressIndicator(minHeight: 2);
     }
@@ -58,10 +64,15 @@ class IAMBillingFulfillmentSection extends StatelessWidget {
       children: [
         DropdownButtonFormField<String>(
           value: selectedType,
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             labelText: 'Fulfillment',
             hintText: 'Select delivery or pickup',
+            labelStyle: TextStyle(color: labelColor),
+            floatingLabelStyle: TextStyle(color: labelColor),
+            hintStyle: TextStyle(color: labelColor),
           ),
+          dropdownColor: dark ? IAMColors.dark : IAMColors.white,
+          style: TextStyle(color: textColor),
           items: fulfillmentTypes
               .map(
                 (item) => DropdownMenuItem<String>(
@@ -81,10 +92,15 @@ class IAMBillingFulfillmentSection extends StatelessWidget {
           const SizedBox(height: IAMSizes.spaceBtwItems),
           DropdownButtonFormField<String>(
             value: selectedBranch,
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               labelText: 'Pickup branch',
               hintText: 'Select a branch',
+              labelStyle: TextStyle(color: labelColor),
+              floatingLabelStyle: TextStyle(color: labelColor),
+              hintStyle: TextStyle(color: labelColor),
             ),
+            dropdownColor: dark ? IAMColors.dark : IAMColors.white,
+            style: TextStyle(color: textColor),
             items: branchItems
                 .map(
                   (branch) => DropdownMenuItem<String>(

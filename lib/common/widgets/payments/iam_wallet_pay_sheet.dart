@@ -1040,6 +1040,9 @@ class _IamWalletOtpVerificationPageState
         elevation: 0,
         scrolledUnderElevation: 0,
         foregroundColor: onSurface,
+        iconTheme: IconThemeData(
+          color: dark ? IAMColors.white : IAMColors.black,
+        ),
         title: const Text('Verify OTP'),
       ),
       body: SafeArea(

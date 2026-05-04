@@ -98,6 +98,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final product = widget.product;
+    final dark = IAMHelperFunctions.isDarkMode(context);
 
     if (product == null) {
       return Scaffold(
@@ -283,6 +284,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       DropdownButton<int>(
                         value: selectedRating,
                         underline: const SizedBox(),
+                        dropdownColor: dark ? IAMColors.dark : IAMColors.white,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: dark ? IAMColors.white : IAMColors.black,
+                        ),
+                        iconEnabledColor:
+                            dark ? IAMColors.lightGrey : IAMColors.darkGrey,
                         items: const [
                           DropdownMenuItem(value: 0, child: Text('All')),
                           DropdownMenuItem(value: 5, child: Text('5 ⭐')),
@@ -316,7 +323,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       if (!snapshot.hasData ||
                           snapshot.data == null ||
                           !snapshot.data!.success) {
-                        return const Text('No reviews found');
+                        return Text(
+                          'No reviews found',
+                          style: TextStyle(
+                            color: dark ? IAMColors.lightGrey : IAMColors.darkGrey,
+                          ),
+                        );
                       }
 
                       final reviews = snapshot.data!.data ?? [];
@@ -328,7 +340,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                 .toList();
 
                       if (filteredReviews.isEmpty) {
-                        return const Text('No reviews yet');
+                        return Text(
+                          'No reviews yet',
+                          style: TextStyle(
+                            color: dark ? IAMColors.lightGrey : IAMColors.darkGrey,
+                          ),
+                        );
                       }
 
                       return Column(
@@ -347,7 +364,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             ),
                             padding: const EdgeInsets.all(IAMSizes.md),
                             decoration: BoxDecoration(
-                              color: Colors.grey[100],
+                              color: dark ? IAMColors.dark : Colors.grey[100],
                               borderRadius: BorderRadius.circular(IAMSizes.sm),
                             ),
                             child: Column(
@@ -357,9 +374,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                   reviewerName.isNotEmpty
                                       ? reviewerName
                                       : 'Anonymous',
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 13,
                                     fontWeight: FontWeight.w600,
+                                    color:
+                                        dark ? IAMColors.white : IAMColors.black,
                                   ),
                                 ),
                                 const SizedBox(height: 6),
@@ -377,7 +396,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                 const SizedBox(height: 8),
                                 Text(
                                   review.reviewComment,
-                                  style: const TextStyle(fontSize: 14),
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: dark
+                                        ? IAMColors.lightGrey
+                                        : IAMColors.black,
+                                  ),
                                 ),
                               ],
                             ),

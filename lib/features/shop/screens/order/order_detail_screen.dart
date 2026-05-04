@@ -20,8 +20,15 @@ class OrderDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final dark = IAMHelperFunctions.isDarkMode(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Order Details')),
+      appBar: AppBar(
+        title: const Text('Order Details'),
+        foregroundColor: dark ? IAMColors.white : IAMColors.black,
+        iconTheme: IconThemeData(
+          color: dark ? IAMColors.white : IAMColors.black,
+        ),
+      ),
       body: FutureBuilder<ApiResponse<OrderDetailItem?>>(
         future: ApiMiddleware.orders.getOrderDetail(refNo),
         builder: (context, snapshot) {
@@ -105,7 +112,9 @@ class OrderDetailScreen extends StatelessWidget {
                                                     .textTheme
                                                     .bodySmall!
                                                     .copyWith(
-                                                      color: Colors.grey[600],
+                                                      color: dark
+                                                          ? IAMColors.darkGrey
+                                                          : Colors.grey[600],
                                                     ),
                                               ),
                                             ],
@@ -125,7 +134,9 @@ class OrderDetailScreen extends StatelessWidget {
                                   width: double.infinity,
                                   padding: const EdgeInsets.all(12),
                                   decoration: BoxDecoration(
-                                    color: Colors.grey[200],
+                                    color: dark
+                                        ? IAMColors.darkerGrey
+                                        : Colors.grey[200],
                                     borderRadius: BorderRadius.circular(
                                       IAMSizes.sm,
                                     ),
@@ -195,7 +206,7 @@ class OrderDetailScreen extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: Colors.grey[100],
+                          color: dark ? IAMColors.dark : Colors.grey[100],
                           borderRadius: BorderRadius.circular(IAMSizes.md),
                         ),
                         child: Column(
@@ -226,8 +237,10 @@ class OrderDetailScreen extends StatelessWidget {
                                             children: [
                                               TextSpan(
                                                 text: '${shipping.fullName} • ',
-                                                style: const TextStyle(
-                                                  color: Colors.black,
+                                                style: TextStyle(
+                                                  color: dark
+                                                      ? IAMColors.white
+                                                      : Colors.black,
                                                 ),
                                               ),
                                               TextSpan(
@@ -243,18 +256,22 @@ class OrderDetailScreen extends StatelessWidget {
                                         const SizedBox(height: 2),
                                         Text(
                                           shipping.completeAddress,
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                             fontSize: 11,
-                                            color: Colors.black87,
+                                            color: dark
+                                                ? IAMColors.grey
+                                                : Colors.black87,
                                           ),
                                         ),
                                         if (shipping.notes.isNotEmpty) ...[
                                           const SizedBox(height: 2),
                                           Text(
                                             'Notes: ${shipping.notes}',
-                                            style: const TextStyle(
+                                            style: TextStyle(
                                               fontSize: 11,
-                                              color: Colors.black87,
+                                              color: dark
+                                                  ? IAMColors.grey
+                                                  : Colors.black87,
                                               fontStyle: FontStyle.italic,
                                             ),
                                           ),

@@ -1,18 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:iam_ecomm/common/widgets/container/rounded_container.dart';
+import 'package:iam_ecomm/features/shop/screens/order/order_status_ids.dart';
 import 'package:iam_ecomm/features/shop/screens/order/widgets/cancelled_order_screen.dart';
 import 'package:iam_ecomm/features/shop/screens/order/widgets/delivered_screen.dart';
 import 'package:iam_ecomm/features/shop/screens/order/widgets/processing_order_screen.dart';
-import 'package:iam_ecomm/utils/constants/colors.dart';
 import 'package:iam_ecomm/utils/constants/sizes.dart';
 import 'package:iam_ecomm/utils/helpers/helper_functions.dart';
-import 'package:iam_ecomm/utils/api/api.dart';
-import 'package:iam_ecomm/features/shop/screens/order/order_detail_screen.dart';
-import 'package:iam_ecomm/utils/api/responses/response_prep.dart';
-import 'package:iam_ecomm/utils/formatters/formatter.dart';
-import 'package:iconsax/iconsax.dart';
-import 'package:intl/intl.dart';
 
 class IAMOrderListItems extends StatefulWidget {
   const IAMOrderListItems({super.key});
@@ -24,80 +17,113 @@ class IAMOrderListItems extends StatefulWidget {
 class _IAMOrderListItemsState extends State<IAMOrderListItems> {
   int selectedIndex = 0;
 
+  static final List<(String label, Widget page)> _tabs = [
+    (
+      'Pending',
+      PipelineStageTab(
+        stageIds: const {OrderStatusIds.pending},
+        emptyMessage: 'No pending orders',
+      ),
+    ),
+    (
+      'Ready',
+      PipelineStageTab(
+        stageIds: const {OrderStatusIds.readyToShip},
+        emptyMessage: 'No orders ready to ship',
+      ),
+    ),
+    (
+      'Transit',
+      PipelineStageTab(
+        stageIds: const {OrderStatusIds.inTransit},
+        emptyMessage: 'No orders in transit',
+      ),
+    ),
+    ('Delivered', const DeliveredTab()),
+    ('Cancelled', const CancelledTab()),
+  ];
+
   @override
   Widget build(BuildContext context) {
     final dark = IAMHelperFunctions.isDarkMode(context);
 
     return Column(
       children: [
+        SizedBox(
+          width: double.infinity,
+          child: Row(
+            children: [
+              Icon(
+                Icons.swipe_left_alt_rounded,
+                size: 16,
+                color: Colors.grey.shade600,
+              ),
+              Expanded(
+                child: Center(
+                  child: Text(
+                    'Swipe tabs to see more',
+                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                  ),
+                ),
+              ),
+              Icon(
+                Icons.swipe_right_alt_rounded,
+                size: 16,
+                color: Colors.grey.shade600,
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: IAMSizes.sm),
         IAMRoundedContainer(
-          padding: const EdgeInsets.all(4),
+          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
           backgroundColor: dark ? Colors.grey[900]! : Colors.grey[200]!,
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final tabWidth = constraints.maxWidth / 3; // tab count :D
-
-              return Stack(
-                children: [
-                  // Sliding background
-                  AnimatedPositioned(
-                    left: selectedIndex * tabWidth,
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeInOut,
-                    child: Container(
-                      width: tabWidth,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                    ),
-                  ),
-                  Row(
-                    children: [
-                      _buildTab('Processing', 0, tabWidth),
-                      _buildTab('Delivered', 1, tabWidth),
-                      _buildTab('Cancelled', 2, tabWidth),
-                    ],
-                  ),
-                ],
-              );
-            },
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: Row(
+                children: List.generate(_tabs.length, (i) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: _buildChip(i, _tabs[i].$1),
+                  );
+                }),
+              ),
+            ),
           ),
         ),
 
         const SizedBox(height: IAMSizes.spaceBtwItems),
 
-        /// ---------------- TAB CONTENT ----------------
         Expanded(
           child: IndexedStack(
-            index: selectedIndex,
-            children: [ProcessingTab(), DeliveredTab(), CancelledTab()],
+            index: selectedIndex.clamp(0, _tabs.length - 1),
+            children: _tabs.map((t) => t.$2).toList(),
           ),
         ),
       ],
     );
   }
 
-  /// TAB BUILDER
-  Widget _buildTab(String title, int index, double tabWidth) {
+  Widget _buildChip(int index, String title) {
     final isSelected = selectedIndex == index;
+    final bg = isSelected ? Colors.white : Colors.transparent;
 
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          selectedIndex = index;
-        });
-      },
-      child: SizedBox(
-        width: tabWidth,
-        height: 40,
-        child: Center(
+    return Material(
+      color: bg,
+      borderRadius: BorderRadius.circular(24),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(24),
+        onTap: () => setState(() => selectedIndex = index),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           child: Text(
             title,
             style: TextStyle(
-              color: isSelected ? Colors.black : Colors.grey,
-              fontWeight: FontWeight.w500,
+              color: isSelected ? Colors.black : Colors.grey.shade700,
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+              fontSize: 13,
             ),
           ),
         ),

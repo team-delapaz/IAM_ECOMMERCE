@@ -46,22 +46,26 @@ class TrackingOrderScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final user = AuthController.instance.user.value;
+    final dark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: dark ? IAMColors.black : Colors.grey[100],
       appBar: AppBar(
         title: const Text('Tracking Result'),
         centerTitle: true,
         elevation: 0,
         backgroundColor: Colors.transparent,
-        foregroundColor: Colors.black,
+        foregroundColor: dark ? IAMColors.white : Colors.black,
+        iconTheme: IconThemeData(
+          color: dark ? IAMColors.white : Colors.black,
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(IAMSizes.md),
         child: Column(
           children: [
-            _productCard(),
+            _productCard(context),
             const SizedBox(height: IAMSizes.spaceBtwSections),
-            _orderDetails(user),
+            _orderDetails(context, user),
             const SizedBox(height: IAMSizes.spaceBtwSections),
             Expanded(child: _timeline()),
             _bottomButtons(),
@@ -71,7 +75,8 @@ class TrackingOrderScreen extends StatelessWidget {
     );
   }
 
-  Widget _productCard() {
+  Widget _productCard(BuildContext context) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
     OrderProductItem? first;
     for (final e in order.items) {
       if (e != null) {
@@ -84,7 +89,7 @@ class TrackingOrderScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(IAMSizes.md),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: dark ? IAMColors.dark : Colors.white,
         borderRadius: BorderRadius.circular(IAMSizes.lg),
       ),
       child: Row(
@@ -93,7 +98,7 @@ class TrackingOrderScreen extends StatelessWidget {
             width: 60,
             height: 60,
             decoration: BoxDecoration(
-              color: Colors.grey[200],
+              color: dark ? IAMColors.darkerGrey : Colors.grey[200],
               borderRadius: BorderRadius.circular(IAMSizes.md),
               image: imageUrl.isNotEmpty
                   ? DecorationImage(
@@ -141,11 +146,12 @@ class TrackingOrderScreen extends StatelessWidget {
         .join(' ');
   }
 
-  Widget _orderDetails(UserInfo? user) {
+  Widget _orderDetails(BuildContext context, UserInfo? user) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.all(IAMSizes.md),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: dark ? IAMColors.dark : Colors.white,
         borderRadius: BorderRadius.circular(IAMSizes.lg),
       ),
       child: Column(
@@ -207,21 +213,23 @@ class TrackingOrderScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: IAMSizes.spaceBtwItems),
-          _row('Customer:', user?.fullName ?? 'IAM User'),
+          _row(context, 'Customer:', user?.fullName ?? 'IAM User'),
           _row(
+            context,
             'Destination:',
             order.shippingInfo?.completeAddress != null
                 ? toTitleCase(order.shippingInfo!.completeAddress)
                 : 'No Selected Address',
           ),
-          _row('Contact No.:', order.shippingInfo?.mobileNo ?? 'N/A'),
-          _row('Payment Method:', order.paymentMethod.isNotEmpty ? order.paymentMethod : 'N/A'),
+          _row(context, 'Contact No.:', order.shippingInfo?.mobileNo ?? 'N/A'),
+          _row(context, 'Payment Method:', order.paymentMethod.isNotEmpty ? order.paymentMethod : 'N/A'),
         ],
       ),
     );
   }
 
-  Widget _row(String title, String value) {
+  Widget _row(BuildContext context, String title, String value) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
     return Padding(
       padding: const EdgeInsets.only(bottom: IAMSizes.sm),
       child: LayoutBuilder(
@@ -236,7 +244,7 @@ class TrackingOrderScreen extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    color: Colors.grey,
+                    color: IAMColors.darkGrey,
                     fontWeight: FontWeight.w400,
                   ),
                 ),
@@ -249,7 +257,7 @@ class TrackingOrderScreen extends StatelessWidget {
                   style: const TextStyle(
                     fontWeight: FontWeight.w500,
                     height: 1.3,
-                  ),
+                  ).copyWith(color: dark ? IAMColors.white : IAMColors.black),
                 ),
               ),
             ],
@@ -297,6 +305,7 @@ class TrackingOrderScreen extends StatelessWidget {
               final i = e.key;
               final m = e.value;
               return _trackingStepRow(
+                context: context,
                 title: m.title,
                 subtitle: m.subtitle,
                 time: m.time,
@@ -314,6 +323,7 @@ class TrackingOrderScreen extends StatelessWidget {
   }
 
   Widget _trackingStepRow({
+    required BuildContext context,
     required String title,
     required String subtitle,
     required String time,
@@ -323,35 +333,42 @@ class TrackingOrderScreen extends StatelessWidget {
     bool dangerTerminal = false,
     bool warningTerminal = false,
   }) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
     final isAlertCurrent =
         phase == _StepVisualPhase.current && (dangerTerminal || warningTerminal);
     final accent = dangerTerminal
         ? Colors.red
         : (warningTerminal ? Colors.deepOrange : null);
+    final mutedCompleted = dark ? Colors.grey.shade500 : Colors.grey.shade600;
+    final mutedCompletedLine =
+        dark ? Colors.grey.shade700 : Colors.grey.shade300;
+    final upcomingBase = dark ? Colors.grey.shade300 : Colors.grey.shade700;
+    final upcomingSubtitle =
+        dark ? Colors.grey.shade500 : Colors.grey.shade500;
+    final currentBase = IAMColors.primary;
 
-    Color dotColor;
-    switch (phase) {
-      case _StepVisualPhase.current:
-        dotColor = isAlertCurrent ? accent!.shade600 : IAMColors.primary;
-        break;
-      case _StepVisualPhase.completed:
-        dotColor = Colors.green.shade600;
-        break;
-      case _StepVisualPhase.upcoming:
-        dotColor = Colors.grey[300]!;
-        break;
-    }
+    final Color dotColor = switch (phase) {
+      _StepVisualPhase.current =>
+        isAlertCurrent ? accent!.shade600 : currentBase,
+      _StepVisualPhase.completed => mutedCompleted,
+      _StepVisualPhase.upcoming => dark ? Colors.grey.shade700 : Colors.grey.shade300,
+    };
 
-    final titleColor = phase == _StepVisualPhase.upcoming
-        ? Colors.grey[500]!
-        : (isAlertCurrent ? accent!.shade800 : Colors.black87);
-    final subtitleColor = phase == _StepVisualPhase.current && !isAlertCurrent
-        ? IAMColors.primary.withOpacity(0.85)
-        : (phase == _StepVisualPhase.upcoming
-            ? Colors.grey[400]!
-            : (isAlertCurrent
-                ? accent!.shade700.withOpacity(0.9)
-                : Colors.grey[600]!));
+    final Color titleColor = switch (phase) {
+      _StepVisualPhase.current =>
+        isAlertCurrent ? accent!.shade700 : currentBase,
+      _StepVisualPhase.completed => mutedCompleted,
+      _StepVisualPhase.upcoming => upcomingBase,
+    };
+
+    final Color subtitleColor = switch (phase) {
+      _StepVisualPhase.current => isAlertCurrent
+          ? accent!.shade600
+          : currentBase.withOpacity(0.9),
+      _StepVisualPhase.completed =>
+        dark ? Colors.grey.shade400 : Colors.grey.shade600,
+      _StepVisualPhase.upcoming => upcomingSubtitle,
+    };
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -371,8 +388,8 @@ class TrackingOrderScreen extends StatelessWidget {
                 width: 2,
                 height: 50,
                 color: phase == _StepVisualPhase.completed
-                    ? Colors.green.shade200
-                    : Colors.grey[300],
+                    ? mutedCompletedLine
+                    : (dark ? Colors.grey.shade800 : Colors.grey.shade300),
               ),
           ],
         ),
@@ -380,9 +397,14 @@ class TrackingOrderScreen extends StatelessWidget {
         Icon(
           icon,
           size: 20,
-          color: phase == _StepVisualPhase.upcoming
-              ? Colors.grey[400]
-              : (isAlertCurrent ? accent!.shade700 : Colors.grey[700]),
+          color: switch (phase) {
+            _StepVisualPhase.current => isAlertCurrent
+                ? accent!.shade700
+                : currentBase,
+            _StepVisualPhase.completed => mutedCompleted,
+            _StepVisualPhase.upcoming =>
+              dark ? Colors.grey.shade500 : Colors.grey.shade500,
+          },
         ),
         const SizedBox(width: IAMSizes.spaceBtwItems),
         Expanded(
@@ -406,7 +428,12 @@ class TrackingOrderScreen extends StatelessWidget {
         ),
         Text(
           time,
-          style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+          style: TextStyle(
+            fontSize: 12,
+            color: phase == _StepVisualPhase.current
+                ? (isAlertCurrent ? accent!.shade700 : currentBase)
+                : (dark ? Colors.grey.shade500 : Colors.grey.shade600),
+          ),
         ),
       ],
     );

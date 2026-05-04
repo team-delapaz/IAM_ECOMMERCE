@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:iam_ecomm/common/texts/section_heading.dart';
 import 'package:iam_ecomm/features/personalization/screens/address/add_new_address.dart';
 import 'package:iam_ecomm/features/personalization/screens/address/widgets/single_address.dart';
 import 'package:iam_ecomm/utils/api/api.dart';
 import 'package:iam_ecomm/utils/api/responses/response_prep.dart';
 import 'package:iam_ecomm/utils/constants/colors.dart';
 import 'package:iam_ecomm/utils/constants/sizes.dart';
+import 'package:iam_ecomm/utils/helpers/helper_functions.dart';
 import 'package:iconsax/iconsax.dart';
 
 class IAMBillingAddressSection extends StatefulWidget {
@@ -189,6 +189,7 @@ class _IAMBillingAddressSectionState extends State<IAMBillingAddressSection> {
 
   @override
   Widget build(BuildContext context) {
+    final dark = IAMHelperFunctions.isDarkMode(context);
     final hasAddress = _selectedAddress != null;
 
     return Column(
@@ -243,11 +244,11 @@ class _IAMBillingAddressSectionState extends State<IAMBillingAddressSection> {
           Container(
             padding: const EdgeInsets.all(IAMSizes.md),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: dark ? IAMColors.dark : Colors.white,
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
+                  color: Colors.black.withOpacity(dark ? 0.2 : 0.04),
                   blurRadius: 8,
                   offset: const Offset(0, 3),
                 ),
@@ -271,12 +272,14 @@ class _IAMBillingAddressSectionState extends State<IAMBillingAddressSection> {
                     Container(
                       padding: const EdgeInsets.all(6),
                       decoration: BoxDecoration(
-                        color: Colors.grey.withOpacity(0.15),
+                        color: (dark ? IAMColors.grey : Colors.grey).withOpacity(
+                          dark ? 0.2 : 0.15,
+                        ),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.location_on,
-                        color: Colors.black87,
+                        color: dark ? IAMColors.lightGrey : Colors.black87,
                         size: 16,
                       ),
                     ),
@@ -291,12 +294,14 @@ class _IAMBillingAddressSectionState extends State<IAMBillingAddressSection> {
                     Container(
                       padding: const EdgeInsets.all(6),
                       decoration: BoxDecoration(
-                        color: Colors.grey.withOpacity(0.15),
+                        color: (dark ? IAMColors.grey : Colors.grey).withOpacity(
+                          dark ? 0.2 : 0.15,
+                        ),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.phone,
-                        color: Colors.grey,
+                        color: dark ? IAMColors.lightGrey : Colors.grey,
                         size: 14,
                       ),
                     ),
@@ -317,12 +322,14 @@ class _IAMBillingAddressSectionState extends State<IAMBillingAddressSection> {
                     Container(
                       padding: const EdgeInsets.all(6),
                       decoration: BoxDecoration(
-                        color: Colors.grey.withOpacity(0.15),
+                        color: (dark ? IAMColors.grey : Colors.grey).withOpacity(
+                          dark ? 0.2 : 0.15,
+                        ),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.location_history,
-                        color: Colors.grey,
+                        color: dark ? IAMColors.lightGrey : Colors.grey,
                         size: 14,
                       ),
                     ),
