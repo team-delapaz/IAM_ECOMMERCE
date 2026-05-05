@@ -216,12 +216,20 @@ class TrackingOrderScreen extends StatelessWidget {
           _row(context, 'Customer:', user?.fullName ?? 'IAM User'),
           _row(
             context,
-            'Destination:',
-            order.shippingInfo?.completeAddress != null
-                ? toTitleCase(order.shippingInfo!.completeAddress)
-                : 'No Selected Address',
+            order.pickupLocation != null ? 'Pickup Location:' : 'Destination:',
+            order.pickupLocation != null
+                ? toTitleCase(order.pickupLocation!.completeAddress)
+                : order.shippingInfo?.completeAddress != null
+                    ? toTitleCase(order.shippingInfo!.completeAddress)
+                    : 'No Selected Address',
           ),
-          _row(context, 'Contact No.:', order.shippingInfo?.mobileNo ?? 'N/A'),
+          _row(
+            context,
+            'Contact No.:',
+            order.pickupLocation?.contactNo.isNotEmpty == true
+                ? order.pickupLocation!.contactNo
+                : order.shippingInfo?.mobileNo ?? 'N/A',
+          ),
           _row(context, 'Payment Method:', order.paymentMethod.isNotEmpty ? order.paymentMethod : 'N/A'),
         ],
       ),

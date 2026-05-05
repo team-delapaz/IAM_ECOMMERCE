@@ -918,6 +918,7 @@ class OrderDetailItem {
   final String gatewayReference;
   final String checkoutUrl;
   final ShippingInfo? shippingInfo;
+  final PickupLocation? pickupLocation;
   final List<OrderProductItem?> items;
 
   OrderDetailItem({
@@ -939,6 +940,7 @@ class OrderDetailItem {
     required this.gatewayReference,
     required this.checkoutUrl,
     this.shippingInfo,
+    this.pickupLocation,
     required this.items,
   });
 
@@ -968,7 +970,52 @@ class OrderDetailItem {
       gatewayReference: m['gatewayReference'] as String? ?? '',
       checkoutUrl: m['checkoutUrl'] as String? ?? '',
       shippingInfo: ShippingInfo.fromJson(m['shippingInfo']),
+      pickupLocation: PickupLocation.fromJson(m['pickupLocation']),
       items: itemsList,
+    );
+  }
+}
+
+class PickupLocation {
+  final String pickupLocationCode;
+  final String pickupLocationName;
+  final String address;
+  final String city;
+  final String province;
+  final String contactNo;
+  final String emailAddress;
+  final String operatingHours;
+
+  PickupLocation({
+    required this.pickupLocationCode,
+    required this.pickupLocationName,
+    required this.address,
+    required this.city,
+    required this.province,
+    required this.contactNo,
+    required this.emailAddress,
+    required this.operatingHours,
+  });
+
+  String get completeAddress {
+    final parts = [address, city, province]
+        .where((part) => part.trim().isNotEmpty)
+        .toList();
+    return parts.join(', ');
+  }
+
+  static PickupLocation? fromJson(dynamic json) {
+    final m = asMap(json);
+    if (m == null) return null;
+    return PickupLocation(
+      pickupLocationCode: m['pickupLocationCode'] as String? ?? '',
+      pickupLocationName: m['pickupLocationName'] as String? ?? '',
+      address: m['address'] as String? ?? '',
+      city: m['city'] as String? ?? '',
+      province: m['province'] as String? ?? '',
+      contactNo: m['contactNo'] as String? ?? '',
+      emailAddress: m['emailAddress'] as String? ?? '',
+      operatingHours: m['operatingHours'] as String? ?? '',
     );
   }
 }
