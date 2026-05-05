@@ -369,7 +369,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
       final product = productMap[code];
       final name = product?.productName ?? code;
-      final price = product?.memberPrice ?? 0;
+      final price = product?.regularPrice ?? 0;
       final lineTotal = price * qty;
       subtotal += lineTotal;
 
@@ -1022,8 +1022,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: IAMColors.primary,
                       foregroundColor: IAMColors.white,
-                      disabledBackgroundColor: IAMColors.grey,
-                      disabledForegroundColor: Colors.white70,
+                      disabledBackgroundColor: const Color.fromARGB(255, 166, 166, 166),
+                      disabledForegroundColor: IAMColors.white,
                       padding: const EdgeInsets.symmetric(
                         vertical: IAMSizes.md,
                       ),

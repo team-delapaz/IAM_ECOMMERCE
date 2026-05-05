@@ -16,6 +16,14 @@ class IAMProductMetaData extends StatelessWidget {
 
   final ProductItem? product;
 
+  static num _effectivePrice({
+    required bool isLoggedIn,
+    required num regularPrice,
+    required num sellingPrice,
+  }) {
+    return isLoggedIn ? sellingPrice : regularPrice;
+  }
+
   static String _formatPrice(num value) {
     return IAMFormatter.formatCurrency(value.toDouble()).replaceFirst('₱', '');
   }
@@ -29,14 +37,18 @@ class IAMProductMetaData extends StatelessWidget {
         : 'AMAZING BARLEY';
 
     return Obx(() {
-      final showMember = auth.isLoggedIn.value && auth.isMember;
+      final isLoggedIn = auth.isLoggedIn.value;
       final regularPrice = product?.regularPrice ?? 1000.0;
-      final memberPrice = product?.memberPrice ?? 500.0;
+      final sellingPrice = product?.sellingPrice ?? regularPrice;
       final discountPercent =
-          showMember && regularPrice > 0 && memberPrice < regularPrice
-          ? ((regularPrice - memberPrice) / regularPrice * 100).round()
+          isLoggedIn && regularPrice > 0 && sellingPrice < regularPrice
+          ? ((regularPrice - sellingPrice) / regularPrice * 100).round()
           : null;
-      final displayPrice = showMember ? memberPrice : regularPrice;
+      final displayPrice = _effectivePrice(
+        isLoggedIn: isLoggedIn,
+        regularPrice: regularPrice,
+        sellingPrice: sellingPrice,
+      );
 
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -60,14 +72,14 @@ class IAMProductMetaData extends StatelessWidget {
                 ),
               if (discountPercent != null)
                 const SizedBox(width: IAMSizes.spaceBtwItems),
-              if (showMember && memberPrice < regularPrice)
+              if (isLoggedIn && sellingPrice < regularPrice)
                 Text(
                   '₱${_formatPrice(regularPrice)}',
                   style: Theme.of(context).textTheme.titleSmall!.apply(
                     decoration: TextDecoration.lineThrough,
                   ),
                 ),
-              if (showMember && memberPrice < regularPrice)
+              if (isLoggedIn && sellingPrice < regularPrice)
                 const SizedBox(width: IAMSizes.spaceBtwItems),
               IAMProductPriceText(
                 price: _formatPrice(displayPrice),

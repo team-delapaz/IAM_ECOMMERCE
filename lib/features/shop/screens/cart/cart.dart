@@ -37,7 +37,6 @@ class _CartScreenState extends State<CartScreen> {
     final isLoggedIn =
         Get.isRegistered<AuthController>() &&
         AuthController.instance.isLoggedIn.value;
-    final showMemberPrice = isLoggedIn && AuthController.instance.isMember;
 
     if (isLoggedIn) {
       final ApiResponse<CartPayload?> res = await ApiMiddleware.cart.getCart();
@@ -83,8 +82,7 @@ class _CartScreenState extends State<CartScreen> {
 
       final product = productMap[code];
       final name = product?.productName ?? code;
-      final price =
-          (showMemberPrice ? product?.memberPrice : product?.regularPrice) ?? 0;
+      final price = product?.regularPrice ?? 0;
       final unitPrice = price;
       final imageUrl = product?.imageUrl ?? '';
       final lineTotal = unitPrice * qty;

@@ -613,7 +613,7 @@ class _IamWalletPaySheetState extends State<_IamWalletPaySheet> {
                                         shadowColor: IAMColors.primary
                                             .withOpacity(0.45),
                                         minimumSize: const Size.fromHeight(54),
-                                        disabledBackgroundColor: IAMColors.grey,
+                                        disabledBackgroundColor: const Color.fromARGB(255, 166, 166, 166),
                                         shape: RoundedRectangleBorder(
                                           borderRadius: BorderRadius.circular(
                                             16,
@@ -629,26 +629,109 @@ class _IamWalletPaySheetState extends State<_IamWalletPaySheet> {
                                                 color: IAMColors.white,
                                               ),
                                             )
-                                          : Row(
-                                              mainAxisSize:
-                                                  MainAxisSize.min,
-                                              children: [
-                                                Icon(
-                                                  Icons.lock_rounded,
-                                                  size: 20,
-                                                  color: IAMColors.white,
-                                                ),
-                                                const SizedBox(width: 10),
-                                                Text(
-                                                  'Proceed to Verification',
-                                                  style: const TextStyle(
-                                                    fontWeight:
-                                                        FontWeight.w800,
-                                                    fontSize: 17,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
+                                          : (!_loadingBalance &&
+                                                  !hasSufficientBalance)
+                                              ? Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  children: [
+                                                    Icon(
+                                                      Icons
+                                                          .warning_amber_rounded,
+                                                      size: 18,
+                                                      color: Colors.white
+                                                          .withOpacity(0.95),
+                                                    ),
+                                                    const SizedBox(width: 10),
+                                                    Flexible(
+                                                      child: Text(
+                                                        'Insufficient funds',
+                                                        maxLines: 2,
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
+                                                        textAlign:
+                                                            TextAlign.center,
+                                                        style: Theme.of(context)
+                                                            .textTheme
+                                                            .bodyMedium
+                                                            ?.copyWith(
+                                                              color:
+                                                                  IAMColors
+                                                                      .white,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w800,
+                                                            ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                )
+                                              : (_loadingBalance)
+                                                  ? Row(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .center,
+                                                      children: [
+                                                        const SizedBox(
+                                                          width: 16,
+                                                          height: 16,
+                                                          child:
+                                                              CircularProgressIndicator(
+                                                            strokeWidth: 2,
+                                                            color: IAMColors
+                                                                .white,
+                                                          ),
+                                                        ),
+                                                        const SizedBox(
+                                                          width: 10,
+                                                        ),
+                                                        Flexible(
+                                                          child: Text(
+                                                            'Loading wallet balance…',
+                                                            maxLines: 2,
+                                                            overflow:
+                                                                TextOverflow
+                                                                    .ellipsis,
+                                                            textAlign: TextAlign
+                                                                .center,
+                                                            style: Theme.of(
+                                                              context,
+                                                            ).textTheme.bodySmall
+                                                                ?.copyWith(
+                                                                  color: IAMColors
+                                                                      .white,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w700,
+                                                                ),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    )
+                                                  : Row(
+                                                      mainAxisSize:
+                                                          MainAxisSize.min,
+                                                      children: [
+                                                        Icon(
+                                                          Icons.lock_rounded,
+                                                          size: 20,
+                                                          color:
+                                                              IAMColors.white,
+                                                        ),
+                                                        const SizedBox(
+                                                          width: 10,
+                                                        ),
+                                                        Text(
+                                                          'Proceed to Verification',
+                                                          style:
+                                                              const TextStyle(
+                                                            fontWeight:
+                                                                FontWeight.w800,
+                                                            fontSize: 17,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
                                     ),
                                   ),
                                   const SizedBox(height: 26),

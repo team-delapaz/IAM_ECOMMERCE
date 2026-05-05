@@ -288,9 +288,9 @@ class OrderDetailScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-                const SizedBox(height: 10),
-                const SizedBox(height: 16),
-                const SizedBox(height: 8),
+
+                const SizedBox(height: 12),
+
                 // Text('Date: ${order.orderDate}'),
                 // Text('Status: ${order.orderStatusName}'),
                 _PaymentStatusCard(

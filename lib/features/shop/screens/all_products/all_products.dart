@@ -4,6 +4,7 @@ import 'package:iam_ecomm/common/widgets/appbar/appbar.dart';
 import 'package:iam_ecomm/common/widgets/layouts/grid_layout.dart';
 import 'package:iam_ecomm/common/widgets/loaders/skeleton.dart';
 import 'package:iam_ecomm/common/widgets/products/product_cards/product_card_vertical.dart';
+import 'package:iam_ecomm/features/authentication/controllers/auth_controller.dart';
 import 'package:iam_ecomm/features/shop/controllers/home_controller.dart';
 import 'package:iam_ecomm/utils/api/responses/response_prep.dart';
 import 'package:iam_ecomm/utils/constants/sizes.dart';
@@ -20,7 +21,9 @@ class _AllProductsState extends State<AllProducts> {
   String _selectedSort = 'Name';
 
   num _effectivePrice(ProductItem product) {
-    return product.memberPrice > 0 ? product.memberPrice : product.regularPrice;
+    final isLoggedIn = Get.isRegistered<AuthController>() &&
+        AuthController.instance.isLoggedIn.value;
+    return isLoggedIn ? product.sellingPrice : product.regularPrice;
   }
 
   List<ProductItem> _sortedProducts(List<ProductItem> source) {

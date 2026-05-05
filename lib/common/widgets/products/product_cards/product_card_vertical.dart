@@ -25,6 +25,14 @@ class IAMProductCardVertical extends StatelessWidget {
 
   final ProductItem? product;
 
+  static num _effectivePrice({
+    required bool isLoggedIn,
+    required num regularPrice,
+    required num sellingPrice,
+  }) {
+    return isLoggedIn ? sellingPrice : regularPrice;
+  }
+
   @override
   Widget build(BuildContext context) {
     final auth = AuthController.instance;
@@ -46,13 +54,17 @@ class IAMProductCardVertical extends StatelessWidget {
       final brand = product?.shortDesc.isNotEmpty == true
           ? product!.shortDesc
           : 'Amazing Barley';
-      final memberPrice = product?.memberPrice ?? 750;
+      final isLoggedIn = auth.isLoggedIn.value;
       final regularPrice = product?.regularPrice ?? 1000;
-      final showMember = auth.isLoggedIn.value && auth.isMember;
-      final displayPrice = showMember ? memberPrice : regularPrice;
+      final sellingPrice = product?.sellingPrice ?? regularPrice;
+      final displayPrice = _effectivePrice(
+        isLoggedIn: isLoggedIn,
+        regularPrice: regularPrice,
+        sellingPrice: sellingPrice,
+      );
       final discountPercent =
-          showMember && regularPrice > 0 && memberPrice < regularPrice
-          ? ((regularPrice - memberPrice) / regularPrice * 100).round()
+          isLoggedIn && regularPrice > 0 && sellingPrice < regularPrice
+          ? ((regularPrice - sellingPrice) / regularPrice * 100).round()
           : null;
 
       return GestureDetector(

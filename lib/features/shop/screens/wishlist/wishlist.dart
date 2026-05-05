@@ -39,7 +39,7 @@ class _FavouriteScreenState extends State<FavouriteScreen> {
       productCode: item.productCode,
       productName: item.productName,
       regularPrice: item.sellingPrice,
-      memberPrice: item.sellingPrice,
+      memberPrice: 0,
       sellingPrice: item.sellingPrice,
       shortDesc: item.shortDesc,
       longDesc: item.shortDesc,
