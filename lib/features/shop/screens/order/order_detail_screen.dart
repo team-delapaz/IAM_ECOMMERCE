@@ -45,6 +45,7 @@ class OrderDetailScreen extends StatelessWidget {
             return const Center(child: Text('Order not found'));
           }
           final shipping = order.shippingInfo;
+          final pickup = order.pickupLocation;
           final dark = IAMHelperFunctions.isDarkMode(context);
           final items = order.items ?? [];
           final paymentCard = _PaymentCardModel.from(order);
@@ -213,12 +214,99 @@ class OrderDetailScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Shipping Information',
+                              pickup != null
+                                  ? 'Pickup Information'
+                                  : 'Shipping Information',
                               style: Theme.of(context).textTheme.titleMedium!
                                   .copyWith(fontWeight: FontWeight.w500),
                             ),
                             const SizedBox(height: 8),
-                            if (shipping != null) ...[
+                            if (pickup != null) ...[
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Icon(
+                                    Icons.store_mall_directory,
+                                    color: IAMColors.primary,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        RichText(
+                                          text: TextSpan(
+                                            children: [
+                                              TextSpan(
+                                                text: pickup.pickupLocationName,
+                                                style: TextStyle(
+                                                  color: dark
+                                                      ? IAMColors.white
+                                                      : Colors.black,
+                                                ),
+                                              ),
+                                              if (pickup.contactNo.isNotEmpty)
+                                                TextSpan(
+                                                  text: ' • ${pickup.contactNo}',
+                                                  style: const TextStyle(
+                                                    color: Colors.grey,
+                                                    fontSize: 12,
+                                                  ),
+                                                ),
+                                            ],
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Divider(
+                                          height: 1,
+                                          thickness: 1.5,
+                                          color: (dark
+                                                  ? IAMColors.white
+                                                  : IAMColors.black)
+                                              .withOpacity(0.10),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          pickup.completeAddress,
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            color: dark
+                                                ? IAMColors.grey
+                                                : Colors.black87,
+                                          ),
+                                        ),
+                                        if (pickup.emailAddress.isNotEmpty) ...[
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            pickup.emailAddress,
+                                            style: TextStyle(
+                                              fontSize: 11,
+                                              color: dark
+                                                  ? IAMColors.grey
+                                                  : Colors.black87,
+                                            ),
+                                          ),
+                                        ],
+                                        if (pickup.operatingHours.isNotEmpty) ...[
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            'Hours: ${pickup.operatingHours}',
+                                            style: TextStyle(
+                                              fontSize: 11,
+                                              color: dark
+                                                  ? IAMColors.grey
+                                                  : Colors.black87,
+                                              fontStyle: FontStyle.italic,
+                                            ),
+                                          ),
+                                        ],
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ] else if (shipping != null) ...[
                               Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
