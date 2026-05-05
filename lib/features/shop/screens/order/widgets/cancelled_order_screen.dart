@@ -8,6 +8,7 @@ import 'package:iam_ecomm/utils/constants/sizes.dart';
 import 'package:iam_ecomm/utils/helpers/helper_functions.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:intl/intl.dart';
+import 'package:iam_ecomm/features/shop/screens/order/widgets/order_empty_state.dart';
 
 class CancelledTab extends StatelessWidget {
   const CancelledTab({super.key});
@@ -64,7 +65,12 @@ class CancelledTab extends StatelessWidget {
             .toList();
 
         if (orders.isEmpty) {
-          return const Center(child: Text('No orders in this category'));
+          return const IAMOrderEmptyState(
+            icon: Iconsax.close_circle,
+            title: 'No cancelled orders',
+            subtitle:
+                'Cancelled, returned, or failed delivery orders will appear here.',
+          );
         }
 
         return FutureBuilder(
@@ -77,7 +83,12 @@ class CancelledTab extends StatelessWidget {
             if (!detailSnapshot.hasData ||
                 detailSnapshot.data == null ||
                 detailSnapshot.data!.isEmpty) {
-              return const Center(child: Text('No orders found'));
+              return const IAMOrderEmptyState(
+                icon: Iconsax.close_circle,
+                title: 'No cancelled orders',
+                subtitle:
+                    'Cancelled, returned, or failed delivery orders will appear here.',
+              );
             }
 
             final combined = detailSnapshot.data!;

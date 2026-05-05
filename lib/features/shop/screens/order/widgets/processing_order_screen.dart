@@ -12,6 +12,7 @@ import 'package:iam_ecomm/utils/api/api.dart';
 import 'package:iam_ecomm/utils/api/core/api_response.dart';
 import 'package:iam_ecomm/features/shop/screens/order/order_detail_screen.dart';
 import 'package:iam_ecomm/features/shop/screens/order/order_status_ids.dart';
+import 'package:iam_ecomm/features/shop/screens/order/widgets/order_empty_state.dart';
 import 'package:iam_ecomm/utils/api/responses/response_prep.dart';
 import 'package:iam_ecomm/navigation_menu.dart';
 import 'package:iconsax/iconsax.dart';
@@ -22,11 +23,15 @@ class PipelineStageTab extends StatefulWidget {
   const PipelineStageTab({
     super.key,
     required this.stageIds,
-    required this.emptyMessage,
+    required this.emptyTitle,
+    required this.emptySubtitle,
+    required this.emptyIcon,
   });
 
   final Set<int> stageIds;
-  final String emptyMessage;
+  final String emptyTitle;
+  final String emptySubtitle;
+  final IconData emptyIcon;
 
   @override
   State<PipelineStageTab> createState() => _PipelineStageTabState();
@@ -96,7 +101,11 @@ class _PipelineStageTabState extends State<PipelineStageTab> {
             .toList();
 
         if (orders.isEmpty) {
-          return Center(child: Text(widget.emptyMessage));
+          return IAMOrderEmptyState(
+            icon: widget.emptyIcon,
+            title: widget.emptyTitle,
+            subtitle: widget.emptySubtitle,
+          );
         }
 
         return ListView.separated(

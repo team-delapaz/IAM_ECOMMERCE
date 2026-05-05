@@ -1,18 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:get/get_utils/src/extensions/export.dart';
-import 'package:iam_ecomm/common/widgets/login_signup/form_divider.dart';
-import 'package:iam_ecomm/common/widgets/login_signup/social_buttons.dart';
 import 'package:iam_ecomm/features/authentication/screens/signup/widgets/signup.form.dart';
+import 'package:iam_ecomm/utils/constants/colors.dart';
 import 'package:iam_ecomm/utils/constants/sizes.dart';
 import 'package:iam_ecomm/utils/constants/text_strings.dart';
+import 'package:iam_ecomm/utils/helpers/helper_functions.dart';
 
 class SignupScreen extends StatelessWidget {
   const SignupScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final dark = IAMHelperFunctions.isDarkMode(context);
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(
+        foregroundColor: dark ? IAMColors.white : IAMColors.black,
+        iconTheme: IconThemeData(
+          color: dark ? IAMColors.white : IAMColors.black,
+        ),
+      ),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(IAMSizes.defaultSpace),

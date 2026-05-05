@@ -915,6 +915,9 @@ class OrderDetailItem {
   final String paymentProvider;
   final String paymentMethod;
   final String paymentStatusMessage;
+  final int fulfillmentTypeId;
+  final String fulfillmentTypeCode;
+  final String fulfillmentTypeName;
   final String gatewayReference;
   final String checkoutUrl;
   final ShippingInfo? shippingInfo;
@@ -937,6 +940,9 @@ class OrderDetailItem {
     required this.paymentProvider,
     required this.paymentMethod,
     required this.paymentStatusMessage,
+    required this.fulfillmentTypeId,
+    required this.fulfillmentTypeCode,
+    required this.fulfillmentTypeName,
     required this.gatewayReference,
     required this.checkoutUrl,
     this.shippingInfo,
@@ -967,6 +973,9 @@ class OrderDetailItem {
       paymentProvider: m['paymentProvider'] as String? ?? '',
       paymentMethod: m['paymentMethod'] as String? ?? '',
       paymentStatusMessage: m['paymentStatusMessage'] as String? ?? '',
+      fulfillmentTypeId: (m['fulfillmentTypeId'] as int?) ?? 0,
+      fulfillmentTypeCode: m['fulfillmentTypeCode'] as String? ?? '',
+      fulfillmentTypeName: m['fulfillmentTypeName'] as String? ?? '',
       gatewayReference: m['gatewayReference'] as String? ?? '',
       checkoutUrl: m['checkoutUrl'] as String? ?? '',
       shippingInfo: ShippingInfo.fromJson(m['shippingInfo']),

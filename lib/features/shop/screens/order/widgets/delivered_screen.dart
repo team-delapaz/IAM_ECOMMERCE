@@ -9,6 +9,7 @@ import 'package:intl/intl.dart';
 import 'package:iam_ecomm/utils/api/api.dart';
 import 'package:iam_ecomm/utils/api/responses/response_prep.dart';
 import 'package:iam_ecomm/features/shop/screens/order/order_status_ids.dart';
+import 'package:iam_ecomm/features/shop/screens/order/widgets/order_empty_state.dart';
 
 class DeliveredTab extends StatelessWidget {
   const DeliveredTab({super.key});
@@ -61,7 +62,11 @@ class DeliveredTab extends StatelessWidget {
             .toList();
 
         if (orders.isEmpty) {
-          return const Center(child: Text('No orders found'));
+          return const IAMOrderEmptyState(
+            icon: Iconsax.tick_circle,
+            title: 'No delivered orders',
+            subtitle: 'Completed orders will appear here after they are delivered.',
+          );
         }
 
         return FutureBuilder(
@@ -74,7 +79,12 @@ class DeliveredTab extends StatelessWidget {
             if (!detailSnapshot.hasData ||
                 detailSnapshot.data == null ||
                 detailSnapshot.data!.isEmpty) {
-              return const Center(child: Text('No orders found'));
+              return const IAMOrderEmptyState(
+                icon: Iconsax.tick_circle,
+                title: 'No delivered orders',
+                subtitle:
+                    'Completed orders will appear here after they are delivered.',
+              );
             }
 
             final combined = detailSnapshot.data!;
@@ -114,7 +124,11 @@ class DeliveredTab extends StatelessWidget {
     OrderDetailItem orderDetail,
   ) {
     final dark = IAMHelperFunctions.isDarkMode(context);
-    final items = orderDetail.items ?? [];
+    final items = orderDetail.items;
+    final firstItem = items.whereType<OrderProductItem>().isNotEmpty
+        ? items.whereType<OrderProductItem>().first
+        : null;
+    final firstProductCode = firstItem?.productCode ?? '';
 
     return IAMRoundedContainer(
       padding: const EdgeInsets.all(IAMSizes.md),
@@ -187,16 +201,17 @@ class DeliveredTab extends StatelessWidget {
           const SizedBox(height: IAMSizes.spaceBtwItems),
 
           Column(
-            children: items.where((item) => item != null).map((item) {
-              final nonNullItem = item!;
+            children: items.whereType<OrderProductItem>().map((nonNullItem) {
               return _itemRow(
-                nonNullItem.productName ?? 'Unnamed Product',
+                nonNullItem.productName.isNotEmpty
+                    ? nonNullItem.productName
+                    : 'Unnamed Product',
                 NumberFormat.currency(
                   locale: 'en_PH',
                   symbol: '₱',
                   decimalDigits: 2,
-                ).format(nonNullItem.sellingPrice ?? 0),
-                'x${nonNullItem.qty ?? 1}',
+                ).format(nonNullItem.sellingPrice),
+                'x${nonNullItem.qty}',
                 nonNullItem.imageUrl,
                 dark: dark,
               );
@@ -227,9 +242,10 @@ class DeliveredTab extends StatelessWidget {
             children: [
               Expanded(
                 child: FutureBuilder<ApiResponse<List<ProductReviewItem?>>>(
-                  future: (order.orderRefno.isNotEmpty)
+                  future: (order.orderRefno.isNotEmpty &&
+                          firstProductCode.isNotEmpty)
                       ? ApiMiddleware.productReview.getReviews(
-                          items.first!.productCode!,
+                          firstProductCode,
                         )
                       : null,
                   builder: (context, reviewSnapshot) {
@@ -247,15 +263,13 @@ class DeliveredTab extends StatelessWidget {
 
                     return OutlinedButton.icon(
                       onPressed: () async {
-                        if (items.isEmpty || items.first?.productCode == null) {
+                        if (firstProductCode.isEmpty) {
                           return;
                         }
 
-                        final productCode = items.first!.productCode!;
-
                         final reviewsResponse = await ApiMiddleware
                             .productReview
-                            .getReviews(productCode);
+                            .getReviews(firstProductCode);
 
                         final reviews = (reviewsResponse.data ?? [])
                             .whereType<ProductReviewItem>()
@@ -437,7 +451,7 @@ void _showViewReviewModal(
 
               /// Reviews List
               ...reviews.map((review) {
-                final rating = review.rating ?? 0;
+                final rating = review.rating;
 
                 return Container(
                   margin: const EdgeInsets.only(bottom: IAMSizes.lg),
@@ -492,8 +506,8 @@ void _showViewReviewModal(
                           borderRadius: BorderRadius.circular(14),
                         ),
                         child: Text(
-                          (review.reviewComment ?? '').isNotEmpty
-                              ? review.reviewComment!
+                          review.reviewComment.isNotEmpty
+                              ? review.reviewComment
                               : 'No review comment provided.',
                           style: TextStyle(
                             fontSize: 14,

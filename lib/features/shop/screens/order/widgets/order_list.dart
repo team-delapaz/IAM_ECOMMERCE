@@ -6,6 +6,7 @@ import 'package:iam_ecomm/features/shop/screens/order/widgets/delivered_screen.d
 import 'package:iam_ecomm/features/shop/screens/order/widgets/processing_order_screen.dart';
 import 'package:iam_ecomm/utils/constants/sizes.dart';
 import 'package:iam_ecomm/utils/helpers/helper_functions.dart';
+import 'package:iconsax/iconsax.dart';
 
 class IAMOrderListItems extends StatefulWidget {
   const IAMOrderListItems({super.key});
@@ -22,21 +23,27 @@ class _IAMOrderListItemsState extends State<IAMOrderListItems> {
       'Pending',
       PipelineStageTab(
         stageIds: const {OrderStatusIds.pending},
-        emptyMessage: 'No pending orders',
+        emptyIcon: Iconsax.timer_1,
+        emptyTitle: 'No pending orders',
+        emptySubtitle: 'Once you place an order, it will show up here.',
       ),
     ),
     (
       'Ready',
       PipelineStageTab(
         stageIds: const {OrderStatusIds.readyToShip},
-        emptyMessage: 'No orders ready to ship',
+        emptyIcon: Iconsax.box,
+        emptyTitle: 'No orders ready to ship',
+        emptySubtitle: 'We’ll show your orders here when they are packed and ready.',
       ),
     ),
     (
       'Transit',
       PipelineStageTab(
         stageIds: const {OrderStatusIds.inTransit},
-        emptyMessage: 'No orders in transit',
+        emptyIcon: Iconsax.truck_fast,
+        emptyTitle: 'No orders in transit',
+        emptySubtitle: 'Orders that are on the way will appear here.',
       ),
     ),
     ('Delivered', const DeliveredTab()),
