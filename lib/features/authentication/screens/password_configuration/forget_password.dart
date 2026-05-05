@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iam_ecomm/features/authentication/screens/password_configuration/otp_reset_code.dart';
 import 'package:iam_ecomm/utils/api/api.dart';
+import 'package:iam_ecomm/utils/constants/colors.dart';
 import 'package:iam_ecomm/utils/constants/sizes.dart';
 import 'package:iam_ecomm/utils/constants/text_strings.dart';
+import 'package:iam_ecomm/utils/helpers/helper_functions.dart';
 import 'package:iconsax/iconsax.dart';
 
 class ForgetPassword extends StatefulWidget {
@@ -62,8 +64,14 @@ class _ForgetPasswordState extends State<ForgetPassword> {
 
   @override
   Widget build(BuildContext context) {
+    final dark = IAMHelperFunctions.isDarkMode(context);
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(
+        foregroundColor: dark ? IAMColors.white : IAMColors.black,
+        iconTheme: IconThemeData(
+          color: dark ? IAMColors.white : IAMColors.black,
+        ),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(IAMSizes.defaultSpace),
         child: Form(

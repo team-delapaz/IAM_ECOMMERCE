@@ -467,9 +467,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     final fulfillmentTypeCode = _selectedFulfillmentTypeCode.trim();
     final fulfillmentTypeId = _selectedFulfillmentTypeId;
     final selectedAreaCode = _selectedBranchAreaCode?.trim();
-    final areaCodeToSend = (selectedAreaCode == null || selectedAreaCode.isEmpty)
-        ? '0'
-        : selectedAreaCode;
+    final areaCodeToSend =
+        (selectedAreaCode == null || selectedAreaCode.isEmpty)
+            ? null
+            : selectedAreaCode;
 
     final isPickup = _isPickupSelected;
     if (fulfillmentTypeCode.isEmpty) {

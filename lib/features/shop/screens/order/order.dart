@@ -18,6 +18,7 @@ class OrderScreen extends StatelessWidget {
           'My Orders',
           style: Theme.of(context).textTheme.headlineSmall,
         ),
+        centerTitle: true,
         showBackArrow: true,
         actions: [
           Padding(

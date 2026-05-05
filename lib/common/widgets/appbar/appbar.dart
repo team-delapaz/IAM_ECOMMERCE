@@ -13,6 +13,7 @@ class IAMAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.actions,
     this.leadingOnPressed,
     this.showBackArrow = false,
+    this.centerTitle = false,
     this.backgroundColor,
     this.elevation,
     this.scrolledUnderElevation,
@@ -21,6 +22,7 @@ class IAMAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   final Widget? title;
   final bool showBackArrow;
+  final bool centerTitle;
   final IconData? leadingIcon;
   final List<Widget>? actions;
   final VoidCallback? leadingOnPressed;
@@ -52,6 +54,7 @@ class IAMAppBar extends StatelessWidget implements PreferredSizeWidget {
             : leadingIcon != null
             ? IconButton(onPressed: leadingOnPressed, icon: Icon(leadingIcon))
             : null,
+        centerTitle: centerTitle,
         title: title,
         actions: actions,
       ),

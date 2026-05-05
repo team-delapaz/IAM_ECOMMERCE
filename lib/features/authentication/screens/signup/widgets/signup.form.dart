@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:flutter/services.dart';
 import 'package:iam_ecomm/features/authentication/screens/signup/verify_email.dart';
 import 'package:iam_ecomm/features/authentication/screens/signup/widgets/termsandconditions.dart';
 import 'package:iam_ecomm/utils/api/api.dart';
@@ -154,8 +155,25 @@ class _IAMSignupFormState extends State<IAMSignupForm> {
                     labelText: IAMTexts.firstName,
                     prefixIcon: Icon(Iconsax.user),
                   ),
-                  validator: (v) =>
-                      (v == null || v.isEmpty) ? 'Required Field*' : null,
+                  inputFormatters: [
+                    // Letters only (no numbers/special characters).
+                    // Allow spaces to support multi-part names like "Mary Jane".
+                    FilteringTextInputFormatter.allow(
+                      RegExp(r'[A-Za-z ]'),
+                    ),
+                  ],
+                  validator: (v) {
+                    if (v == null || v.trim().isEmpty) {
+                      return 'Required Field*';
+                    }
+
+                    final normalized = v.trim();
+                    final regex = RegExp(r'^[A-Za-z]+(?: [A-Za-z]+)*$');
+                    if (!regex.hasMatch(normalized)) {
+                      return 'Only letters are allowed';
+                    }
+                    return null;
+                  },
                 ),
               ),
               const SizedBox(width: IAMSizes.spaceBtwInputFields),
@@ -167,8 +185,25 @@ class _IAMSignupFormState extends State<IAMSignupForm> {
                     labelText: IAMTexts.lastName,
                     prefixIcon: Icon(Iconsax.user),
                   ),
-                  validator: (v) =>
-                      (v == null || v.isEmpty) ? 'Required Field*' : null,
+                  inputFormatters: [
+                    // Letters only (no numbers/special characters).
+                    // Allow spaces to support multi-part names like "Dela Cruz".
+                    FilteringTextInputFormatter.allow(
+                      RegExp(r'[A-Za-z ]'),
+                    ),
+                  ],
+                  validator: (v) {
+                    if (v == null || v.trim().isEmpty) {
+                      return 'Required Field*';
+                    }
+
+                    final normalized = v.trim();
+                    final regex = RegExp(r'^[A-Za-z]+(?: [A-Za-z]+)*$');
+                    if (!regex.hasMatch(normalized)) {
+                      return 'Only letters are allowed';
+                    }
+                    return null;
+                  },
                 ),
               ),
             ],
