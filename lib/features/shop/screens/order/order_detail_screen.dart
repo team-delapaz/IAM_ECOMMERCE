@@ -50,7 +50,14 @@ class OrderDetailScreen extends StatelessWidget {
           final items = order.items ?? [];
           final paymentCard = _PaymentCardModel.from(order);
           return SingleChildScrollView(
-            padding: const EdgeInsets.all(IAMSizes.defaultSpace),
+            padding: EdgeInsets.fromLTRB(
+              IAMSizes.defaultSpace,
+              IAMSizes.defaultSpace,
+              IAMSizes.defaultSpace,
+              IAMSizes.defaultSpace +
+                  MediaQuery.of(context).padding.bottom +
+                  24,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -248,7 +255,8 @@ class OrderDetailScreen extends StatelessWidget {
                                               ),
                                               if (pickup.contactNo.isNotEmpty)
                                                 TextSpan(
-                                                  text: ' • ${pickup.contactNo}',
+                                                  text:
+                                                      ' • ${pickup.contactNo}',
                                                   style: const TextStyle(
                                                     color: Colors.grey,
                                                     fontSize: 12,
@@ -261,10 +269,11 @@ class OrderDetailScreen extends StatelessWidget {
                                         Divider(
                                           height: 1,
                                           thickness: 1.5,
-                                          color: (dark
-                                                  ? IAMColors.white
-                                                  : IAMColors.black)
-                                              .withOpacity(0.10),
+                                          color:
+                                              (dark
+                                                      ? IAMColors.white
+                                                      : IAMColors.black)
+                                                  .withOpacity(0.10),
                                         ),
                                         const SizedBox(height: 8),
                                         Text(
@@ -288,7 +297,9 @@ class OrderDetailScreen extends StatelessWidget {
                                             ),
                                           ),
                                         ],
-                                        if (pickup.operatingHours.isNotEmpty) ...[
+                                        if (pickup
+                                            .operatingHours
+                                            .isNotEmpty) ...[
                                           const SizedBox(height: 2),
                                           Text(
                                             'Hours: ${pickup.operatingHours}',
@@ -345,10 +356,11 @@ class OrderDetailScreen extends StatelessWidget {
                                         Divider(
                                           height: 1,
                                           thickness: 1.5,
-                                          color: (dark
-                                                  ? IAMColors.white
-                                                  : IAMColors.black)
-                                              .withOpacity(0.10),
+                                          color:
+                                              (dark
+                                                      ? IAMColors.white
+                                                      : IAMColors.black)
+                                                  .withOpacity(0.10),
                                         ),
                                         const SizedBox(height: 8),
                                         Text(
