@@ -23,6 +23,34 @@ String readStringValue(Map<String, dynamic> m, List<String> keys) {
   return '';
 }
 
+class HelpTopicItem {
+  final int helpTopicId;
+  final String category;
+  final String title;
+  final String content;
+  final int sortOrder;
+
+  HelpTopicItem({
+    required this.helpTopicId,
+    required this.category,
+    required this.title,
+    required this.content,
+    required this.sortOrder,
+  });
+
+  static HelpTopicItem? fromJson(dynamic json) {
+    final m = asMap(json);
+    if (m == null) return null;
+    return HelpTopicItem(
+      helpTopicId: (m['helpTopicId'] as int?) ?? 0,
+      category: m['category'] as String? ?? '',
+      title: m['title'] as String? ?? '',
+      content: m['content'] as String? ?? '',
+      sortOrder: (m['sortOrder'] as int?) ?? 0,
+    );
+  }
+}
+
 class LoginData {
   final TokenInfo? token;
   final UserInfo? user;
