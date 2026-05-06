@@ -5,6 +5,7 @@ import 'services/auth_api.dart';
 import 'services/cart_api.dart';
 import 'services/checkout_api.dart';
 import 'services/fulfillment_api.dart';
+import 'services/help_center_api.dart';
 import 'services/location_api.dart';
 import 'services/member_api.dart';
 import 'services/orders_api.dart';
@@ -33,6 +34,7 @@ class ApiMiddleware {
   static final CartApi cart = CartApi(_client);
   static final CheckoutApi checkout = CheckoutApi(_client);
   static final FulfillmentApi fulfillment = FulfillmentApi(_client);
+  static final HelpCenterApi helpCenter = HelpCenterApi(_client);
   static final LocationApi location = LocationApi(_client);
   static final MemberApi member = MemberApi(_client);
   static final OrdersApi orders = OrdersApi(_client);
