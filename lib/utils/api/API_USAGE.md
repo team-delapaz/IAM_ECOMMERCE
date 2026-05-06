@@ -132,6 +132,10 @@ await ApiMiddleware.init();
 - `ApiMiddleware.points.getPoints()` → `ApiResponse<List<dynamic>?>` (GET `/Points`)
 - `ApiMiddleware.points.getBalance()` → `ApiResponse<PointsBalanceData?>` (GET `/Points/Balance`)
 
+## Help Center
+
+- `ApiMiddleware.helpCenter.getTopics()` → `ApiResponse<List<HelpTopicItem?>>` (GET `/HelpCenter/Topics`) — grouped into categories in the app Help Center screen.
+
 ## Response handling
 
 ```dart

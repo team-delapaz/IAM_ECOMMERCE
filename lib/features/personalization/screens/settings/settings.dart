@@ -7,6 +7,7 @@ import 'package:iam_ecomm/common/widgets/custom_shapes/containers/primary_header
 import 'package:iam_ecomm/common/widgets/list_tiles/settings_menu_tile.dart';
 import 'package:iam_ecomm/common/widgets/list_tiles/user_profile_tile.dart';
 import 'package:iam_ecomm/features/authentication/controllers/auth_controller.dart';
+import 'package:iam_ecomm/features/personalization/screens/help_center/help_center.dart';
 import 'package:iam_ecomm/utils/theme/theme_controller.dart';
 import 'package:iam_ecomm/features/personalization/screens/address/address.dart';
 import 'package:iam_ecomm/features/personalization/screens/profile/profile.dart';
@@ -187,6 +188,7 @@ class _SettingScreenState extends State<SettingScreen> {
                       icon: Iconsax.message_question,
                       title: 'Help Center',
                       subTitle: 'FAQs',
+                      onTap: () => Get.to(() => const HelpCenterScreen()),
                     ),
                   // IAMSettingMenu(
                   //   icon: Iconsax.notification,
