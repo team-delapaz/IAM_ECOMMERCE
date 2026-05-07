@@ -17,10 +17,10 @@ class IAMUserProfile extends StatelessWidget {
       final user = AuthController.instance.user.value;
       return ListTile(
         leading: IAMCircularImage(
-          image: IAMImages.pandauser,
+          image: IAMImages.darkAppLogo,
           width: 50,
           height: 50,
-          padding: 0,
+          padding: 8,
         ),
         title: Text(
           user?.fullName ?? 'IAM User',

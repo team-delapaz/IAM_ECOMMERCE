@@ -315,10 +315,10 @@ class _ProfileHeroCard extends StatelessWidget {
                         ],
                       ),
                       child: const IAMCircularImage(
-                        image: IAMImages.pandauser,
+                        image: IAMImages.darkAppLogo,
                         width: 86,
                         height: 86,
-                        padding: 0,
+                        padding: 10,
                       ),
                     ),
                   ],

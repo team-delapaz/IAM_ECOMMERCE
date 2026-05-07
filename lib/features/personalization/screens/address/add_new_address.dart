@@ -414,11 +414,11 @@ class _AddNewAddressScreenState extends State<AddNewAddressScreen> {
                       widget.lockRecipientName),
                   decoration: const InputDecoration(
                     prefixIcon: Icon(Iconsax.user),
-                    labelText: 'Name',
+                    labelText: 'Recipient',
                   ),
                   validator: (value) {
                     if ((value ?? '').trim().isEmpty)
-                      return 'Name is required.';
+                      return 'Recipient is required.';
                     return null;
                   },
                 ),

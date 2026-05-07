@@ -148,6 +148,18 @@ class TrackingOrderScreen extends StatelessWidget {
 
   Widget _orderDetails(BuildContext context, UserInfo? user) {
     final dark = Theme.of(context).brightness == Brightness.dark;
+    final fulfillmentId = order.fulfillmentTypeId;
+    final fulfillmentName = order.fulfillmentTypeName.trim().toLowerCase();
+    final isHomeDelivery =
+        fulfillmentId == 1 && fulfillmentName == 'home delivery';
+    final isStorePickup =
+        fulfillmentId == 2 && fulfillmentName == 'store pickup';
+    final effectivePickup = isStorePickup
+        ? order.pickupLocation
+        : (!isHomeDelivery ? order.pickupLocation : null);
+    final effectiveShipping = isHomeDelivery
+        ? order.shippingInfo
+        : (!isStorePickup ? order.shippingInfo : null);
     return Container(
       padding: const EdgeInsets.all(IAMSizes.md),
       decoration: BoxDecoration(
@@ -216,19 +228,21 @@ class TrackingOrderScreen extends StatelessWidget {
           _row(context, 'Customer:', user?.fullName ?? 'IAM User'),
           _row(
             context,
-            order.pickupLocation != null ? 'Pickup Location:' : 'Destination:',
-            order.pickupLocation != null
-                ? toTitleCase(order.pickupLocation!.completeAddress)
-                : order.shippingInfo?.completeAddress != null
-                    ? toTitleCase(order.shippingInfo!.completeAddress)
+            effectivePickup != null ? 'Pickup Location:' : 'Destination:',
+            effectivePickup != null
+                ? toTitleCase(effectivePickup.completeAddress)
+                : (effectiveShipping?.completeAddress.trim().isNotEmpty == true)
+                    ? toTitleCase(effectiveShipping!.completeAddress)
                     : 'No Selected Address',
           ),
           _row(
             context,
             'Contact No.:',
-            order.pickupLocation?.contactNo.isNotEmpty == true
-                ? order.pickupLocation!.contactNo
-                : order.shippingInfo?.mobileNo ?? 'N/A',
+            (effectivePickup?.contactNo.isNotEmpty == true)
+                ? effectivePickup!.contactNo
+                : (effectiveShipping?.mobileNo.isNotEmpty == true)
+                    ? effectiveShipping!.mobileNo
+                    : 'N/A',
           ),
           _row(context, 'Payment Method:', order.paymentMethod.isNotEmpty ? order.paymentMethod : 'N/A'),
         ],
